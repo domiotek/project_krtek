@@ -22,6 +22,29 @@ namespace WebAPI {
              * this may notify administrator about mysql problems.
              */
             reportMysqlError(error: import("mysql").MysqlError): void
+
+            /**
+             * Wrapper for mysql query call.
+             * @param queryStr Query
+             * @param values Values to insert. Replace question marks inside query string.
+             * @param conn Connection, that is used if given, otherwise new one is created. 
+             * Can be usefull for transactions.
+             */
+            performQuery<T extends "Select" | "Other">(queryStr: string, values: Array<string | number | null>, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Mysql.TGenericMysqlResult<T> | null>
+
+            /**
+             * Returns error of last performQuery call
+             * @throws Do not use if performQuery returned positive response. Will throw.
+             * @returns Mysql Error
+             */
+            getLastQueryError(): import("mysql").MysqlError
+
+            /**
+             * Returns failure reason of last performQuery call
+             * @throws Do not use if performQuery returned positive response. Will throw.
+             * @returns Failure reason
+             */
+            getLastQueryFailureReason(): _.TGenericAPIError
         }
 
         type TMysqlSelectQueryResult = Array<{[field: string]: any}>
@@ -29,14 +52,14 @@ namespace WebAPI {
         interface IMysqlQueryResult {
             fieldCount: number
             affectedRows: number
-            insertID: number
+            insertId: number
             serverStatus: number
             warningCount: number
             message: string
             changedRows: number
         }
 
-        type TGenericMysqlResult = TMysqlSelectQueryResult | IMysqlQueryResult | undefined
+        type TGenericMysqlResult<T extends "Select" | "Other"> = (T extends "Select"?TMysqlSelectQueryResult:IMysqlQueryResult) | undefined
 
         type Connection = import("mysql").Connection
 
@@ -45,24 +68,23 @@ namespace WebAPI {
         }
     }
 
-    namespace Auth {
-
-        namespace _ {
-            interface IActionSuccess<T> {
-                result: "Success"
-                data: T
-            }
-
-            interface IActionFailure<T> {
-                result: TGenericAPIError | T
-            }
-
-            type TGetAllActionResult<T, S=TGenericAPIError> = IActionSuccess<T> | IActionFailure<S>;
-        }
-
+    namespace _ {
         type TGenericAPIError = "NoConnection" | "DBError";
 
         type TGenericActionResult = true | TGenericAPIError;
+
+        interface IActionSuccess<T> {
+            result: "Success"
+            data: T
+        }
+
+        interface IActionFailure<T> {
+            result: TGenericAPIError | T
+        }
+
+        type TGetAllActionResult<T, S=TGenericAPIError> = IActionSuccess<T> | IActionFailure<S>;
+        
+        type TGenericObjectActionResult<T,S> = IActionSuccess<T> | IActionFailure<S>
 
         namespace SessionAPI {
             interface ISessionDetails {
@@ -74,17 +96,17 @@ namespace WebAPI {
                 expirationDate: import("luxon").DateTime
             }
 
-            type TLoginResult = Auth._.IActionSuccess<string> | Auth._.IActionFailure<"InvalidCredentials">;
+            type TLoginResult = _.TGenericObjectActionResult<string, "InvalidCredentials">;
 
-            type TGetSessionValidResult = boolean | TGenericAPIError;
+            type TGetSessionValidResult = boolean | WebAPI._.TGenericAPIError;
 
-            type TProlongSessionResult = boolean | TGenericAPIError | "InvalidSession";
+            type TProlongSessionResult = boolean | WebAPI._.TGenericAPIError | "InvalidSession";
 
-            type TGetSessionDetailsResult = Auth._.IActionSuccess<ISessionDetails> | Auth._.IActionFailure<"InvalidSession">;
+            type TGetSessionDetailsResult = _.TGenericObjectActionResult<ISessionDetails, "InvalidSession">;
 
-            type TDropSessionResult = TGenericActionResult | "InvalidSession";
+            type TDropSessionResult = WebAPI._.TGenericActionResult | "InvalidSession";
 
-            type TGetAllSessionsResult = Auth._.TGetAllActionResult<ISessionDetails[]>
+            type TGetAllSessionsResult = WebAPI._.TGetAllActionResult<ISessionDetails[]>
         }
 
         namespace UserAPI {
@@ -97,9 +119,9 @@ namespace WebAPI {
                 gender: string
             }
 
-            type TCreateUserResult = TGenericActionResult | "InvalidEmail" | "UserExists" | "InvalidPassword";
+            type TCreateUserResult = WebAPI._.TGenericActionResult | "InvalidEmail" | "UserExists" | "InvalidPassword";
 
-            type TUserExistsResult = TGenericActionResult | false;
+            type TUserExistsResult = WebAPI._.TGenericActionResult | false;
 
             interface IUserDetails {
                 userID: number
@@ -115,20 +137,21 @@ namespace WebAPI {
                 lastPasswordChangeDate: import("luxon").DateTime
             }
 
-            type TGetUserResult = Auth._.IActionSuccess<IUserDetails> | Auth._.IActionFailure<"InvalidInput" | "NoUser">
+            type TGetUserResult = _.TGenericObjectActionResult<IUserDetails, "InvalidInput" | "NoUser">
 
-            type TSetPasswordResult = TGenericActionResult | "InvalidPassword" | "InvalidUser";
+            type TSetPasswordResult = WebAPI._.TGenericActionResult | "InvalidPassword" | "InvalidUser";
 
-            type TGetAllUsersResult = Auth._.TGetAllActionResult<IUserDetails[]>
+            type TGetAllUsersResult = WebAPI._.TGetAllActionResult<IUserDetails[]>
+
         }
 
         namespace AccountsTokenAPI {
 
-            type TCreateTokenResult = Auth._.IActionSuccess<string> | Auth._.IActionFailure<"NoUser" | "InvalidInput" | "TooMuchTokens" | "InvalidAction">
+            type TCreateTokenResult = _.TGenericObjectActionResult<string, "NoUser" | "InvalidInput" | "TooMuchTokens" | "InvalidAction">
 
             type TAccountActionName = "ChangePassword";
 
-            type TGetTokenCountResult = Auth._.IActionSuccess<number> | Auth._.IActionFailure<"NoUser">
+            type TGetTokenCountResult = _.TGenericObjectActionResult<number | "NoUser">
 
             interface ITokenDetails {
                 tokenID: string
@@ -139,13 +162,13 @@ namespace WebAPI {
                 expirationDate: import("luxon").DateTime
             }
 
-            type TGetTokenDetailsResult = Auth._.IActionSuccess<ITokenDetails> | Auth._.IActionFailure<"InvalidToken">
+            type TGetTokenDetailsResult = _.TGenericObjectActionResult<ITokenDetails | "InvalidToken">
 
-            type TDropTokenResult = TGenericActionResult | "InvalidToken";
+            type TDropTokenResult = WebAPI._.TGenericActionResult | "InvalidToken";
 
-            type TGetAllTokensResult = Auth._.TGetAllActionResult<ITokenDetails[]>
+            type TGetAllTokensResult = WebAPI._.TGetAllActionResult<ITokenDetails[]>
 
-            type TGetTokenTypesResult = Auth._.TGetAllActionResult<string[]>
+            type TGetTokenTypesResult = WebAPI._.TGetAllActionResult<string[]>
         }
 
         namespace InviteAPI {
@@ -156,13 +179,13 @@ namespace WebAPI {
                 expirationDate: import("luxon").DateTime
             }
 
-            type TInviteGenResult = Auth._.IActionSuccess<string> | Auth._.IActionFailure<"InviteExists" | "AccountExists" | "InvalidEmail">
+            type TInviteGenResult = _.TGenericObjectActionResult<string, "InviteExists" | "AccountExists" | "InvalidEmail">
 
-            type TGetInviteDetailsResult = Auth._.IActionSuccess<IInviteDetails> | Auth._.IActionFailure<"InvalidToken">
+            type TGetInviteDetailsResult = _.TGenericObjectActionResult<IInviteDetails | "InvalidToken">
     
-            type TDropInviteResult = TGenericActionResult | "InvalidToken";
+            type TDropInviteResult = WebAPI._.TGenericActionResult | "InvalidToken";
 
-            type TGetAllTokensResult = Auth._.TGetAllActionResult<IInviteDetails[]>
+            type TGetAllTokensResult = WebAPI._.TGetAllActionResult<IInviteDetails[]>
         }
 
         interface ILastFailureReasonObject {
@@ -233,7 +256,7 @@ namespace WebAPI {
             /**
              * Removes all expired authentication sessions.
              */
-            dropAllExpiredSessions(): Promise<TGenericActionResult>
+            dropAllExpiredSessions(): Promise<WebAPI._.TGenericActionResult>
 
 
 
@@ -364,7 +387,7 @@ namespace WebAPI {
              * @async
              * @returns True on successfull request, string error code on failure.
              */
-            dropAllExpiredTokens(): Promise<TGenericActionResult>
+            dropAllExpiredTokens(): Promise<WebAPI._.TGenericActionResult>
 
             /**
              * Returns all possible account action types
@@ -422,7 +445,7 @@ namespace WebAPI {
              * @async
              * @returns True on successfull request, string error code on failure.
              */
-            dropAllExpiredInvites(): Promise<TGenericActionResult>
+            dropAllExpiredInvites(): Promise<WebAPI._.TGenericActionResult>
         }
     }
 
