@@ -1,0 +1,67 @@
+.Portal {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem .75rem;
+}
+
+.Portal.ImageHeader {
+    padding: 0;
+    border-radius: inherit;
+}
+
+.Portal >img {
+    width: 100%;
+    align-self: center;
+}
+
+.ImageHolder {
+    display: flex;
+    flex-direction: column;
+    background: #e7e4fd;
+    padding: 1.5rem .75rem;
+    border-radius: inherit;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.ImageHolder > img {
+    align-self: center;
+}
+
+.PageHolder {
+    padding: 0 0 1.5rem;
+    position: relative;
+    height: 450px;
+    overflow: hidden;
+}
+
+.Page {
+    padding: 0 1.2rem;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    display: none;
+    animation: fadeInAnim 0.5s cubic-bezier(0, 0, 0.15, 0.98);
+}
+
+@keyframes fadeInAnim {
+    from {
+        top: 30%;
+        opacity: 0;
+        transform: scale(85%);
+    }
+
+    to {
+        top: 0;
+        opacity: 1;
+        transform: scale(100%);
+    }
+}
+
+.Show {
+    display: flex;
+
+}

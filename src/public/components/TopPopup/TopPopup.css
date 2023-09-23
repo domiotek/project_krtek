@@ -1,0 +1,30 @@
+
+.TopPopup {
+    position: absolute;
+    display: flex;
+    top: -100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.5rem 1rem;
+    box-shadow: 1px 1px 7px 0 #8b7575;
+    background: var(--main-bg);
+
+    font-size: smaller;
+    border-radius: 0 0 1.5rem 1.5rem;
+    align-items: center;
+    white-space: nowrap;
+    transition: top 0.7s;
+}
+
+.TopPopup.shown {
+    top: 0;
+}
+
+.TopPopup button {
+    font-size: xx-small;
+    width: 1rem;
+    height: 1rem;
+    padding: 0;
+    margin-left: 0.5rem;
+    border-radius: 50%;
+}

@@ -1,0 +1,172 @@
+.App {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+}
+
+.Header {
+  padding: 0.5rem 0.5rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  background: var(--main-bg);
+  box-shadow: #d9d8d8 0 1px 2px 0;
+  z-index: 4;
+}
+
+.HamburgerButton, .AccountButton {
+  background: none;
+  display: flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem;
+  border-radius: 5rem;
+}
+
+.AccountButton {
+  width: 3rem;
+  height: 3rem;
+  padding: 0.15rem;
+}
+
+.HamburgerButton:hover, .AccountButton:hover {
+  background: var(--bg-light-85);
+}
+.HamburgerButton:active, .AccountButton:active {
+  background: var(--bg-light);
+}
+
+.HamburgerButton img, .AccountButton img {
+  width: 100%;
+  height: 100%;
+}
+
+.LogoLink {
+	margin: auto;
+}
+
+.Logo {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.HeaderProfilePicturePlaceholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.ContentBox {
+	display: flex;
+	flex: 1;
+}
+
+.ContentWindow {
+  flex: 1;
+  z-index: 1;
+}
+
+.Footer {
+  background: #2d3142; 
+  padding: 15px;
+  color: white;
+  text-align: center;
+}
+
+.Footer a {
+	color: var(--bg-light-85);
+	text-decoration: underline;
+}
+
+.MiniFooter {
+	margin-top: 1.5rem;
+	font-size: smaller;
+	text-align: center;
+	display: none;
+}
+
+.MiniFooter a:hover {
+	text-decoration: underline;
+}
+
+.NavBar {
+  position: absolute;
+  width: 100%;
+  height: calc(100% - 4rem);
+  top: 0;
+  left: -100%;
+  background: var(--main-bg);
+  z-index: 3;
+  transition: left 0.5s;
+  margin-top: 4rem;
+  padding: 2rem 2rem 0;
+}
+
+@media screen and (min-width: 426px) {
+    .NavBar {
+      left: -22rem;
+      width: 22rem;
+      box-shadow: 1px 0px 4px 0 #c1c1c1;
+      margin-top: 4rem;
+    }
+}
+
+.OpenNavBar {
+	left: 0;
+}
+
+@media screen and (min-width: 1200px) {
+  	.HamburgerButton {
+    	display: none;
+  	}
+
+	.LogoLink {
+		margin: 0;
+	}
+
+	.Logo {
+		width: 3.25rem;
+		height: 3.25rem;
+	}
+
+	.NavBar {
+		box-shadow: none;
+		left: 0;
+		position: static;
+    margin-top: 0;
+    height: 100%;
+	}
+
+	.AccountButton {
+		display: none;
+	}
+
+	.Footer {
+		display: none;
+	}
+
+  	.MiniFooter {
+		display: block;
+	}
+}
+
+@media screen and (min-width: 1981px) {
+    .App {
+		padding: 0 20%;
+	}
+	
+	.Header {
+		box-shadow: none;
+		padding-left: 0;
+	}
+
+	.NavBar {
+		padding: 2rem 2rem 0 0;
+	}
+}

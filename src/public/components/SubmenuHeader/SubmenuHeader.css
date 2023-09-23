@@ -1,0 +1,41 @@
+.SubmenuHeader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 100%;
+}
+
+.GoBackButton {
+    color: black;
+    position: relative;
+    padding: 0.4rem 0.4rem 0.4rem 1.5rem;
+    font-size: smaller;
+    background: none!important;
+    position: absolute;
+    left: 0;
+}
+
+.GoBackButton span {
+    opacity: 0;
+    transition: opacity 0.4s;
+}
+
+.GoBackButton img {
+    position: absolute;
+    width: 1.5rem;
+    height: 1.5rem;
+    left: 1.5rem;
+    background: var(--main-bg);
+    top: 50%;
+    transform: translateY(-50%);
+    transition: left 0.4s;
+}
+
+.GoBackButton:hover span {
+    opacity: 1;
+}
+
+.GoBackButton:hover img {
+    left: 0;
+}

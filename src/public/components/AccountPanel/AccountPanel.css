@@ -1,0 +1,165 @@
+
+.AccountPanel {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    --profile-image-size: 3.75rem;
+}
+
+.AccountPanel.Vertical {
+    align-items:flex-start;
+    flex-wrap: wrap;
+}
+
+.AccountPanel img, .ProfilePictureImitation {
+    width: var(--profile-image-size);
+    height: var(--profile-image-size);
+}
+
+.Horizontal img {
+    padding: .5rem;
+}
+
+.TextWrapper, .ButtonsWrapper {
+    height: 100%;
+    padding: .75rem 0;
+}
+
+.Vertical .TextWrapper, .Vertical .ButtonsWrapper {
+    height: auto;
+    padding: 0;
+}
+
+.TextWrapper h4 {
+    margin: 0;
+}
+
+.TextWrapper span {
+    font-size: smaller;
+}
+
+.Vertical .TextWrapper {
+    padding-left: 0.75rem;
+    width: calc(100% - var(--profile-image-size));
+}
+
+.ButtonsWrapper {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+}
+
+.Horizontal .ButtonsWrapper span {
+    display: none;
+}
+
+.Horizontal .ButtonsWrapper a {
+    width: 3rem;
+    height: 3rem;
+}
+
+.ButtonsWrapper img {
+    width: 100%;
+    height: 100%;
+}
+
+.Vertical .SettingsLink {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-right: 0.5rem;
+}
+
+.Vertical .LogoutLink {
+    width: 6rem;
+    height: 2rem;
+    display: flex;
+    padding: 0.4rem;
+    align-items: center;
+    border: solid 1px var(--primary-color);
+    justify-content: space-evenly;
+    border-radius: 4rem;
+}
+.Vertical .LogoutLink img {
+    width: auto;
+}
+
+.Vertical .LogoutLink span {
+    color: black;
+    font-size: small;
+}
+
+.ProfilePictureImitation {
+    border-radius: 50%;
+}
+
+.TextPlaceholderWrapper span {
+    display: block;
+    width: 60%;
+    height: 1rem;
+    animation-delay: 0.5s;
+}
+
+.TextPlaceholderWrapper span:nth-child(2) {
+    margin-top: 0.5rem;
+}
+
+.ButtonsPlaceholderWrapper {
+    width: 130px;
+}
+
+.ButtonsPlaceholderWrapper span{
+    display: block;
+}
+
+.ButtonsPlaceholderWrapper span:nth-child(1) {
+    height: 1.5rem;
+    width: 1.5rem;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+    animation-delay: 0.3s;
+}
+
+.ButtonsPlaceholderWrapper span:nth-child(2) {
+    height: 2rem;
+    width: 6rem;
+    border-radius: 4rem;
+    animation-delay: 0.8s;
+}
+
+.Horizontal .ProfilePictureImitation {
+    height: calc(var(--profile-image-size) - 1rem);
+    width: calc(var(--profile-image-size) - 1rem);
+    margin: 0 0.5rem;
+    flex-shrink: 0;
+}
+
+.Horizontal .TextPlaceholderWrapper {
+    width: 40%;
+}
+
+.Horizontal .TextPlaceholderWrapper span {
+    width: 100%;
+}
+
+.Horizontal .ButtonsPlaceholderWrapper span {
+    display: block;
+}
+
+.Horizontal .ButtonsPlaceholderWrapper span:nth-child(1) {
+    width: 2.5rem;
+    height: 2.5rem;
+    animation-delay: 1s;
+}
+
+.Horizontal .ButtonsPlaceholderWrapper span:nth-child(2) {
+    width: 2.5rem;
+    height: 2.5rem;
+    animation-delay: 1.5s;
+}
+
+.Horizontal .ButtonsPlaceholderWrapper {
+    width: auto;
+    margin-right: 0.5rem;
+}
+

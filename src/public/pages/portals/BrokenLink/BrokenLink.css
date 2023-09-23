@@ -1,0 +1,22 @@
+.BrokenLinkPortal {
+    padding: 1.5rem 0;
+}
+
+.BrokenLinkPortal img {
+    width: 60%;
+}
+
+.BrokenLinkPortal h3 {
+    padding: 0 1rem;
+}
+.BrokenLinkPortal p {
+    padding: 0 1rem;
+    font-size: smaller;
+    margin-top: 0;
+}
+
+.BrokenLinkPortal button {
+    margin-top: 1.5rem;
+    border-radius: 6rem;
+    align-self: center;
+}

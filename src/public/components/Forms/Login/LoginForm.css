@@ -1,0 +1,37 @@
+
+.LoginForm {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-top: 1.5rem;
+}
+
+.LoginForm >div {
+    margin: 0.5rem 0;
+}
+
+.LoginForm >button {
+    align-self: flex-end;
+    font-size: smaller;
+    margin-top: 1.25rem;
+    border-radius: 1rem;
+    padding: 0.75rem 1.75rem;
+}
+
+.LoginForm >button:disabled {
+    background: #68647b;
+}
+
+.ErrorDialog {
+    display: none;
+    border: solid 1px #d19595;
+    padding: 0.5rem;
+    font-size: smaller;
+    border-radius: 0.5rem;
+    background: #ffe2e2;
+}
+
+.ErrorDialog.DialogShown {
+    display: block;
+}

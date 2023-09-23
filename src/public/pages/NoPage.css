@@ -1,0 +1,44 @@
+.FlexContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+}
+.FlexContainer >img {
+    width: 70%;
+    max-width: 20rem;
+}
+
+.MessageHolder {
+    margin: 1.5rem 0;
+}
+
+.MessageHolder h2 {
+    color: var(--secondary-color);
+}
+
+.MessageHolder >a {
+    margin: 1.7rem auto 0;
+}
+
+@media screen and (min-width: 1000px) {
+    .FlexContainer {
+        flex-direction: row-reverse;
+        padding-bottom: 12rem;
+    }
+    .FlexContainer img {
+        width: 35%;
+        max-width: 30rem;
+    }
+    .MessageHolder h2 {
+        font-size: 2rem;
+    }
+    .MessageHolder p {
+        width: 70%;
+        margin: 0 auto;
+    }
+    .MessageHolder a {
+        margin: 2.4rem 4.5rem 0 auto;
+    }
+}

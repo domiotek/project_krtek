@@ -1,0 +1,32 @@
+
+.InputContainer label, .InputContainer input {
+    display: block;
+    color: #4e4d59
+}
+
+.InputContainer input {
+    margin-top: 0.25rem;
+    width: 100%;
+    padding: 0.5rem;
+    border: solid 1px #a9a1e3;
+    background: #e4e2ef;
+    color: black;
+    border-radius: 0.4rem;
+
+}
+
+.InputContainer.hidden {
+    display: none;
+}
+
+.InputContainer.checkbox {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    font-size: smaller;
+}
+
+.InputContainer.checkbox input {
+    margin: 0 0.25rem 0 0.5rem;
+    width: auto;
+}

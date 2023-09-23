@@ -1,0 +1,8 @@
+{
+    "ignore": [
+        "src",
+        "dist/public"
+    ],
+    "ext": "js",
+    "delay": 500
+}

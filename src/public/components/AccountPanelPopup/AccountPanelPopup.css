@@ -1,0 +1,18 @@
+
+.PopupBox {
+    position: absolute;
+    display: none;
+    z-index: 2;
+    padding: 0.5rem;
+    background: var(--main-bg);
+    box-shadow: 1px 1px 6px 0 #939393;
+    top: 70px;
+    right: 5px;
+
+    height: 8rem;
+    width: 15rem;
+}
+
+.OpenPopupBox {
+    display: block;
+}

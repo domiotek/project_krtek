@@ -1,0 +1,147 @@
+.Content.PasswordRecoveryHeightAdjust {
+    min-height: 520px;
+}
+
+.ContentBox {
+    padding: 1.5rem .75rem;
+}
+
+.MainPanel, .AdditionalPanel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.MainPanel >div {
+    display: flex;
+    flex: 1;
+    width: 100%;
+}
+
+.HideMainPanel {
+    opacity: 0;
+}
+
+.AdditionalPanel {
+    position: absolute;
+    top: 0;
+    border-radius: inherit;
+    background: var(--main-bg);
+    display: none;
+    align-items: flex-start;
+    padding: .5rem;
+}
+
+.PanelContent {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+}
+
+@keyframes FadeInAnim {
+    from {
+        opacity: 0;
+        transform: scale(85%)
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(100%);
+    }
+    
+}
+.Show {
+    display: flex;
+    animation: FadeInAnim 0.4s;
+}
+
+.ShowOptionsPanel{
+    background: none!important;
+    color: var(--primary-color);
+    padding: 0;
+    font-size: smaller;
+    margin-top: 1.5rem;
+    transition: color 0.3s;
+}
+
+.ShowOptionsPanel:hover {
+    color: var(--primary-light-1-color);
+}
+
+.ShowOptionsPanel:active {
+    background: var(--primary-dark-1-color);
+}
+
+.MainPanel >img {
+    width: 5.5rem;
+    height: 5.5rem;
+}
+
+.HelpCenterPanel .ItemPanel {
+    padding-left: 1.75rem;
+}
+
+.ItemPanel {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    transition: background 0.4s;
+}
+
+.ItemPanel:hover {
+    background: var(--bg-light-85);
+}
+
+.ItemPanel img{
+    width: 1.75rem;
+    height: 1.75rem;
+    margin-right: 1rem;
+}
+
+.RegistrationInfoPanel img, .ContactInfoPanel img, .PasswordRecoveryPanel img{
+    width: 75%;
+    align-self: center;
+}
+.RegistrationInfoPanel  p, .ContactInfoPanel p, .PasswordRecoveryPanel .PanelContent > p {
+    font-size: smaller;
+    padding: 1.5rem;
+}
+
+.PasswordRecoveryPanel img {
+    width: 60%;
+}
+
+.PasswordRecoveryPanel .PanelContent > p {
+    padding: 0.75rem 1.5rem 0;
+    margin: 0; 
+}
+
+.PasswordRecoveryPanel form {
+    padding: 0 1.5rem;
+}
+
+.PasswordRecoveryEndPointPanel img {
+    width: 60%;
+    align-self: center;
+}
+
+.PasswordRecoveryEndPointPanel p {
+    font-size: smaller;
+    margin: 0;
+    padding: 0;
+}
+
+.PasswordRecoveryEndPointPanel .PanelContent {
+    padding: 0 1.5rem;
+}
+
+@media screen and (min-width: 330px) {
+    .MainPanel {
+        padding: 0 7.5%;
+    }
+    
+}

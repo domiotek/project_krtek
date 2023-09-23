@@ -1,0 +1,41 @@
+.MiddleBoxContainer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.MiddleBox {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.Content {
+    height: 95%;
+    width: 100%;
+    margin-bottom: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.Footer {
+    font-size: smaller;
+}
+
+@media screen and (min-width: 426px) {
+    .MiddleBox {
+        width: 350px;
+        height: auto;
+    }
+
+    .Content {
+        box-shadow: 1px 1px 7px 0 #979595;
+        border-radius: 6px;
+    }
+}

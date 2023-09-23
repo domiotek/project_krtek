@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "outDir": "dist",
+    "rootDir": "src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["node"],
+    "sourceMap": true,
+    "typeRoots": [
+      "types",
+      "./node_modules/@types",
+      "src/public/types"
+    ],
+  },
+  "exclude": [
+    "src/public/**/*.tsx"
+  ]
+}

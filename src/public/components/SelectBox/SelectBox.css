@@ -1,0 +1,15 @@
+.InputContainer label, .InputContainer select {
+    display: block;
+    color: #4e4d59
+}
+
+.InputContainer select {
+    margin-top: 0.25rem;
+    width: 100%;
+    padding: 0.5rem;
+    border: solid 1px #a9a1e3;
+    background: #e4e2ef;
+    color: black;
+    border-radius: 0.4rem;
+
+}

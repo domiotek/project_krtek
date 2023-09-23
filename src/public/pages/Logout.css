@@ -1,0 +1,66 @@
+.ContentBox {
+    padding: 1.5rem 1.5rem 3rem;
+}
+
+.ContentBox img  {
+    width: 100%;
+}
+
+
+.Hide {
+    display: none;
+}
+
+.ShowData {
+    display: block;
+    color: var(--primary-color);
+    margin: 0.5rem 0;
+}
+
+.ContentBox p {
+    font-size: smaller;
+}
+
+.ContentBox button {
+    border-radius: 6rem;
+    font-size: smaller;
+    margin-top: 1rem;
+}
+
+.LoadingFields {
+    display: none;
+    margin: 0.5rem 0;
+    height: 1.5rem;
+    width: 50%;
+}
+
+.LoadingFields.ActiveAnim {
+    display: flex;
+}
+
+.LoadingFields span {
+    display: block;
+    height: 100%;
+    width: 50%;
+    margin: 0 0.25rem;
+    background: linear-gradient(90deg, var(--bg-light-85), #abbae76b, var(--bg-light-85));
+    background-size: 200% 100%;
+    background-position-x: -100%;
+    background-repeat: no-repeat;
+    background-color: var(--bg-light-85);
+    animation: Anim 2s ease infinite;
+}
+
+.LoadingFields span:nth-child(2) {
+    animation-delay: 0.5s;
+}
+
+@keyframes Anim {
+    from {
+        background-position-x: 200%;
+    }
+
+    to {
+        background-position-x: -100%;
+    }
+}

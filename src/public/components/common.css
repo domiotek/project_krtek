@@ -1,0 +1,18 @@
+.PulseLoadingAnimHolder {
+    background: linear-gradient(90deg, var(--bg-light-85), #abbae76b, var(--bg-light-85));
+    background-size: 200% 100%;
+    background-position-x: -100%;
+    background-repeat: no-repeat;
+    background-color: var(--bg-light-85);
+    animation: PulseLoadingAnim 2s ease infinite;
+}
+
+@keyframes PulseLoadingAnim {
+    from {
+        background-position-x: 200%;
+    }
+
+    to {
+        background-position-x: -100%;
+    }
+}

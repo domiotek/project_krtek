@@ -1,0 +1,5 @@
+node_modules
+dist
+.vscode
+src/environment-development.json
+project-krtek.code-workspace
