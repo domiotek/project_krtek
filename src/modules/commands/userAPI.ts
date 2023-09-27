@@ -27,7 +27,7 @@ export default function(){
         const usersResult = await global.app.webAuthManager.getAllUsers();
 
         if(usersResult.result=="Success") {
-            const headers = ["UserID", "Email","Name","Surname", "Gender", "RoleID", "Created at", "Last accessed at", "Password last changed at"];
+            const headers = ["UserID", "Email","Name","Surname", "Gender", "RankID", "Created at", "Last accessed at", "Password last changed at"];
             const dataTable = initArrayOfArrays<string>(headers.length);
 
             
@@ -41,7 +41,7 @@ export default function(){
                     user.name,
                     user.surname,
                     user.gender,
-                    user.roleID.toString(), 
+                    user.rankID.toString(), 
                     user.creationDate.toFormat(`dd LLL yyyy HH:mm`),
                     user.lastAccessDate.toFormat(`dd LLL yyyy HH:mm`),
                     user.lastPasswordChangeDate.toFormat(`dd LLL yyyy HH:mm`)
@@ -147,7 +147,7 @@ export default function(){
             req.respond(`Name: ${insertColor("fg_cyan",user.name,data.colorsMode)}`, false);
             req.respond(`Surname: ${insertColor("fg_cyan",user.surname,data.colorsMode)}`, false);
             req.respond(`Gender: ${insertColor("fg_cyan",user.gender,data.colorsMode)}`, false);
-            req.respond(`RoleID: ${insertColor("fg_cyan",user.roleID.toString(),data.colorsMode)}`, false);
+            req.respond(`RankID: ${insertColor("fg_cyan",user.rankID.toString(),data.colorsMode)}`, false);
             req.respond(`Created at: ${insertColor("fg_cyan", user.creationDate.toFormat(`dd LLL yyyy HH:mm`), data.colorsMode)}`, false);
             req.respond(`Last accessed at: ${insertColor("fg_cyan",user.lastAccessDate.toFormat(`dd LLL yyyy HH:mm`), data.colorsMode)}`, false);
             req.respond(`Password last changed at: ${insertColor("fg_cyan",user.lastPasswordChangeDate.toFormat(`dd LLL yyyy HH:mm`), data.colorsMode)}`);

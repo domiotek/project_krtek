@@ -260,7 +260,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
         const values = [userKey];
 
-        const response = await this.db.performQuery<"Select">(`SELECT *, DATE_FORMAT(creationDate, '%Y-%m-%dT%TZ') as creationDate, DATE_FORMAT(lastAccessDate, '%Y-%m-%dT%TZ') as lastAccessDate, DATE_FORMAT(lastPasswordChangeDate, '%Y-%m-%dT%TZ') as lastPasswordChangeDate FROM users NATURAL JOIN roles WHERE ${field}=?;`,values,conn);
+        const response = await this.db.performQuery<"Select">(`SELECT *, DATE_FORMAT(creationDate, '%Y-%m-%dT%TZ') as creationDate, DATE_FORMAT(lastAccessDate, '%Y-%m-%dT%TZ') as lastAccessDate, DATE_FORMAT(lastPasswordChangeDate, '%Y-%m-%dT%TZ') as lastPasswordChangeDate FROM users NATURAL JOIN ranks WHERE ${field}=?;`,values,conn);
 
         if(response) {
             if(response.length===1) {
@@ -273,8 +273,8 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                         name: response[0]["name"],
                         surname: response[0]["surname"],
                         gender: response[0]["gender"],
-                        roleID: response[0]["roleID"],
-                        roleName: response[0]["friendlyName"],
+                        rankID: response[0]["rankID"],
+                        rankName: response[0]["displayName"],
                         creationDate: DateTime.fromISO(response[0]["creationDate"]),
                         lastAccessDate: DateTime.fromISO(response[0]["lastAccessDate"]),
                         lastPasswordChangeDate: DateTime.fromISO(response[0]["lastPasswordChangeDate"])
@@ -322,7 +322,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
         if(connection) {
 
-            const query = `SELECT *, DATE_FORMAT(creationDate, '%Y-%m-%dT%TZ') as creationDate, DATE_FORMAT(lastAccessDate, '%Y-%m-%dT%TZ') as lastAccessDate, DATE_FORMAT(lastPasswordChangeDate, '%Y-%m-%dT%TZ') as lastPasswordChangeDate FROM users NATURAL JOIN roles;`;
+            const query = `SELECT *, DATE_FORMAT(creationDate, '%Y-%m-%dT%TZ') as creationDate, DATE_FORMAT(lastAccessDate, '%Y-%m-%dT%TZ') as lastAccessDate, DATE_FORMAT(lastPasswordChangeDate, '%Y-%m-%dT%TZ') as lastPasswordChangeDate FROM users NATURAL JOIN ranks;`;
             const response = await this.db.performQuery<"Select">(query,[],connection);
 
             if(response) {
@@ -339,8 +339,8 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                         name: row["name"],
                         surname: row["surname"],
                         gender: row["gender"],
-                        roleID: row["roleID"],
-                        roleName: row["friendlyName"],
+                        rankID: row["rankID"],
+                        rankName: row["displayName"],
                         creationDate: DateTime.fromISO(row["creationDate"]),
                         lastAccessDate: DateTime.fromISO(row["lastAccessDate"]),
                         lastPasswordChangeDate: DateTime.fromISO(row["lastPasswordChangeDate"])

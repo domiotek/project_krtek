@@ -38,7 +38,7 @@ export default function App() {
                 if(result.status=="Success") {
                     setUserData({
                         accountName: result.data.name,
-                        accountRole: result.data.roleName,
+                        accountRole: result.data.rankName,
                         accountImage: userImg
                     });
                 }

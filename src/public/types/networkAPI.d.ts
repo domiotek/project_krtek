@@ -114,7 +114,7 @@ export namespace API {
             interface IResponseData {
                 name: string
                 surname: string
-                roleName: string
+                rankName: string
             }
 
             type TResponse = API._.ISuccessGetResponse<IResponseData> | API._.IFailureGetResponse<TCommonResponses | "NotSignedIn">

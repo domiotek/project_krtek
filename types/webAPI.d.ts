@@ -130,8 +130,8 @@ namespace WebAPI {
                 name: string
                 surname: string
                 gender: "m" | "f" | "o"
-                roleID: number
-                roleName: string
+                rankID: number
+                rankName: string
                 creationDate: import("luxon").DateTime
                 lastAccessDate: import("luxon").DateTime
                 lastPasswordChangeDate: import("luxon").DateTime

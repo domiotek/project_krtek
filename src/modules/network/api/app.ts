@@ -38,7 +38,7 @@ const basicData: RouteOptions = {
                         data: {
                             name: user.data.name,
                             surname: user.data.surname,
-                            roleName: user.data.roleName
+                            rankName: user.data.rankName
                         }
                     }
                 }else if(user.result!="InvalidInput"&&user.result!="NoUser") result.errCode = user.result;
