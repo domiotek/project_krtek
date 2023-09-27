@@ -283,13 +283,13 @@ namespace WebAPI {
             createUser(userData: UserAPI.IUserRegistrationData): Promise<UserAPI.TCreateUserResult>
 
             /**
-             * Checks whether user with given email address exists or not.
-             * @param emailAddress Email address
+             * Checks whether user with given user key exists or not.
+             * @param userKey Email address or UserID
              * 
              * @async
              * @returns Boolean on successfull request with either True if exists or False if it doesn't, string error code on failure.
              */
-            userExists(emailAddress: string): Promise<UserAPI.TUserExistsResult>
+            userExists(userKey: string | number): Promise<UserAPI.TUserExistsResult>
 
             /**
              * Returns details about user that matches given query specifics.

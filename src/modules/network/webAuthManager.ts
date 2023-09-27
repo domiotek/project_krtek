@@ -229,8 +229,15 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         return result;
     }
 
-    public async userExists(email: string, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Auth.UserAPI.TUserExistsResult> {
-        const result = await this.db.performQuery<"Select">(`SELECT userID FROM users WHERE email=?;`,[email.toLowerCase()],conn);
+    public async userExists(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Auth.UserAPI.TUserExistsResult> {
+        let field;
+        switch(typeof userKey) {
+            case "number": field = "userID"; break;
+            case "string": field = "email"; userKey = userKey.toLowerCase(); break;
+            default: throw new Error("TypeError: Invalid user key in userExists. Expected either number or a string.");
+        }
+
+        const result = await this.db.performQuery<"Select">(`SELECT userID FROM users WHERE ${field}=?;`,[userKey],conn);
 
         if(result) {
             return result.length===1;
