@@ -366,6 +366,289 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         return result;
     }
 
+    //Role API
+
+    public async getRoleID(roleName: string, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Auth.RoleAPI.TGetRoleIDResult> {
+        let result: WebAPI.Auth.RoleAPI.TGetRoleIDResult = {
+            result:"InvalidRole"
+        }
+
+        const response = await this.db.performQuery<"Select">("SELECT roleID FROM roles where roleName=?",[roleName],conn);
+
+        if(response) {
+            if(response.length==1) {
+                result = {
+                    result: "Success",
+                    data: response[0]["roleID"]
+                }
+            }
+        }else result.result = this.db.getLastQueryFailureReason();
+
+        return result;
+    }
+
+    public async getDefinedRoles(): Promise<WebAPI.Auth.RoleAPI.TGetDefinedRolesResult> {
+        let result: WebAPI.Auth.RoleAPI.TGetDefinedRolesResult = {
+            result: "NoConnection"
+        }
+
+        const connection = await this.db.getConnection();
+
+        if(connection) {
+            connection.beginTransaction();
+
+            const response = await this.db.performQuery<"Select">("SELECT * from roles",[], connection);
+
+            if(response) {
+                result = {
+                    result: "Success",
+                    data: []
+                }
+
+                for (const row of response) {
+                    result.data.push({
+                        ID: row["roleID"],
+                        name: row["roleName"],
+                        displayName: row["displayName"]
+                    })
+                }
+
+                connection.commit();
+
+            }else result.result = this.db.getLastQueryFailureReason();
+
+            connection.release();
+        }
+
+
+        return result;
+    }
+
+    public async listUsersWithRole(roleName: string): Promise<WebAPI.Auth.RoleAPI.TListRoleUsersResult> {
+        let result: WebAPI.Auth.RoleAPI.TListRoleUsersResult= {
+            result: "NoConnection"
+        }
+
+        const connection = await this.db.getConnection();
+
+        if(connection) {
+            connection.beginTransaction();
+
+            let roleDetails = await this.db.performQuery<"Select">("SELECT roleID FROM roles WHERE roleName=?",[roleName], connection);
+            if(roleDetails) {
+
+                if(roleDetails.length===1) {
+                    const response = await this.db.performQuery<"Select">("SELECT * from role_assignments NATURAL JOIN users WHERE roleID=?",[roleDetails[0]["roleID"]], connection);
+
+                    if(response) {
+                        result = {
+                            result: "Success",
+                            data: []
+                        }
+    
+                        for (const row of response) {
+                            result.data.push({
+                                userID: row["userID"],
+                                email: row["email"],
+                                password: row["password"],
+                                name: row["name"],
+                                surname: row["surname"],
+                                gender: row["gender"],
+                                rankID: row["rankID"],
+                                rankName: row["displayName"],
+                                creationDate: DateTime.fromJSDate(row["creationDate"]),
+                                lastAccessDate: DateTime.fromJSDate(row["lastAccessDate"]),
+                                lastPasswordChangeDate: DateTime.fromJSDate(row["lastPasswordChangeDate"])
+                            })
+                        }
+    
+                        connection.commit();
+    
+                    }else result.result = this.db.getLastQueryFailureReason();
+
+                }else result.result = "InvalidRole"
+            }else result.result = this.db.getLastQueryFailureReason();
+
+            connection.release();
+        }
+
+
+        return result;
+    }
+
+    public async getUserRoles(userKey: string | number): Promise<WebAPI.Auth.RoleAPI.TGetRolesResult> {
+        let result: WebAPI.Auth.RoleAPI.TGetRolesResult = {
+            result: "NoConnection"
+        }
+
+        const connection = await this.db.getConnection();
+
+        if(connection) {
+            connection.beginTransaction();
+
+            const user = await global.app.webAuthManager.getUser(userKey);
+
+            if(user.result=="Success") {
+                const response = await this.db.performQuery<"Select">("SELECT * from role_assignments NATURAL JOIN roles WHERE userID=?",[user.data.userID], connection);
+
+                if(response) {
+                    result = {
+                        result: "Success",
+                        data: []
+                    }
+
+                    for (const row of response) {
+                        result.data.push({
+                            ID: row["roleID"],
+                            name: row["roleName"],
+                            displayName: row["displayName"]
+                        })
+                    }
+
+                    connection.commit();
+
+                }else result.result = this.db.getLastQueryFailureReason();
+            }else result.result = user.result;
+
+            connection.release();
+        }
+
+
+        return result;
+    }
+
+    public async hasRole(userKey: string | number, roleName: any): Promise<WebAPI.Auth.RoleAPI.THasRoleResult> {
+        let result: WebAPI.Auth.RoleAPI.THasRoleResult = "NoConnection";
+
+        const connection = await this.db.getConnection();
+
+        if(connection) {
+            connection.beginTransaction();
+
+            const user = await global.app.webAuthManager.getUser(userKey);
+
+            if(user.result=="Success") {
+                let roleDetails = await this.db.performQuery<"Select">("SELECT roleID FROM roles WHERE roleName=?",[roleName], connection);
+
+                if(roleDetails) {
+
+                    if(roleDetails.length===1) {
+                        const response = await this.db.performQuery<"Select">("SELECT * from role_assignments WHERE roleID=? AND userID=?",[roleDetails[0]["roleID"],user.data.userID], connection);
+
+                        if(response) {
+                            result = response.length===1;
+                        }else result = this.db.getLastQueryFailureReason();
+                    }else result = "InvalidRole";
+                }else result = this.db.getLastQueryFailureReason();
+            }else result = user.result;
+
+            connection.release();
+        }
+
+
+        return result;
+    }
+
+    public async assignRole(userKey: string | number, roleName: string): Promise<WebAPI.Auth.RoleAPI.TAssignRoleResult> {
+        let result: WebAPI.Auth.RoleAPI.TAssignRoleResult = "NoConnection";
+
+        const connection = await this.db.getConnection();
+
+        if(connection) {
+            connection.beginTransaction();
+
+            const user = await global.app.webAuthManager.getUser(userKey);
+
+            if(user.result=="Success") {
+                let roleDetails = await this.db.performQuery<"Select">("SELECT roleID FROM roles WHERE roleName=?",[roleName], connection);
+
+                if(roleDetails) {
+
+                    if(roleDetails.length===1) {
+                        const assignmentCheck = await this.db.performQuery<"Select">("SELECT * from role_assignments WHERE roleID=? AND userID=?",[roleDetails[0]["roleID"],user.data.userID], connection);
+
+                        if(assignmentCheck) {
+                            if(assignmentCheck.length===0) {
+                                const response = await this.db.performQuery<"Other">("INSERT INTO role_assignments(roleID, userID) VALUES(?,?)",[roleDetails[0]["roleID"],user.data.userID]);
+                                if(response) {
+                                    if(response.affectedRows==1) return true;
+                                    else return "DBError";
+                                }else result = this.db.getLastQueryFailureReason();
+                            }else result = "AlreadyAssigned";
+                        }else result = this.db.getLastQueryFailureReason();
+                    }else result = "InvalidRole";
+                }else result = this.db.getLastQueryFailureReason();
+            }else result = user.result;
+
+            connection.release();
+        }
+
+
+        return result;
+    }
+
+    public async unassignRole(userKey: string | number, roleName: string): Promise<WebAPI.Auth.RoleAPI.TUnassignRoleResult> {
+        const connection = await this.db.getConnection();
+
+        if(connection) {
+            connection.beginTransaction();
+
+            const userID = await this._resolveUserKey(userKey, connection);
+
+            if(userID==-1) {
+                connection.release();
+                return "NoUser";
+            }
+
+            const roleIDResult = await this.getRoleID(roleName, connection);
+
+            let roleID;
+
+            if(roleIDResult.result=="Success") 
+                roleID = roleIDResult.data;
+            else {
+                connection.release();
+                return roleIDResult.result;
+            }
+
+
+            let result: Awaited<ReturnType<WebAuthManager["unassignRole"]>>
+            const response = await this.db.performQuery<"Other">("DELETE FROM role_assignments WHERE roleID=? AND userID=?;",[roleID,userID], connection);
+
+            if(response) {
+                if(response.affectedRows===1) result = true;
+                else result = "NotAssigned";
+            }else result = this.db.getLastQueryFailureReason();
+
+            connection.release();
+            return result;
+        }else return "NoConnection";
+    }
+
+    public async unassignAllRoles(userKey: string | number): Promise<WebAPI.Auth.RoleAPI.TUnassignAllRolesResult> {
+        const connection = await this.db.getConnection();
+
+        if(connection) {
+            connection.beginTransaction();
+
+            const userID = await this._resolveUserKey(userKey, connection);
+
+            if(userID==-1) {
+                connection.release();
+                return "NoUser";
+            }
+
+            let result: Awaited<ReturnType<WebAuthManager["unassignAllRoles"]>>
+            const response = await this.db.performQuery<"Other">("DELETE FROM role_assignments WHERE userID=?;",[userID], connection);
+
+            if(response) result = true;
+            else result = this.db.getLastQueryFailureReason();
+
+            connection.release();
+            return result;
+        }else return "NoConnection";
+    }
+
     //Account actions API
 
     public async createToken(actionName: WebAPI.Auth.AccountsTokenAPI.TAccountActionName ,userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Auth.AccountsTokenAPI.TCreateTokenResult> {

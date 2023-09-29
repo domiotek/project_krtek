@@ -142,6 +142,23 @@ namespace WebAPI {
             type TSetPasswordResult = WebAPI._.TGenericActionResult | "InvalidPassword" | "NoUser";
 
             type TGetAllUsersResult = WebAPI._.TGetAllActionResult<IUserDetails[]>
+        }
+
+        namespace RoleAPI {
+            interface IRoleDetails {
+                ID: number
+                name: string
+                displayName: string
+            }
+
+            type TGetRoleIDResult = _.TGenericObjectActionResult<number, "InvalidRole">
+            type TGetDefinedRolesResult = _.TGenericObjectActionResult<IRoleDetails[], _.TGenericAPIError>
+            type TListRoleUsersResult = _.TGenericObjectActionResult<UserAPI.IUserDetails[], "InvalidRole">
+            type TGetRolesResult = _.TGenericObjectActionResult<IRoleDetails[], "NoUser">
+            type THasRoleResult = boolean | _.TGenericAPIError | "NoUser" | "InvalidRole"
+            type TAssignRoleResult = _.TGenericActionResult | "NoUser" | "InvalidRole" | "AlreadyAssigned"
+            type TUnassignRoleResult = _.TGenericActionResult | "InvalidRole" | "NoUser" | "NotAssigned"
+            type TUnassignAllRolesResult = _.TGenericActionResult | "NoUser"
 
         }
 
@@ -326,6 +343,83 @@ namespace WebAPI {
              *
              */
             dropAccount(): Promise<void>
+
+
+            /**
+             * Role API
+             */
+
+            /**
+             * Returns internal DB roleID of role with given codeName
+             * @param roleName role's codeName
+             */
+            getRoleID(roleName: string): Promise<RoleAPI.TGetRoleIDResult>
+
+            /**
+             * Returns details of all defined roles
+             * 
+             * @async
+             * @returns Object with string result and role detail objects array in data prop if result is Success
+             */
+            getDefinedRoles(): Promise<RoleAPI.TGetDefinedRolesResult>
+
+            /**
+             * Returns array of all users that have specified role assigned.
+             * @param roleName Role's code name.
+             * 
+             * @async
+             * @returns Object with string result and User details objects array in data prop if result is Success
+             */
+            listUsersWithRole(roleName: string): Promise<RoleAPI.TListRoleUsersResult>
+
+            /**
+             * Returns details of all roles that have been assigned to the specified user.
+             * @param userKey Either email or user ID
+             * 
+             * @async
+             * @returns Object with string result and role detail objects array in data prop if result is Success
+             */
+            getUserRoles(userKey: string | number): Promise<RoleAPI.TGetRolesResult>
+
+            /**
+             * Checks whether given user has specified role assigned. 
+             * @param userKey Either email or user ID.
+             * @param roleName Role's code name.
+             * 
+             * @async
+             * @returns Boolean on successfull request with either True if they have or False if they don't, string error code on failure.
+             */
+            hasRole(userKey: string | number, roleName: string): Promise<RoleAPI.THasRoleResult>
+
+            /**
+             * Assigns specified role to the given user.
+             * @param userKey Either email or user ID.
+             * @param roleName Role's code name.
+             * 
+             * @async 
+             * @returns True on successfull request, string error code on failure.
+             */
+            assignRole(userKey: string | number, roleName: string): Promise<RoleAPI.TAssignRoleResult>
+
+            /**
+             * Unassigns specified role from the given user.
+             * @param userKey Either email or userID.
+             * @param roleName Role's code name.
+             * 
+             * @async
+             * @returns True on successfull request, string error code on failure.
+             */
+            unassignRole(userKey: string | number, roleName: string): Promise<RoleAPI.TUnassignRoleResult>
+            
+            /**
+             * Unassigns all roles that the specified user was given.
+             * @param userKey Either email or userID.
+             * 
+             * @async
+             * @returns True on successfull request, string error code on failure.
+             */
+            unassignAllRoles(userKey: string | number): Promise<RoleAPI.TUnassignAllRolesResult>
+
 
 
             /**
