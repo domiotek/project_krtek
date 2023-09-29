@@ -321,7 +321,7 @@ const getEmailFromToken: RouteOptions = {
                 if(user.result=="Success") {
                     result.status="Success";
                     result.email=user.data.email;
-                }else if(user.result=="InvalidInput" || user.result=="NoUser") result.errCode = "InvalidToken";
+                }else if(user.result=="NoUser") result.errCode = "InvalidToken";
                 else result.errCode = user.result;
             }else result.errCode = response.result;
         }

@@ -41,7 +41,7 @@ const basicData: RouteOptions = {
                             rankName: user.data.rankName
                         }
                     }
-                }else if(user.result!="InvalidInput"&&user.result!="NoUser") result.errCode = user.result;
+                }else if(user.result!="NoUser") result.errCode = user.result;
             }else if(response.result!="InvalidSession") result.errCode = response.result;
         }
 

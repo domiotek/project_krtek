@@ -81,7 +81,7 @@ export namespace API {
             }
 
             interface IResponse extends IGenericPOSTResponse {
-                errCode?:  TCommonResponses | "InvalidToken" | "InvalidPassword" | "InvalidUser"
+                errCode?:  TCommonResponses | "InvalidToken" | "InvalidPassword" | "NoUser"
             }
         }
 
