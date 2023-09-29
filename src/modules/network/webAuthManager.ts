@@ -17,6 +17,35 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         this.db = mysqlConn;
     }
 
+    /**
+     * Resolves userKey into userID.
+     * @param conn existing connection. Can be passed to avoid creating another connection just for that.
+     * @returns userID or -1 if user is not found.
+     */
+    private async _resolveUserKey(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection): Promise<number> {
+        switch(typeof userKey) {
+            case "string": 
+                const userData = await this.getUser(userKey,conn);
+                if(userData.result=="Success") return userData.data.userID;
+                else return -1;
+            case "number": return userKey;
+            default: throw new TypeError("Invalid user key. Expected either number or a string.");
+        }
+    }
+
+    /**
+     * Translates userKey into more descriptive form.
+     * @returns object containing field property which holds db field name in users table to search in and userKey which still
+     * holds either userID or email, but with email lowercased.
+     */
+    private _translateUserKey(userKey: string | number): {field: "email" | "userID", userKey: string | number} {
+        switch(typeof userKey) {
+            case "string": return {field: "email", userKey: userKey.toLowerCase()};
+            case "number": return {field: "userID", userKey};
+            default: throw new TypeError("Invalid user key. Expected either number or a string.");
+        }
+    }
+
     //Session API
 
     public async tryLogin(email: string, password: string,ipAddress: string, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Auth.SessionAPI.TLoginResult> {
@@ -230,14 +259,10 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     }
 
     public async userExists(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Auth.UserAPI.TUserExistsResult> {
-        let field;
-        switch(typeof userKey) {
-            case "number": field = "userID"; break;
-            case "string": field = "email"; userKey = userKey.toLowerCase(); break;
-            default: throw new Error("TypeError: Invalid user key in userExists. Expected either number or a string.");
-        }
 
-        const result = await this.db.performQuery<"Select">(`SELECT userID FROM users WHERE ${field}=?;`,[userKey],conn);
+        const {field, userKey: safeUserKey} = this._translateUserKey(userKey);
+
+        const result = await this.db.performQuery<"Select">(`SELECT userID FROM users WHERE ${field}=?;`,[safeUserKey],conn);
 
         if(result) {
             return result.length===1;
@@ -245,22 +270,14 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     }
 
     public async getUser(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Auth.UserAPI.TGetUserResult> {
-        let field = "";
 
         let result: WebAPI.Auth.UserAPI.TGetUserResult = {
-            result: "InvalidInput"
+            result: "NoUser"
         }
         
+        const {field, userKey: safeUserKey} = this._translateUserKey(userKey);
 
-        switch(typeof userKey) {
-            case "number": field = "userID"; break;
-            case "string": field = "email"; userKey = userKey.toLowerCase(); break;
-            default: return result;
-        }
-
-        const values = [userKey];
-
-        const response = await this.db.performQuery<"Select">(`SELECT *, DATE_FORMAT(creationDate, '%Y-%m-%dT%TZ') as creationDate, DATE_FORMAT(lastAccessDate, '%Y-%m-%dT%TZ') as lastAccessDate, DATE_FORMAT(lastPasswordChangeDate, '%Y-%m-%dT%TZ') as lastPasswordChangeDate FROM users NATURAL JOIN ranks WHERE ${field}=?;`,values,conn);
+        const response = await this.db.performQuery<"Select">(`SELECT *, DATE_FORMAT(creationDate, '%Y-%m-%dT%TZ') as creationDate, DATE_FORMAT(lastAccessDate, '%Y-%m-%dT%TZ') as lastAccessDate, DATE_FORMAT(lastPasswordChangeDate, '%Y-%m-%dT%TZ') as lastPasswordChangeDate FROM users NATURAL JOIN ranks WHERE ${field}=?;`,[safeUserKey],conn);
 
         if(response) {
             if(response.length===1) {
@@ -280,20 +297,15 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                         lastPasswordChangeDate: DateTime.fromISO(response[0]["lastPasswordChangeDate"])
                     }
                 }
-            }else result.result = "NoUser";
+            }
         }else result.result = this.db.getLastQueryFailureReason();
 
         return result;
     }
 
     public async setPassword(userKey: string | number, newPassword: string, conn?: WebAPI.Mysql.IPoolConnection | undefined): Promise<WebAPI.Auth.UserAPI.TSetPasswordResult> {
-        let field = "";
 
-        switch(typeof userKey) {
-            case "number": field = "userID"; break;
-            case "string": field = "email"; userKey = userKey.toLowerCase(); break;
-            default: return "InvalidUser";
-        }
+        const {field, userKey: safeUserKey} = this._translateUserKey(userKey);
 
         if(!/(?=.*\d)(?=.*[a-z])(?=.*[A-Z])((?=.*\W)|(?=.*_))^[^ ]+$/.test(newPassword)) {
             return "InvalidPassword";
@@ -305,7 +317,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
         if(result) {
             if(result.changedRows===1) return true;
-            else return "InvalidUser";
+            else return "NoUser";
         }else return this.db.getLastQueryFailureReason();
     }
 
@@ -357,18 +369,10 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     //Account actions API
 
     public async createToken(actionName: WebAPI.Auth.AccountsTokenAPI.TAccountActionName ,userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Auth.AccountsTokenAPI.TCreateTokenResult> {
-        let userID: number | undefined;
 
-        switch(typeof userKey) {
-            case "number": userID = userKey; break;
-            case "string": 
-                const user = await this.getUser(userKey);
-                if(user.result=="Success") userID = user.data.userID;
-            break;
-            default: return {result: "InvalidInput"}
-        }
+        const userID = await this._resolveUserKey(userKey);
 
-        if(userID!=undefined) {
+        if(userID!=-1) {
             const connection = conn ?? await this.db.getConnection();
             if(connection) {
                 let result: WebAPI.Auth.AccountsTokenAPI.TCreateTokenResult = {

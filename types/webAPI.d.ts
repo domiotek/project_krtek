@@ -137,9 +137,9 @@ namespace WebAPI {
                 lastPasswordChangeDate: import("luxon").DateTime
             }
 
-            type TGetUserResult = _.TGenericObjectActionResult<IUserDetails, "InvalidInput" | "NoUser">
+            type TGetUserResult = _.TGenericObjectActionResult<IUserDetails, "NoUser">
 
-            type TSetPasswordResult = WebAPI._.TGenericActionResult | "InvalidPassword" | "InvalidUser";
+            type TSetPasswordResult = WebAPI._.TGenericActionResult | "InvalidPassword" | "NoUser";
 
             type TGetAllUsersResult = WebAPI._.TGetAllActionResult<IUserDetails[]>
 
@@ -147,7 +147,7 @@ namespace WebAPI {
 
         namespace AccountsTokenAPI {
 
-            type TCreateTokenResult = _.TGenericObjectActionResult<string, "NoUser" | "InvalidInput" | "TooMuchTokens" | "InvalidAction">
+            type TCreateTokenResult = _.TGenericObjectActionResult<string, "NoUser" | "TooMuchTokens" | "InvalidAction">
 
             type TAccountActionName = "ChangePassword";
 
