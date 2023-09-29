@@ -12,6 +12,7 @@ function describeAPIError(errorCode: string) {
         case "NoUser": message = "Couldn't find user matching given criteria."; break;
         case "UserExists": message = "There is already user with that email address."; break;
         case "InvalidPassword": message = "Given password doesn't meet the requirements."; break;
+        case "InvalidRank": message = "Requested rank isn't defined."; break;
         default: message = "No additional information.";
     } 
 
@@ -27,7 +28,7 @@ export default function(){
         const usersResult = await global.app.webAuthManager.getAllUsers();
 
         if(usersResult.result=="Success") {
-            const headers = ["UserID", "Email","Name","Surname", "Gender", "RankID", "Created at", "Last accessed at", "Password last changed at"];
+            const headers = ["UserID", "Email","Name","Surname", "Gender", "Rank", "Created at", "Last accessed at", "Password last changed at"];
             const dataTable = initArrayOfArrays<string>(headers.length);
 
             
@@ -41,7 +42,7 @@ export default function(){
                     user.name,
                     user.surname,
                     user.gender,
-                    user.rankID.toString(), 
+                    user.rankName, 
                     user.creationDate.toFormat(`dd LLL yyyy HH:mm`),
                     user.lastAccessDate.toFormat(`dd LLL yyyy HH:mm`),
                     user.lastPasswordChangeDate.toFormat(`dd LLL yyyy HH:mm`)
@@ -147,7 +148,7 @@ export default function(){
             req.respond(`Name: ${insertColor("fg_cyan",user.name,data.colorsMode)}`, false);
             req.respond(`Surname: ${insertColor("fg_cyan",user.surname,data.colorsMode)}`, false);
             req.respond(`Gender: ${insertColor("fg_cyan",user.gender,data.colorsMode)}`, false);
-            req.respond(`RankID: ${insertColor("fg_cyan",user.rankID.toString(),data.colorsMode)}`, false);
+            req.respond(`Rank: ${insertColor("fg_cyan",user.rankName,data.colorsMode)}`, false);
             req.respond(`Created at: ${insertColor("fg_cyan", user.creationDate.toFormat(`dd LLL yyyy HH:mm`), data.colorsMode)}`, false);
             req.respond(`Last accessed at: ${insertColor("fg_cyan",user.lastAccessDate.toFormat(`dd LLL yyyy HH:mm`), data.colorsMode)}`, false);
             req.respond(`Password last changed at: ${insertColor("fg_cyan",user.lastPasswordChangeDate.toFormat(`dd LLL yyyy HH:mm`), data.colorsMode)}`);
@@ -197,6 +198,79 @@ export default function(){
         }
     });
 
+    command.addSubCommand({
+        name: "assign-rank",
+        desc: "Assigns given rank to the specified user.",
+        params: [
+            {
+                relation: "oneOf",
+                parameters: [
+                    {
+                        name: "userID",
+                        desc: "User's ID.",
+                        type: "number"
+                    },
+                    {
+                        name: "email",
+                        desc: "User's email.",
+                        type: "string"
+                    }
+                ]
+            }, 
+            {
+                name: "rankName",
+                desc: "Rank to assign",
+                type: "string"
+            }
+        ]
+    }, async (req, data)=>{
+        const userID = data.parameters["userID"] as number | undefined;
+        const email = data.parameters["email"] as string | undefined;
+        const rankName = data.parameters["rankName"] as string;
+
+        const result = await global.app.webAuthManager.assignRank(userID ?? email ?? "",rankName);
+
+        if(result===true) {
+            req.respond(insertColor("fg_green","Rank has been successfully assigned.",data.colorsMode));
+        }else {
+            const message = describeAPIError(result);
+            req.respond(`Couldn't assign rank for an account identified by: ${insertColor("fg_cyan",userID?.toString() ?? email ?? "", data.colorsMode)} - ${insertColor('fg_red',result,data.colorsMode)}\n${insertColor("fg_grey",message,data.colorsMode)}`);
+        }
+    });
+
+    command.addSubCommand({
+        name: "list-ranks",
+        desc: "Lists all defined ranks.",
+        params: []
+    }, async (req, data)=>{
+        const ranks = await global.app.webAuthManager.getRanks();
+
+        if(ranks.result=="Success") {
+            const headers = ["Rank ID", "Name","Display name"];
+            const dataTable = initArrayOfArrays<string>(headers.length);
+
+            
+            for(let i=0; i< headers.length; i++)
+                dataTable[i].push(headers[i]);
+
+            for (const rank of ranks.data) {
+                const values = [
+                    rank.ID.toString(), 
+                    rank.rankName, 
+                    rank.displayName,
+                ];
+
+                for(let i=0; i<values.length; i++)
+                    dataTable[i].push(values[i]);
+            }
+
+            req.respond(getPrintableDataTable(dataTable));
+        }else {
+            const message = describeAPIError(ranks.result);
+            req.respond(`Couldn't fetch ranks - ${insertColor('fg_red',ranks.result,data.colorsMode)}\n${insertColor("fg_grey",message,data.colorsMode)}`);
+        }
+    });
+
     
     command.addVariant({
         type: "customTest",
@@ -207,6 +281,8 @@ export default function(){
         variant.excludeSubCommand("create");
         variant.excludeSubCommand("get");
         variant.excludeSubCommand("set-password");
+        variant.excludeSubCommand("assign-rank");
+        variant.excludeSubCommand("list-ranks");
 
     });
 
