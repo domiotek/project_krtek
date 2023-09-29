@@ -313,7 +313,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
         const hashedPassword = await hash(newPassword,10);
         
-        const result = await this.db.performQuery<"Other">(`UPDATE users SET password=?, lastPasswordChangeDate=NOW() WHERE ${field}=?`,[hashedPassword, userKey],conn);
+        const result = await this.db.performQuery<"Other">(`UPDATE users SET password=?, lastPasswordChangeDate=NOW() WHERE ${field}=?`,[hashedPassword, safeUserKey],conn);
 
         if(result) {
             if(result.changedRows===1) return true;
