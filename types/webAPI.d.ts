@@ -85,7 +85,9 @@ namespace WebAPI {
         type TGetAllActionResult<T, S=TGenericAPIError> = IActionSuccess<T> | IActionFailure<S>;
         
         type TGenericObjectActionResult<T,S> = IActionSuccess<T> | IActionFailure<S>
+    }
 
+    namespace Auth {
         namespace SessionAPI {
             interface ISessionDetails {
                 sessionID: string
@@ -540,6 +542,222 @@ namespace WebAPI {
              * @returns True on successfull request, string error code on failure.
              */
             dropAllExpiredInvites(): Promise<WebAPI._.TGenericActionResult>
+        }
+    }
+
+    namespace Schedule {
+
+        type DateTime = import("luxon").DateTime;
+
+        namespace ScheduleManager {
+            interface IDateRangeOptions {
+                before?: DateTime
+                after?: DateTime
+            }
+
+            interface IUserShifts {
+                shifts: IWorkDay[]
+                userSlots: number[]
+            }
+
+            type TGetWorkDayResult = _.TGenericObjectActionResult<IWorkDay, "InvalidDate">
+            type TGetUserShiftsResult = WebAPI._.TGenericObjectActionResult<IUserShifts,"InvalidUser" | "InvalidRange">
+            type TGetWeekResult = WebAPI._.TGenericObjectActionResult<IWorkDay[],"InvalidDate">
+            
+        }
+
+        namespace WorkDayAPI {
+            interface ISlots {
+                [privateID: number]: IShiftSlot | undefined
+            }
+
+            interface IShiftSlot {
+                plannedStartTime: DateTime
+                plannedEndTime: DateTime | null
+                requiredRole: string
+                assignedShift: IShift | null
+            }
+            
+            type TSetNoteResult = WebAPI._.TGenericActionResult | "NoteTooLong"
+            type TGetSlotResult = WebAPI._.TGenericObjectActionResult<IShiftSlot, "InvalidSlot">
+            type TGetSlotIDsResult = WebAPI._.TGenericObjectActionResult<number[],WebAPI._.TGenericAPIError>
+            type TGetAllSlots = WebAPI._.TGetAllActionResult<ISlots>
+            type TAddSlot = WebAPI._.TGenericActionResult | "InvalidRole" | "InvalidDateTimeInput" | "MaxSlotCountReached"
+            type TEditSlotResult = WebAPI._.TGenericActionResult | "InvalidRole" | "InvalidDateTimeInput"
+            type TDeleteSlot = WebAPI._.TGenericActionResult | "InvalidSlot"
+            type TAssignUserResult = WebAPI._.TGenericActionResult | "InvalidSlot" | "NoUser" | "UserWithoutRole" | "AlreadyAssigned"
+            type TUnassignUserResult = WebAPI._.TGenericActionResult | "InvalidSlot"
+        }
+
+        namespace ShiftAPI {
+            type TGetUserResult = WebAPI._.IActionSuccess<Auth.UserAPI.IUserDetails> | WebAPI._.IActionFailure<"NoUser">
+            type TUpdateDataResult = WebAPI._.TGenericActionResult | "InvalidInput" | "InvalidShift"
+        }
+
+        interface IScheduleManager {
+
+            /**
+             * Returns details about the specified work day.
+             * @param when DateTime object with the requested day.
+             * 
+             * @async
+             * @returns Object with string result and Workday instance in data prop if result is Success
+             */
+            getWorkDay(when: DateTime): Promise<ScheduleManager.TGetWorkDayResult>
+
+            /**
+             * Returns all shifts from specified period of time, where given user was in one of the slots.
+             * @param from Optional parameter, when omitted, all records are searched. It's an object with two
+             * properties - before and after. You can use both or only one of them to specify search range.
+             * 
+             * @async 
+             * @returns Object with string result and user shifts object in data prop if result is Success. 
+             * User shifts object consists of two properties - shifts which is an array of work days where user is assigned
+             * and userSlots which is also an array and its values are the slot IDs to which user is assigned in the corresponding work day.
+             */
+            getUserShifts(userID: number, from?: ScheduleManager.IDateRangeOptions): Promise<ScheduleManager.TGetUserShiftsResult>
+
+            /**
+             * Returns all work days from the current week.
+             * 
+             * @async
+             * @returns Object with string result and work day instance array in data prop if result is Success
+             */
+            getCurrentWeek(): Promise<ScheduleManager.TGetWeekResult>
+
+            /**
+             * Returns all work days from the week from the given day is.
+             * @param ofDay Target date.
+             * 
+             * @async
+             * @returns Object with string result and work day instance array in data prop if result is Success
+             */
+            getWeek(ofDay: DateTime): Promise<ScheduleManager.TGetWeekResult>
+        }
+
+        interface IWorkDay {
+            readonly note: string | null
+            readonly date: DateTime
+
+            /**
+             * Sets new note for the workday.
+             * @param newNote Maximum of 255 characters. Note can be cleared if null is given.
+             * 
+             * @async
+             * @returns True on successfull request, string error code on failure.
+             */
+            setNote(newNote: string | null): Promise<WorkDayAPI.TSetNoteResult>;
+
+            /**
+             * Returns details about the slot with given slot ID
+             * @param id Slot ID
+             * 
+             * @async 
+             * @returns Object with string result and slot details object in data prop if result is Success
+             */
+            getSlot(id: number): Promise<WorkDayAPI.TGetSlotResult>
+
+            /**
+             * Returns IDs of all defined slots.
+             * 
+             * @async
+             * @returns Object with string result and IDs array in data prop if result is Success
+             */
+            getSlotIDs(): Promise<WorkDayAPI.TGetSlotIDsResult>
+
+            /**
+             * Returns details of all defined slots.
+             * 
+             * @async
+             * @returns Object with string result and slots object in data prop if result is Success.
+             * Slots object is a key-value map with slot IDs as keys and slot details object as value.
+             */
+            getAllSlots(): Promise<WorkDayAPI.TGetAllSlots>
+
+            /**
+             * Adds new slot to the work day. 
+             * Note that there is a limit of how much slots there can be.
+             * See MAX_SLOT_COUNT static property to see the limit.
+             * @param requiredRole Role that user has to have in order to be assigned to a slot.
+             * @param startTime Planned start time for that slot.
+             * @param endTime Planned end time for that slot. Optional.
+             * 
+             * @async
+             * @returns True on successfull request, string error code on failure.
+             */
+            addSlot(requiredRole: string, startTime: DateTime, endTime?: DateTime): Promise<WorkDayAPI.TAddSlot>
+
+            /**
+             * Edits existing slot with given data.
+             * @param slotID Target slot ID
+             * @param requiredRole Role that user has to have in order to be assigned to a slot.
+             * @param startTime Planned start time for that slot.
+             * @param endTime Planned end time for that slot. Optional.
+             * 
+             * @async
+             * @returns True on successfull request, string error code on failure.
+             */
+            editSlot(slotID: number, requiredRole: string, startTime: DateTime, endTime?: DateTime): Promise
+
+            /**
+             * Deletes existing slot with specified ID. Will also delete shift details associated with it.
+             * @param id Target slot ID.
+             * 
+             * @async 
+             * @returns True on successfull request, string error code on failure.
+             */
+            deleteSlot(id: number): Promise<WorkDayAPI.TDeleteSlot>
+
+            /**
+             * Deletes all defined slots and shifts associated with them.
+             * 
+             * @async
+             * @returns True on successfull request, string error code on failure.
+             */
+            deleteAllSlots(): Promise<WebAPI._.TGenericActionResult>
+
+            /**
+             * Assigns given user to the specified slot.
+             * @param slotID Target slot ID.
+             * @param userID User to assign. User has to have the required role and cannot be
+             * already assigned to any other slot on the same work day.
+             * 
+             * @async
+             * @returns True on successfull request, string error code on failure.
+             */
+            assignUser(slotID: number, userID: number): Promise<WorkDayAPI.TAssignUserResult>
+
+
+            /**
+             * Unassigns user from the specified slot.
+             * @param slotID Target slot.
+             * 
+             * @async
+             * @returns True on successfull request, string error code on failure.
+             */
+            unassignUser(slotID: number): Promise<WorkDayAPI.TUnassignUserResult>
+        }
+
+        interface IShift {
+            readonly ID: number;
+            readonly startTime: DateTime;
+            readonly endTime: DateTime | null;
+
+            /**
+             * Returns details of the user associated with the shift.
+             * 
+             * @async 
+             * @returns Object with string result and User details object in data prop if result is Success
+             */
+            getUser(): Promise<ShiftAPI.TGetUserResult>
+
+            /**
+             * Updates start and end times for this shift.
+             * 
+             * @async
+             * @returns True on successfull request, string error code on failure.
+             */
+            updateData(startTime: DateTime, endTime: DateTime): Promise<ShiftAPI.TUpdateDataResult>
         }
     }
 

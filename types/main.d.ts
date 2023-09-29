@@ -37,7 +37,16 @@ interface IApp {
      */
     public readonly localDownloads: IDownloadsManager;
 
+    /**
+     * Handles all actions related with the users, authentication and
+     * actions on accounts.
+     */
     public readonly webAuthManager: WebAPI.Auth.IWebAuthManager;
+    
+    /**
+     * Handles all actions related with the Schedule API
+     */
+    public readonly scheduleManager: WebAPI.Schedule.IScheduleManager;
 
     public readonly mailer: Mailer.IMailer;
 
