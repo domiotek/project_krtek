@@ -49,7 +49,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     //Session API
 
     public async tryLogin(email: string, password: string,ipAddress: string, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Auth.SessionAPI.TLoginResult> {
-        let result: WebAPI.Auth.SessionAPI.TLoginResult = {
+        let result: Awaited<ReturnType<WebAuthManager["tryLogin"]>> = {
             result:"NoConnection"
         }
 
@@ -101,7 +101,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
         const connection = conn ?? await this.db.getConnection();
         if(connection) {
-            let result: WebAPI.Auth.SessionAPI.TProlongSessionResult = "InvalidSession";
+            let result: Awaited<ReturnType<WebAuthManager["prolongSession"]>> = "InvalidSession";
             connection.beginTransaction();
 
             const session = await this.getSessionDetails(sessionToken);
@@ -133,7 +133,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     }
 
     public async getSessionDetails(sessionToken: string, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Auth.SessionAPI.TGetSessionDetailsResult> {
-        let result: WebAPI.Auth.SessionAPI.TGetSessionDetailsResult = {
+        let result: Awaited<ReturnType<WebAuthManager["getSessionDetails"]>> = {
             result: "InvalidSession"
         }
 
@@ -170,7 +170,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     }
 
     public async getAllSessions(userID: number, conn?: WebAPI.Mysql.IPoolConnection | undefined): Promise<WebAPI.Auth.SessionAPI.TGetAllSessionsResult> {
-        let result: WebAPI.Auth.SessionAPI.TGetAllSessionsResult = {
+        let result: Awaited<ReturnType<WebAuthManager["getAllSessions"]>> = {
             result: "NoConnection"
         }
 
@@ -220,7 +220,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         const emailRegex = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
         const connection = conn ?? await this.db.getConnection();
 
-        let result: WebAPI.Auth.UserAPI.TCreateUserResult = "DBError";
+        let result: Awaited<ReturnType<WebAuthManager["createUser"]>> = "DBError";
         
         if(connection) {
             if(emailRegex.test(userData.email)) {
@@ -271,7 +271,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
     public async getUser(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Auth.UserAPI.TGetUserResult> {
 
-        let result: WebAPI.Auth.UserAPI.TGetUserResult = {
+        let result: Awaited<ReturnType<WebAuthManager["getUser"]>> = {
             result: "NoUser"
         }
         
@@ -326,7 +326,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     }
 
     public async getAllUsers(conn?: WebAPI.Mysql.IPoolConnection | undefined): Promise<WebAPI.Auth.UserAPI.TGetAllUsersResult> {
-        let result: WebAPI.Auth.UserAPI.TGetAllUsersResult = {
+        let result: Awaited<ReturnType<WebAuthManager["getAllUsers"]>> = {
             result: "NoConnection"
         }
 
@@ -369,7 +369,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     //Role API
 
     public async getRoleID(roleName: string, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Auth.RoleAPI.TGetRoleIDResult> {
-        let result: WebAPI.Auth.RoleAPI.TGetRoleIDResult = {
+        let result: Awaited<ReturnType<WebAuthManager["getRoleID"]>> = {
             result:"InvalidRole"
         }
 
@@ -388,7 +388,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     }
 
     public async getDefinedRoles(): Promise<WebAPI.Auth.RoleAPI.TGetDefinedRolesResult> {
-        let result: WebAPI.Auth.RoleAPI.TGetDefinedRolesResult = {
+        let result: Awaited<ReturnType<WebAuthManager["getDefinedRoles"]>> = {
             result: "NoConnection"
         }
 
@@ -425,7 +425,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     }
 
     public async listUsersWithRole(roleName: string): Promise<WebAPI.Auth.RoleAPI.TListRoleUsersResult> {
-        let result: WebAPI.Auth.RoleAPI.TListRoleUsersResult= {
+        let result: Awaited<ReturnType<WebAuthManager["listUsersWithRole"]>>= {
             result: "NoConnection"
         }
 
@@ -477,7 +477,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     }
 
     public async getUserRoles(userKey: string | number): Promise<WebAPI.Auth.RoleAPI.TGetRolesResult> {
-        let result: WebAPI.Auth.RoleAPI.TGetRolesResult = {
+        let result: Awaited<ReturnType<WebAuthManager["getUserRoles"]>> = {
             result: "NoConnection"
         }
 
@@ -518,7 +518,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     }
 
     public async hasRole(userKey: string | number, roleName: any): Promise<WebAPI.Auth.RoleAPI.THasRoleResult> {
-        let result: WebAPI.Auth.RoleAPI.THasRoleResult = "NoConnection";
+        let result: Awaited<ReturnType<WebAuthManager["hasRole"]>> = "NoConnection";
 
         const connection = await this.db.getConnection();
 
@@ -550,7 +550,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     }
 
     public async assignRole(userKey: string | number, roleName: string): Promise<WebAPI.Auth.RoleAPI.TAssignRoleResult> {
-        let result: WebAPI.Auth.RoleAPI.TAssignRoleResult = "NoConnection";
+        let result: Awaited<ReturnType<WebAuthManager["assignRole"]>> = "NoConnection";
 
         const connection = await this.db.getConnection();
 
@@ -658,7 +658,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         if(userID!=-1) {
             const connection = conn ?? await this.db.getConnection();
             if(connection) {
-                let result: WebAPI.Auth.AccountsTokenAPI.TCreateTokenResult = {
+                let result: Awaited<ReturnType<WebAuthManager["createToken"]>> = {
                     result: "DBError"
                 }
 
@@ -693,7 +693,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     }
 
     public async getTokenDetails(token: string, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Auth.AccountsTokenAPI.TGetTokenDetailsResult> {
-        let result: WebAPI.Auth.AccountsTokenAPI.TGetTokenDetailsResult = {
+        let result: Awaited<ReturnType<WebAuthManager["getTokenDetails"]>> = {
             result: "InvalidToken"
         }
 
@@ -720,7 +720,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
     public async getTokensCount(userKey: string | number, actionName: WebAPI.Auth.AccountsTokenAPI.TAccountActionName, conn?: WebAPI.Mysql.IPoolConnection | undefined): Promise<WebAPI.Auth.AccountsTokenAPI.TGetTokenCountResult> {
         const user = await this.getUser(userKey);
-        let result: WebAPI.Auth.AccountsTokenAPI.TGetTokenCountResult = {
+        let result: Awaited<ReturnType<WebAuthManager["getTokensCount"]>> = {
             result: "NoUser"
         }
 
@@ -748,7 +748,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     }
 
     public async getAllTokens(userID?: number | undefined, conn?: WebAPI.Mysql.IPoolConnection | undefined): Promise<WebAPI.Auth.AccountsTokenAPI.TGetAllTokensResult> {
-        let result: WebAPI.Auth.AccountsTokenAPI.TGetAllTokensResult = {
+        let result: Awaited<ReturnType<WebAuthManager["getAllTokens"]>> = {
             result: "NoConnection"
         }
 
@@ -793,7 +793,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     }
 
     public async getTokenTypes(conn?: WebAPI.Mysql.IPoolConnection | undefined): Promise<WebAPI.Auth.AccountsTokenAPI.TGetTokenTypesResult> {
-        let result: WebAPI.Auth.AccountsTokenAPI.TGetTokenTypesResult = {
+        let result: Awaited<ReturnType<WebAuthManager["getTokenTypes"]>> = {
             result: "NoConnection"
         }
 
@@ -827,7 +827,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
         const connection = conn ?? await this.db.getConnection();
 
-        const result: WebAPI.Auth.InviteAPI.TInviteGenResult = {
+        const result: Awaited<ReturnType<WebAuthManager["generateInvite"]>> = {
             result: "NoConnection"
         }
 
@@ -871,7 +871,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     }
 
     public async getInviteDetails(query: string, conn?: WebAPI.Mysql.IPoolConnection | undefined): Promise<WebAPI.Auth.InviteAPI.TGetInviteDetailsResult> {
-        const result: WebAPI.Auth.InviteAPI.TGetInviteDetailsResult = {
+        const result: Awaited<ReturnType<WebAuthManager["getInviteDetails"]>> = {
             result: "InvalidToken"
         }
 
@@ -907,7 +907,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     }
 
     public async getAllInvites(conn?: WebAPI.Mysql.IPoolConnection | undefined): Promise<WebAPI.Auth.InviteAPI.TGetAllTokensResult> {
-        let result: WebAPI.Auth.InviteAPI.TGetAllTokensResult = {
+        let result: Awaited<ReturnType<WebAuthManager["getAllInvites"]>> = {
             result: "NoConnection"
         }
 
