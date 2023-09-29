@@ -137,7 +137,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             result: "InvalidSession"
         }
 
-        let queryStr = `SELECT *, DATE_FORMAT(creationDate, '%Y-%m-%dT%TZ') as creationDate, DATE_FORMAT(lastAccessDate, '%Y-%m-%dT%TZ') as lastAccessDate, DATE_FORMAT(expirationDate, '%Y-%m-%dT%TZ') as expirationDate FROM auth_sessions WHERE sessionID=? AND now() < expirationDate;`;
+        let queryStr = `SELECT * FROM auth_sessions WHERE sessionID=? AND now() < expirationDate;`;
         const response = await this.db.performQuery<"Select">(queryStr,[sessionToken],conn);
 
         if(response) {
@@ -148,9 +148,9 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                         sessionID: response[0]["sessionID"],
                         userID: response[0]["userID"],
                         ipAddress: response[0]["ipAddress"],
-                        creationDate: DateTime.fromISO(response[0]["creationDate"]),
-                        lastAccessDate: DateTime.fromISO(response[0]["lastAccessDate"]),
-                        expirationDate: DateTime.fromISO(response[0]["expirationDate"])
+                        creationDate: DateTime.fromJSDate(response[0]["creationDate"]),
+                        lastAccessDate: DateTime.fromJSDate(response[0]["lastAccessDate"]),
+                        expirationDate: DateTime.fromJSDate(response[0]["expirationDate"])
                     }
                 }
             }
@@ -179,7 +179,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         if(connection) {
             let conditionQuery = userID?`WHERE userID=${connection.escape(userID)}`:"";
 
-            const query = `SELECT *, DATE_FORMAT(creationDate, '%Y-%m-%dT%TZ') as creationDate, DATE_FORMAT(lastAccessDate, '%Y-%m-%dT%TZ') as lastAccessDate, DATE_FORMAT(expirationDate, '%Y-%m-%dT%TZ') as expirationDate FROM auth_sessions ${conditionQuery};`;
+            const query = `SELECT * FROM auth_sessions ${conditionQuery};`;
             const response = await this.db.performQuery<"Select">(query,[],connection);
 
             if(response) {
@@ -193,9 +193,9 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                         sessionID: row["sessionID"],
                         userID: row["userID"],
                         ipAddress: row["ipAddress"],
-                        creationDate: DateTime.fromISO(row["creationDate"]),
-                        lastAccessDate: DateTime.fromISO(row["lastAccessDate"]),
-                        expirationDate: DateTime.fromISO(row["expirationDate"])
+                        creationDate: DateTime.fromJSDate(row["creationDate"]),
+                        lastAccessDate: DateTime.fromJSDate(row["lastAccessDate"]),
+                        expirationDate: DateTime.fromJSDate(row["expirationDate"])
                     });
                 }
             }else result.result = this.db.getLastQueryFailureReason();
@@ -277,7 +277,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         
         const {field, userKey: safeUserKey} = this._translateUserKey(userKey);
 
-        const response = await this.db.performQuery<"Select">(`SELECT *, DATE_FORMAT(creationDate, '%Y-%m-%dT%TZ') as creationDate, DATE_FORMAT(lastAccessDate, '%Y-%m-%dT%TZ') as lastAccessDate, DATE_FORMAT(lastPasswordChangeDate, '%Y-%m-%dT%TZ') as lastPasswordChangeDate FROM users NATURAL JOIN ranks WHERE ${field}=?;`,[safeUserKey],conn);
+        const response = await this.db.performQuery<"Select">(`SELECT * FROM users NATURAL JOIN ranks WHERE ${field}=?;`,[safeUserKey],conn);
 
         if(response) {
             if(response.length===1) {
@@ -292,9 +292,9 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                         gender: response[0]["gender"],
                         rankID: response[0]["rankID"],
                         rankName: response[0]["displayName"],
-                        creationDate: DateTime.fromISO(response[0]["creationDate"]),
-                        lastAccessDate: DateTime.fromISO(response[0]["lastAccessDate"]),
-                        lastPasswordChangeDate: DateTime.fromISO(response[0]["lastPasswordChangeDate"])
+                        creationDate: DateTime.fromJSDate(response[0]["creationDate"]),
+                        lastAccessDate: DateTime.fromJSDate(response[0]["lastAccessDate"]),
+                        lastPasswordChangeDate: DateTime.fromJSDate(response[0]["lastPasswordChangeDate"])
                     }
                 }
             }
@@ -334,7 +334,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
         if(connection) {
 
-            const query = `SELECT *, DATE_FORMAT(creationDate, '%Y-%m-%dT%TZ') as creationDate, DATE_FORMAT(lastAccessDate, '%Y-%m-%dT%TZ') as lastAccessDate, DATE_FORMAT(lastPasswordChangeDate, '%Y-%m-%dT%TZ') as lastPasswordChangeDate FROM users NATURAL JOIN ranks;`;
+            const query = `SELECT * FROM users NATURAL JOIN ranks;`;
             const response = await this.db.performQuery<"Select">(query,[],connection);
 
             if(response) {
@@ -353,9 +353,9 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                         gender: row["gender"],
                         rankID: row["rankID"],
                         rankName: row["displayName"],
-                        creationDate: DateTime.fromISO(row["creationDate"]),
-                        lastAccessDate: DateTime.fromISO(row["lastAccessDate"]),
-                        lastPasswordChangeDate: DateTime.fromISO(row["lastPasswordChangeDate"])
+                        creationDate: DateTime.fromJSDate(row["creationDate"]),
+                        lastAccessDate: DateTime.fromJSDate(row["lastAccessDate"]),
+                        lastPasswordChangeDate: DateTime.fromJSDate(row["lastPasswordChangeDate"])
                     });
                 }
             }else result.result = this.db.getLastQueryFailureReason();
@@ -697,7 +697,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             result: "InvalidToken"
         }
 
-        const response = await this.db.performQuery<"Select">(`SELECT *, DATE_FORMAT(creationDate, '%Y-%m-%dT%TZ') as creationDate, DATE_FORMAT(expirationDate, '%Y-%m-%dT%TZ') as expirationDate FROM account_actions NATURAL JOIN account_action_types WHERE accountActionTokenID=? AND now() < expirationDate;`,[token],conn);
+        const response = await this.db.performQuery<"Select">(`SELECT * FROM account_actions NATURAL JOIN account_action_types WHERE accountActionTokenID=? AND now() < expirationDate;`,[token],conn);
 
         if(response) {
             if(response.length===1) {
@@ -708,8 +708,8 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                         actionTypeID: response[0]["accountActionTypeID"],
                         actionTypeName: response[0]["accountActionName"],
                         userID: response[0]["userID"],
-                        creationDate: DateTime.fromISO(response[0]["creationDate"]),
-                        expirationDate: DateTime.fromISO(response[0]["expirationDate"])
+                        creationDate: DateTime.fromJSDate(response[0]["creationDate"]),
+                        expirationDate: DateTime.fromJSDate(response[0]["expirationDate"])
                     }
                 }
             }
@@ -757,7 +757,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         if(connection) {
             let conditionQuery = userID?`WHERE userID=${connection.escape(userID)}`:"";
 
-            const query = `SELECT *, DATE_FORMAT(creationDate, '%Y-%m-%dT%TZ') as creationDate, DATE_FORMAT(expirationDate, '%Y-%m-%dT%TZ') as expirationDate FROM account_actions NATURAL JOIN account_action_types ${conditionQuery};`;
+            const query = `SELECT * FROM account_actions NATURAL JOIN account_action_types ${conditionQuery};`;
             const response = await this.db.performQuery<"Select">(query,[],connection);
 
             if(response) {
@@ -772,8 +772,8 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                         actionTypeID: row["acccountActionTypeID"],
                         actionTypeName: row["accountActionName"],
                         userID: row["userID"],
-                        creationDate: DateTime.fromISO(row["creationDate"]),
-                        expirationDate: DateTime.fromISO(row["expirationDate"])
+                        creationDate: DateTime.fromJSDate(row["creationDate"]),
+                        expirationDate: DateTime.fromJSDate(row["expirationDate"])
                     });
                 }
             }else result.result = this.db.getLastQueryFailureReason();
@@ -876,7 +876,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         }
 
         const field = query.includes("@")?"email":"inviteTokenID";
-        const queryStr = `SELECT *, DATE_FORMAT(creationDate, '%Y-%m-%dT%TZ') as creationDate, DATE_FORMAT(expirationDate, '%Y-%m-%dT%TZ') as expirationDate FROM invites WHERE ${field}=? AND now() < expirationDate;`;
+        const queryStr = `SELECT * FROM invites WHERE ${field}=? AND now() < expirationDate;`;
 
         const response = await this.db.performQuery<"Select">(queryStr,[query.toLowerCase()],conn);
 
@@ -887,8 +887,8 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                     data: {
                         token: response[0]["inviteTokenID"],
                         email: response[0]["email"],
-                        creationDate: DateTime.fromISO(response[0]["creationDate"]),
-                        expirationDate: DateTime.fromISO(response[0]["expirationDate"])
+                        creationDate: DateTime.fromJSDate(response[0]["creationDate"]),
+                        expirationDate: DateTime.fromJSDate(response[0]["expirationDate"])
                     }
                 }
             }
@@ -911,7 +911,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             result: "NoConnection"
         }
 
-        const query = `SELECT *, DATE_FORMAT(creationDate, '%Y-%m-%dT%TZ') as creationDate, DATE_FORMAT(expirationDate, '%Y-%m-%dT%TZ') as expirationDate FROM invites;`;
+        const query = `SELECT * FROM invites;`;
         const response = await this.db.performQuery<"Select">(query,[],conn);
 
         if(response) {
@@ -924,8 +924,8 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                 result.data.push({
                     token: row["inviteTokenID"],
                     email: row["email"],
-                    creationDate: DateTime.fromISO(row["creationDate"]),
-                    expirationDate: DateTime.fromISO(row["expirationDate"])
+                    creationDate: DateTime.fromJSDate(row["creationDate"]),
+                    expirationDate: DateTime.fromJSDate(row["expirationDate"])
                 });
             }
         }else result.result = this.db.getLastQueryFailureReason();
