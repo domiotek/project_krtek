@@ -144,6 +144,20 @@ namespace WebAPI {
             type TSetPasswordResult = WebAPI._.TGenericActionResult | "InvalidPassword" | "NoUser";
 
             type TGetAllUsersResult = WebAPI._.TGetAllActionResult<IUserDetails[]>
+
+            interface IRankDetails {
+                ID: number
+                rankName: string
+                displayName: string
+            }
+
+            type TAssignRankResult = _.TGenericActionResult | "NoUser" | "InvalidRank"
+
+            type TGetRankResult = _.TGenericObjectActionResult<IRankDetails,"InvalidRank">
+
+            type TGetRanksResult = _.TGenericObjectActionResult<IRankDetails[], _.TGenericAPIError>
+
+            type TGetUsersWithRankResult = _.TGenericObjectActionResult<IUserDetails[],"InvalidRank">
         }
 
         namespace RoleAPI {
@@ -345,6 +359,43 @@ namespace WebAPI {
              *
              */
             dropAccount(): Promise<void>
+
+            /**
+             * Assigns rank to the specified user.
+             * @param userKey Either email or user ID.
+             * @param rankName Rank's code name.
+             * 
+             * @async
+             * @returns True on successfull request, string error code on failure.
+             */
+            assignRank(userKey: string | number, rankName: string): Promise<UserAPI.TAssignRankResult>
+
+            /**
+             * Returns details of the specified rank.
+             * @param rankName Rank's code name.
+             * 
+             * @async
+             * @returns Object with string result and rank details object in data prop if result is Success
+             */
+            getRank(rankName: string): Promise<UserAPI.TGetRankResult>
+
+            /**
+             * Returns details of all defined ranks.
+             * 
+             * @async
+             * @returns Object with string result and rank details objects array in data prop if result is Success
+             */
+            getRanks(): Promise<UserAPI.TGetRanksResult>
+
+            /**
+             * Returns all users that have specified rank.
+             * @param rankName Rank's code name.
+             * 
+             * @async
+             * @returns Object with string result and User details objects array in data prop if result is Success
+             */
+            getUsersWithRank(rankName: string): Promise<UserAPI.TGetUsersWithRankResult>
+
 
 
             /**

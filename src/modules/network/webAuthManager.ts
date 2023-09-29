@@ -366,6 +366,119 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         return result;
     }
 
+    public async assignRank(userKey: string | number, rankName: string): Promise<WebAPI.Auth.UserAPI.TAssignRankResult> {
+        let result: Awaited<ReturnType<WebAuthManager["assignRank"]>> = "NoConnection";
+
+        const connection = await this.db.getConnection();
+
+        if(connection) {
+            connection.beginTransaction();
+
+            const userID = await this._resolveUserKey(userKey, connection);
+            if(userID!=-1) {
+                const rankDetails = await this.getRank(rankName, connection);
+
+                if(rankDetails.result=="Success") {
+                    const response = await this.db.performQuery<"Other">("UPDATE users SET rankID=? WHERE userID=?",[rankDetails.data.ID, userID]);
+
+                    if(response) {
+                        if(response.affectedRows===1) {
+                            connection.commit();
+                            result = true;
+                        }else result = "DBError";
+                    }else result = this.db.getLastQueryFailureReason();
+                }else result = rankDetails.result;
+            }else result = "NoUser";
+
+            connection.release();
+        }
+        
+        return result;
+    }
+
+    public async getRank(rankName: string, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Auth.UserAPI.TGetRankResult> {
+        let result: Awaited<ReturnType<WebAuthManager["getRank"]>> = {
+            result: "NoConnection"
+        }
+
+        const connection = conn ?? await this.db.getConnection();
+
+        if(connection) {
+            const response = await this.db.performQuery<"Select">("SELECT rankID, displayName FROM ranks WHERE rankName=?",[rankName], connection);
+            
+            if(response) {
+                if(response.length===1) {
+                    result = {
+                        result: "Success",
+                        data: {
+                            ID: response[0]["rankID"],
+                            rankName,
+                            displayName: response[0]["displayName"]
+                        }
+                    }
+                }else result.result = 'InvalidRank';
+            }else result.result = this.db.getLastQueryFailureReason();
+
+            if(!conn) connection.release();
+        }
+
+        return result;
+    }
+
+    public async getRanks(): Promise<WebAPI.Auth.UserAPI.TGetRanksResult> {
+        let result: Awaited<ReturnType<WebAuthManager["getRanks"]>> = {
+            result: "NoConnection"
+        }
+
+        const response = await this.db.performQuery<"Select">("SELECT * FROM ranks",[]);
+            
+        if(response) {
+            result = {
+                result: "Success",
+                data: []
+            }
+
+            for (const row of response) {
+                result.data.push({
+                    ID: row["rankID"],
+                    rankName: row["rankName"],
+                    displayName: row["displayName"]
+                })
+            }
+        }else result.result = this.db.getLastQueryFailureReason();
+
+        return result;
+    }
+
+    public async getUsersWithRank(rankName: string): Promise<WebAPI.Auth.UserAPI.TGetUsersWithRankResult> {
+        let result: Awaited<ReturnType<WebAuthManager["getUsersWithRank"]>> = {
+            result: "Success",
+            data: []
+        }
+
+        const response = await this.db.performQuery<"Select">("SELECT * FROM users NATURAL JOIN ranks WHERE rankID=?",[rankName]);
+            
+        if(response) {
+            for (const row of response) {
+                result.data.push({
+                    userID: row["userID"],
+                    email: row["email"],
+                    password: row["password"],
+                    name: row["name"],
+                    surname: row["surname"],
+                    gender: row["gender"],
+                    rankID: row["rankID"],
+                    rankName: row["displayName"],
+                    creationDate: DateTime.fromJSDate(row["creationDate"]),
+                    lastAccessDate: DateTime.fromJSDate(row["lastAccessDate"]),
+                    lastPasswordChangeDate: DateTime.fromJSDate(row["lastPasswordChangeDate"])
+                });
+            }
+        }else result = { result: this.db.getLastQueryFailureReason() }
+
+        return result;
+    }
+
     //Role API
 
     public async getRoleID(roleName: string, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Auth.RoleAPI.TGetRoleIDResult> {
