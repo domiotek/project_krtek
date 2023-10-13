@@ -228,7 +228,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                 const user = await this.getUser(userData.email,connection);
 
                 if(user.result!="Success") {
-                    const queryStr = `INSERT INTO users(email, password, name, surname, gender, rankID) VALUES(?,"",?,?,?,1);`;
+                    const queryStr = `INSERT INTO users(email, password, name, surname, gender, rankID) VALUES(?,"",?,?,?,2);`;
 
                     if(!["m","f","o"].includes(userData.gender)) userData.gender = 'o';
 
