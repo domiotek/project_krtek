@@ -20,13 +20,14 @@ body {
   --primary-color: #4166DC;
   --primary-dark-1-color: #2347BE;
 
-  --bg-dark: #B6ADFF;
-  --bg-light: #F8F7FF;
-  --bg-light-85: #EDEBFF;
+  --bg-dark: #adc0ff;
+  --bg-light: #f7f9ff;
+  --bg-light-85: #ebf0ff;
 }
 
 :global(#root) {
   height: 100%;
+  display: flex;
 }
 
 * {

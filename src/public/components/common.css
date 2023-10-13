@@ -5,6 +5,7 @@
     background-repeat: no-repeat;
     background-color: var(--bg-light-85);
     animation: PulseLoadingAnim 2s ease infinite;
+    animation-play-state: var(--pulse-anim-play-state, "running");
 }
 
 @keyframes PulseLoadingAnim {
