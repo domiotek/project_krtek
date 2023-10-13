@@ -228,7 +228,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                 const user = await this.getUser(userData.email,connection);
 
                 if(user.result!="Success") {
-                    const queryStr = `INSERT INTO users(email, password, name, surname, gender, roleID) VALUES(?,"",?,?,?,1);`;
+                    const queryStr = `INSERT INTO users(email, password, name, surname, gender, rankID) VALUES(?,"",?,?,?,1);`;
 
                     if(!["m","f","o"].includes(userData.gender)) userData.gender = 'o';
 
@@ -493,6 +493,25 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                 result = {
                     result: "Success",
                     data: response[0]["roleID"]
+                }
+            }
+        }else result.result = this.db.getLastQueryFailureReason();
+
+        return result;
+    }
+
+    public async getRoleDisplayName(roleName: string, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Auth.RoleAPI.TGetRoleDisplayName> {
+        let result: Awaited<ReturnType<WebAuthManager["getRoleDisplayName"]>> = {
+            result:"InvalidRole"
+        }
+
+        const response = await this.db.performQuery<"Select">("SELECT displayName FROM roles where roleName=?",[roleName],conn);
+
+        if(response) {
+            if(response.length==1) {
+                result = {
+                    result: "Success",
+                    data: response[0]["displayName"]
                 }
             }
         }else result.result = this.db.getLastQueryFailureReason();

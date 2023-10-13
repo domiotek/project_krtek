@@ -168,6 +168,7 @@ namespace WebAPI {
             }
 
             type TGetRoleIDResult = _.TGenericObjectActionResult<number, "InvalidRole">
+            type TGetRoleDisplayName = _.TGenericObjectActionResult<string, "InvalidRole">
             type TGetDefinedRolesResult = _.TGenericObjectActionResult<IRoleDetails[], _.TGenericAPIError>
             type TListRoleUsersResult = _.TGenericObjectActionResult<UserAPI.IUserDetails[], "InvalidRole">
             type TGetRolesResult = _.TGenericObjectActionResult<IRoleDetails[], "NoUser">
@@ -407,6 +408,12 @@ namespace WebAPI {
              * @param roleName role's codeName
              */
             getRoleID(roleName: string): Promise<RoleAPI.TGetRoleIDResult>
+
+            /**
+             * Returns friendly, display name of the role
+             * @param roleName role's code name.
+             */
+            getRoleDisplayName(roleName: string): Promise<RoleAPI.TGetRoleDisplayName>
 
             /**
              * Returns details of all defined roles

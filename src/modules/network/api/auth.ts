@@ -17,7 +17,7 @@ const errorHandler = async (err:FastifyError, req: FastifyRequest)=> {
 
 const signUpRouteRequestSchema = yup.object().shape({
     token: yup.string().required(),
-    email: yup.string().required(),
+    username: yup.string().required(),
     password: yup.string().required().matches(/(?=.*\d)(?=.*[a-z])(?=.*[A-Z])((?=.*\W)|(?=.*_))^[^ ]+$/),
     name: yup.string().required(),
     surname: yup.string().required(),

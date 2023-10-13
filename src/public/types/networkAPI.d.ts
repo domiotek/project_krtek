@@ -40,7 +40,7 @@ export namespace API {
         namespace SignUp {
             interface IRequest {
                 token: string
-                email: string
+                username: string
                 password: string
                 name: string
                 surname: string
