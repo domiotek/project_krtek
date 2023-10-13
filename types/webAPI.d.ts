@@ -687,6 +687,7 @@ namespace WebAPI {
         }
 
         interface IWorkDay {
+            readonly ID: number
             readonly note: string | null
             readonly date: DateTime
 

@@ -196,6 +196,10 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
         this._date = date;
     }
 
+    public get ID() {
+        return this._workDayID;
+    }
+
     public get note() {
         return this._note;
     }
@@ -235,7 +239,7 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
                     data: {
                         requiredRole: data["roleName"],
                         plannedStartTime: DateTime.fromFormat(data["plannedStartTime"],"HH:mm:ss"),
-                        plannedEndTime: DateTime.fromFormat(data["plannedStartTime"],"HH:mm:ss"),
+                        plannedEndTime: data["plannedEndTime"]?DateTime.fromFormat(data["plannedEndTime"],"HH:mm:ss"):null,
                         assignedShift: data["shiftID"]!=null?new Shift(data["shiftID"],this._db,data["userID"],data["startTime"], data["endTime"]):null
                     }
                 }
@@ -283,7 +287,7 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
                 result.data[row["privateSlotID"]] = {
                     requiredRole: row["roleName"],
                     plannedStartTime: DateTime.fromFormat(row["plannedStartTime"],"HH:mm:ss"),
-                    plannedEndTime: DateTime.fromFormat(row["plannedStartTime"],"HH:mm:ss"),
+                    plannedEndTime: row["plannedEndTime"]?DateTime.fromFormat(row["plannedEndTime"],"HH:mm:ss"):null,
                     assignedShift: row["shiftID"]!=null?new Shift(row["shiftID"],this._db,row["userID"],row["startTime"], row["endTime"]):null
                 };
             }
