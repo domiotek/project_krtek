@@ -1,0 +1,203 @@
+.ScheduleView {
+    display: flex;
+    flex-direction: column;
+    max-width: 1000px;
+    width: 100%;
+    align-self: flex-start;
+}
+
+.DayView {
+    width: 100%;
+    margin: 1.5rem 0;
+}
+
+.DayView h2 {
+    margin: 0;
+    color: var(--primary-color);
+}
+
+.DayView h4 {
+    margin: 0;
+    font-size: smaller;
+    padding-left: 0.75rem;
+}
+
+.DatePlaceholder {
+    display: inline-block;
+    width: 40%;
+    height: 1rem;
+    border-radius: 0.5rem;
+    animation-delay: var(--pulse-anim-delay);
+}
+
+.SlotPlaceholders {
+    width: 100%;
+}
+
+.SlotPlaceholders span {
+    display: inline-block;
+    width: 100%;
+    height: 2rem;
+    margin: 0.25rem 0;
+    border-radius: 0.5rem;
+    animation-delay: var(--pulse-anim-delay);
+}
+
+.DayView ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 1.5rem 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.Tag::before {
+    display: inline-block;
+    content: "";
+    width: 0.5em;
+    height: 0.5em;
+    border-radius: 50%;
+    background: var(--bg-dark);
+    margin: 0 0.25rem;
+}
+
+.SlotPanel {
+    border: solid 2px var(--bg-dark);
+    padding: 0.75rem;
+    border-radius: 0.4rem;
+    width: 100%;
+    position: relative;
+    margin: 0.55rem 0;
+}
+
+.SlotPanel h5 {
+    margin: 0;
+    position: absolute;
+    top: -0.60rem;
+    background: var(--main-bg);
+    padding: 0 0.4rem;
+}
+
+.SlotPanel h3 {
+    margin: 0;
+    font-size: 0.85em;
+}
+.SlotPanel.Unassigned h3 {
+    color: #7886b5;
+}
+
+@media screen and (min-width: 426px) {
+    .DayView {
+        width: 75%;
+        align-self: center;
+        max-width: 375px;
+    }
+
+    .DayView ul {
+        align-items: flex-start;
+    }
+}
+
+
+@media screen and (min-width: 769px) {
+    .ScheduleView {
+        flex-direction: row;
+        align-self: center;
+        margin-top: 1.5rem;
+
+        background: #ffffff;
+        box-shadow: 1px 1px 10px 0 #dfdfdf;
+        padding: 0 1.5rem;
+        border-radius: 0.4rem;
+        min-height: 300px;
+    }
+
+    .DayView {
+        width: calc(100% / 7);
+        align-self: unset;
+        text-align: center;
+        margin: 0;
+        padding: 0.75rem 0;
+    }
+
+    .DayView:nth-child(2), .DayView:nth-child(6) {
+        --pulse-anim-delay: 0.5s;
+    }
+    
+    .DayView:nth-child(3), .DayView:nth-child(7) {
+        --pulse-anim-delay: 1s;
+    }
+    
+    .DayView:nth-child(4){
+        --pulse-anim-delay: 1.5s;
+    }
+
+    .DayView h2 {
+        font-size: 1em;
+    }
+
+    .DayView h4 {
+        padding: 0;
+        font-size: x-small;
+        border-bottom: solid 1px var(--bg-dark);
+        padding-bottom: 0.5rem;
+    }
+
+    .DayView ul {
+        padding-top: 1rem;
+    }
+
+    .DatePlaceholder {
+        width: 80%;
+    }
+
+    .SlotPlaceholders span {
+        width: 90%;
+    }
+
+    .Tag {
+        display: none;
+    }
+
+    .NoShiftsText {
+        align-self: center;
+        font-size: smaller;
+        font-weight: bold;
+        color: #6b6b6b;
+    }
+
+    .CurrentDay {
+        border: solid 1px var(--bg-dark);
+        border-radius: 0.5rem;
+    }
+
+    .CurrentDay h4 {
+        padding-bottom: calc(0.5rem - 1px);
+    }
+
+    .SlotPanel {
+        border: none;
+        display: flex;
+        flex-direction: column-reverse;
+        padding: 0.5rem;
+        background: var(--bg-light-85);
+        border-radius: unset;
+        margin: 0 0 0.55rem;
+        text-align: left;
+    }
+
+    .SlotPanel h5 {
+        position: static;
+        font-size: x-small;
+        color: #6b6b6b;
+        background: none;
+        padding: 0;
+    }
+}
+
+@media screen and (min-width: 900px) {
+   .ScheduleView {
+    font-size: larger;
+   } 
+}

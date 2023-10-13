@@ -12,6 +12,7 @@ import PasswordRecoveryPortal from './pages/portals/PasswordRecovery/PasswordRec
 import BrokenLinkPortal from './pages/portals/BrokenLink/BrokenLink';
 import OnBoardingPortal from './pages/portals/OnBoarding/OnBoarding';
 import Logout from './pages/Logout';
+import Schedule from './pages/Schedule';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -24,6 +25,7 @@ root.render(
               <Route index element={<Home />}/>
               <Route path='/Home' element={<Home />}/>
               <Route path="/Announcements" element={<Home />}/>
+              <Route path='/Schedule' element={<Schedule />} />
               <Route path='*' element={<NoPage />} />
           </Route>
           <Route path='/p' element={<Portal />}>

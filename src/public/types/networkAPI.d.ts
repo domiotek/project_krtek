@@ -18,6 +18,7 @@ export namespace API {
 
         interface IFailureGetResponse<T> {
             status: "Failure",
+            message?: string
             errCode: T
         }
     }
@@ -130,6 +131,33 @@ export namespace API {
             }
 
             type TResponse = API._.ISuccessGetResponse<IResponseData[]> | API._.IFailureGetResponse<TCommonResponses | "NotSignedIn">
+        }
+
+        namespace Schedule {
+            namespace GetSchedule {
+
+                interface IRequest {
+                    withDay: string
+                }
+
+                interface IResponseData {
+                    rangeStart: string
+                    rangeEnd: string
+                    workDays: Array<{
+                        ID: number
+                        date: string
+                        slots:  Array<{
+                            ID: number
+                            requiredRole: string
+                            employeeName: string | null
+                            startTime: string
+                            endTime: string | null
+                        }>
+                    }>
+                }
+
+                type TResponse = API._.ISuccessGetResponse<IResponseData> | API._.IFailureGetResponse<TCommonResponses | "NotSignedIn" | "InvalidDate">
+            }
         }
     }
 }
