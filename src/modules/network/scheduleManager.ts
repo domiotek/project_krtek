@@ -1,6 +1,18 @@
 import { DateTime } from "luxon";
 import { MysqlError } from "mysql";
+import { APIError } from "../util.js";
 
+class ScheduleAPIError extends APIError<"Schedule"> {
+    constructor(errCode: WebAPI.APIErrors<"Schedule">) {
+        super(ScheduleManager.name, errCode);
+    }
+}
+
+/**
+ * WebAuthManager expanded with the ability to pass connections to the methods.
+ * Normally hidden within public interface.
+ */
+type InternalWebAuthManager = import("./webAuthManager.js").WebAuthManager;
 
 export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
     private readonly _db: WebAPI.Mysql.IMysqlController;
@@ -9,74 +21,59 @@ export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
         this._db = mysqlConn;
     }
 
-    public async getWorkDay(when: DateTime, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Schedule.ScheduleManager.TGetWorkDayResult> {
-        let result: WebAPI.Schedule.ScheduleManager.TGetWorkDayResult = {
-            result: "NoConnection"
-        }
+    public async getWorkDay(when: DateTime, conn?: WebAPI.Mysql.IPoolConnection) {
 
         if(!when.isValid) {
-            result.result = "InvalidDate"
-            return result;
+            return null;
         }
 
         const connection = conn ?? await this._db.getConnection();
 
         if(connection) {
-            connection.beginTransaction();
+            if(!conn) connection.beginTransaction();
 
             const response = await this._db.performQuery<"Select">("SELECT * FROM work_days WHERE date=?",[when.toISODate()],connection);
+            let errCode: WebAPI.APIErrors<"Schedule">;
 
             if(response) {
                 switch(response.length) {
                     case 1:
-                        result = {
-                            result: "Success",
-                            data: new WorkDay(response[0]["workDayID"],this._db,when, response[0]["note"])
-                        }
                         if(!conn) connection.release();
-                        return result;
+                        return new WorkDay(response[0]["workDayID"],this._db,when, response[0]["note"]);
                     default:
                         this._db.reportMysqlError(new Error(`[DB][Schedule] Invalid state for workday on '${when.toISODate()}'. Detected more than one entry(${response.length}).`) as MysqlError);
+                        errCode = "DBError";
                     case 0:
                         const insertResponse = await this._db.performQuery<"Other">("INSERT INTO work_days(date) VALUES(?);",[when.toISODate()], connection);
                         if(insertResponse) {
                             if(insertResponse.affectedRows==1) {
-                                result = {
-                                    result: "Success",
-                                    data: new WorkDay(insertResponse.insertId,this._db, when, null)
-                                }
-
                                 if(!conn) {
                                     connection.commit();
                                     connection.release();
                                 }
-                                return result;
-                            }else result.result = "DBError";
-                        }else result.result = this._db.getLastQueryFailureReason();
+                                return new WorkDay(insertResponse.insertId,this._db, when, null);
+                            }else errCode = "DBError";
+                        }else errCode = this._db.getLastQueryFailureReason();
                     break;
                 }
-            }else result.result = this._db.getLastQueryFailureReason();
+            }else errCode = this._db.getLastQueryFailureReason();
 
-            if(!conn) {
-                connection.rollback();
-                connection.release();
-            }
+            connection.release();
+            throw new ScheduleAPIError(errCode);
         }
 
-        return result;
+        throw new ScheduleAPIError("NoConnection");
     }
 
-    public async getUserShifts(userID: number, from?: WebAPI.Schedule.ScheduleManager.IDateRangeOptions | undefined): Promise<WebAPI.Schedule.ScheduleManager.TGetUserShiftsResult> {
-        let result: WebAPI.Schedule.ScheduleManager.TGetUserShiftsResult = {
-            result: "NoConnection"
-        }
-
-        const connection = await this._db.getConnection();
+    public async getUserShifts(userID: number, from?: WebAPI.Schedule.ScheduleManager.IDateRangeOptions | undefined, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Schedule.ScheduleManager.IUserShifts> {
+        const connection = conn ?? await this._db.getConnection();
 
         if(connection) {
-            connection.beginTransaction();
+            if(!conn) connection.beginTransaction();
 
-            const userExists = await global.app.webAuthManager.userExists(userID);
+            const userExists = await (global.app.webAuthManager as InternalWebAuthManager).userExists(userID, connection);
+
+            let errCode: WebAPI.APIErrors<"Schedule"> | null = null;
 
             if(userExists) {
                 let rangeStr = "";
@@ -110,74 +107,68 @@ export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
                     const response = await this._db.performQuery<"Select">(query, [userID], connection);
 
                     if(response) {
-                        result = {
-                            result: "Success",
-                            data: {
-                                shifts: [],
-                                userSlots: []
-                            }
+                        const result: WebAPI.Schedule.ScheduleManager.IUserShifts = {
+                            shifts: [],
+                            userSlots: []
                         }
 
                         for (const row of response) {
-                            result.data.shifts.push(new WorkDay(row["workDayID"],this._db,DateTime.fromJSDate(row["date"]),row["note"]));
-                            result.data.userSlots.push(row["privateSlotID"]);
+                            result.shifts.push(new WorkDay(row["workDayID"],this._db,DateTime.fromJSDate(row["date"]),row["note"]));
+                            result.userSlots.push(row["privateSlotID"]);
                         }
-                    }else result.result = this._db.getLastQueryFailureReason();
-                }else result.result = "InvalidRange";
-            }else result.result = "InvalidUser";
+
+                        if(!conn) connection.release();
+                        return result;
+                    }else errCode = this._db.getLastQueryFailureReason();
+                }else errCode = "InvalidRange";
+            }else errCode = "NoUser";
 
             connection.release();
+            if(errCode) throw new ScheduleAPIError(errCode);
         }
 
-        return result;
+        throw new ScheduleAPIError("NoConnection");
     }
 
-    public getCurrentWeek(): Promise<WebAPI.Schedule.ScheduleManager.TGetWeekResult> {
-        return this.getWeek(DateTime.now());
+    public getCurrentWeek(): Promise<WebAPI.Schedule.IWorkDay[]> {
+        return this.getWeek(DateTime.now()) as Promise<WebAPI.Schedule.IWorkDay[]>;
     }
 
-    public async getWeek(ofDay: DateTime): Promise<WebAPI.Schedule.ScheduleManager.TGetWeekResult> {
-        let result: WebAPI.Schedule.ScheduleManager.TGetWeekResult = {
-            result: "NoConnection"
-        }
-
+    public async getWeek(ofDay: DateTime, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Schedule.IWorkDay[] | null> {
         if(!ofDay.isValid) {
-            result.result = "InvalidDate";
-            return result;
+            return null;
         }
 
-        const connection = await this._db.getConnection();
+        const connection = conn ?? await this._db.getConnection();
 
         if(connection) {
-            connection.beginTransaction();
+            if(!conn) connection.beginTransaction();
 
             const beginDate = DateTime.fromObject({weekNumber: ofDay.weekNumber});
             
-            result = {
-                result: "Success",
-                data: []
-            }
+            const result = [];
 
             for(let i=0; i < 7; i++) {
                 const date = beginDate.plus({days: i});
                 
                 const workDay = await this.getWorkDay(date, connection);
 
-                if(workDay.result=="Success") {
-                    result.data.push(workDay.data);
+                if(workDay) {
+                    result.push(workDay);
                 }else {
-                    connection.rollback();
                     connection.release();
-                    return {result: this._db.getLastQueryFailureReason()}
+                    throw new ScheduleAPIError(this._db.getLastQueryFailureReason());
                 }
             }
-
-
-            connection.commit();
-            connection.release();
+            if(!conn) {
+                connection.commit();
+                connection.release();
+            }
+            
+            return result;
         }
 
-        return result;
+        throw new ScheduleAPIError("NoConnection");
     }
 }
 
@@ -208,196 +199,193 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
         return this._date;
     }
 
-    public async setNote(newNote: string | null): Promise<WebAPI.Schedule.WorkDayAPI.TSetNoteResult> {
+    public async setNote(newNote: string | null, conn?: WebAPI.Mysql.IPoolConnection): Promise<void> {
 
         if(newNote&&newNote.length > 255) {
-            return "NoteTooLong";
+            throw new ScheduleAPIError("NoteTooLong");
         }
 
-        const response = await this._db.performQuery<"Other">("UPDATE work_days SET note=? WHERE workDayID=?",[newNote, this._workDayID]);
+        const response = await this._db.performQuery<"Other">("UPDATE work_days SET note=? WHERE workDayID=?",[newNote, this._workDayID], conn);
 
-        if(response) {
-            if(response.affectedRows==1) {
-                this._note = newNote;
-                return true; 
-            }else return "DBError";
-        }else return this._db.getLastQueryFailureReason();
+        if(!response || response.affectedRows!=1) {
+            conn?.release();
+            throw new ScheduleAPIError(response?"DBError":this._db.getLastQueryFailureReason());
+        }
+        
+        this._note = newNote;
+
     }
 
-    public async getSlot(id: number, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Schedule.WorkDayAPI.TGetSlotResult> {
-        let result: WebAPI.Schedule.WorkDayAPI.TGetSlotResult = {
-            result: "InvalidSlot"
-        }
-
+    public async getSlot(id: number, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Schedule.WorkDayAPI.IShiftSlot | null> {
         const response = await this._db.performQuery<"Select">("SELECT * FROM shift_slots NATURAL LEFT JOIN shifts INNER JOIN roles ON roleRequiredID=roleID WHERE workDayID=? AND privateSlotID=?;",[this._workDayID, id],conn);
 
         if(response) {
             if(response.length==1) {
                 const data = response[0];
-                result = {
-                    result: "Success",
-                    data: {
-                        requiredRole: data["roleName"],
-                        plannedStartTime: DateTime.fromFormat(data["plannedStartTime"],"HH:mm:ss"),
-                        plannedEndTime: data["plannedEndTime"]?DateTime.fromFormat(data["plannedEndTime"],"HH:mm:ss"):null,
-                        assignedShift: data["shiftID"]!=null?new Shift(data["shiftID"],this._db,data["userID"],data["startTime"], data["endTime"]):null
-                    }
+                return {
+                    requiredRole: data["roleName"],
+                    plannedStartTime: DateTime.fromFormat(data["plannedStartTime"],"HH:mm:ss"),
+                    plannedEndTime: data["plannedEndTime"]?DateTime.fromFormat(data["plannedEndTime"],"HH:mm:ss"):null,
+                    assignedShift: data["shiftID"]!=null?new Shift(data["shiftID"],this._db,data["userID"],data["startTime"], data["endTime"]):null
                 }
-            }
-        }else result.result= this._db.getLastQueryFailureReason();
-
-       return result;
+            }else return null;
+        }
+        
+        conn?.release();
+        throw new ScheduleAPIError(this._db.getLastQueryFailureReason());
     }
 
-    public async getSlotIDs(conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Schedule.WorkDayAPI.TGetSlotIDsResult> {
-        let result: WebAPI.Schedule.WorkDayAPI.TGetSlotIDsResult = {
-            result:"DBError"
-        }
-
+    public async getSlotIDs(conn?: WebAPI.Mysql.IPoolConnection): Promise<number[]> {
         const response = await this._db.performQuery<"Select">("SELECT privateSlotID FROM shift_slots WHERE workDayID=?;",[this._workDayID], conn);
  
         if(response) {
-            result = {
-                result: "Success",
-                data: []
-            } 
+            const result =  [];
 
             for (const row of response) {
-                result.data.push(row["privateSlotID"]);
+                result.push(row["privateSlotID"]);
             }
-        }else result.result = this._db.getLastQueryFailureReason();
 
-        return result;
+            return result;
+        }
+        
+        conn?.release();
+        throw new ScheduleAPIError(this._db.getLastQueryFailureReason());
     }
 
-    public async getAllSlots(): Promise<WebAPI.Schedule.WorkDayAPI.TGetAllSlots> {
-        let result: WebAPI.Schedule.WorkDayAPI.TGetAllSlots = {
-            result: "DBError"
-        }
-
-        const response = await this._db.performQuery<"Select">("SELECT * FROM shift_slots NATURAL LEFT JOIN shifts INNER JOIN roles ON roleRequiredID=roleID WHERE workDayID=?;",[this._workDayID]);
+    public async getAllSlots(conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Schedule.WorkDayAPI.ISlots> {
+        const response = await this._db.performQuery<"Select">("SELECT * FROM shift_slots NATURAL LEFT JOIN shifts INNER JOIN roles ON roleRequiredID=roleID WHERE workDayID=?;",[this._workDayID], conn);
 
         if(response) {
-            result = {
-                result: "Success",
-                data: {}
-            }
+            const result: Awaited<ReturnType<WorkDay["getAllSlots"]>> = {};
 
             for (const row of response) {
-                result.data[row["privateSlotID"]] = {
+                result[row["privateSlotID"]] = {
                     requiredRole: row["roleName"],
                     plannedStartTime: DateTime.fromFormat(row["plannedStartTime"],"HH:mm:ss"),
                     plannedEndTime: row["plannedEndTime"]?DateTime.fromFormat(row["plannedEndTime"],"HH:mm:ss"):null,
                     assignedShift: row["shiftID"]!=null?new Shift(row["shiftID"],this._db,row["userID"],row["startTime"], row["endTime"]):null
                 };
             }
-        }else result.result= this._db.getLastQueryFailureReason();
-
-        return result;
-    }
-
-    public async addSlot(requiredRole: string, startTime: DateTime, endTime?: DateTime | undefined): Promise<WebAPI.Schedule.WorkDayAPI.TAddSlot> {
-        let result: WebAPI.Schedule.WorkDayAPI.TAddSlot = "InvalidDateTimeInput";
-
-        if(startTime.isValid&&(endTime?endTime.isValid:true)) {
-            const connection = await this._db.getConnection();
-
-            if(connection) {
-                connection.beginTransaction();
-                const roleID = await global.app.webAuthManager.getRoleID(requiredRole);
-                
-                if(roleID.result!="Success") {
-                    return "InvalidRole"
-                }
-
-                const IDs = await this.getSlotIDs(connection);
-
-                let nextID;
-
-                if(IDs.result=="Success") {
-                    for(let i=0; i<WorkDay.MAX_SLOT_COUNT; i++) {
-                        if(!IDs.data.includes(i)) {
-                            nextID = i;
-                            break;
-                        }
-                    }
-
-                    if(nextID!==undefined) {
-                        const response = await this._db.performQuery<"Other">("INSERT INTO shift_slots(workDayID, privateSlotID, plannedStartTime, plannedEndTime, roleRequiredID) VALUES(?,?,?,?,?)",[this._workDayID,nextID,startTime.toFormat("HH:mm:ss"),endTime?.toFormat("HH:mm:ss") ?? null,roleID.data],connection);
-                        if(response) {
-                            if(response.affectedRows==1) {
-                                connection.commit();
-                                connection.release();
-                                return true;
-                            }else return "DBError";
-                        }else result = this._db.getLastQueryFailureReason();
-                    }else result = "MaxSlotCountReached";
-                   
-                }else result = this._db.getLastQueryFailureReason();
-
-                connection.rollback();
-                connection.release();
-            }else result = "NoConnection";
-        }
             
-
-        return result;
+            return result;
+        }
+        
+        conn?.release();
+        throw new ScheduleAPIError(this._db.getLastQueryFailureReason());
     }
 
-    public async editSlot(slotID: number, requiredRole: string, startTime: DateTime, endTime?: DateTime | undefined) {
-        let result: WebAPI.Schedule.WorkDayAPI.TEditSlotResult = "InvalidDateTimeInput";
+    public async addSlot(requiredRole: string, startTime: DateTime, endTime?: DateTime | undefined, conn?: WebAPI.Mysql.IPoolConnection): Promise<void> {
 
-        if(startTime.isValid&&(endTime?endTime.isValid:true)) {
-            const connection = await this._db.getConnection();
+        if(!startTime.isValid||(endTime?!endTime.isValid:false)) {
+            conn?.release();
+            throw new ScheduleAPIError("InvalidDate");
+        }
 
-            if(connection) {
-                connection.beginTransaction();
-                const roleID = await global.app.webAuthManager.getRoleID(requiredRole);
-                
-                if(roleID.result!="Success") {
-                    return "InvalidRole"
+        const roleID = await (global.app.webAuthManager as InternalWebAuthManager).getRoleID(requiredRole, conn);
+
+        if(roleID===null) {
+            conn?.release();
+            throw new ScheduleAPIError("InvalidRole");
+        }
+
+        const connection = conn ?? await this._db.getConnection();
+
+        if(connection) {
+            let errCode: WebAPI.APIErrors<"Schedule">;
+            if(!conn) connection.beginTransaction();
+
+            const IDs = await this.getSlotIDs(connection);
+
+            let nextID;
+
+            for(let i=0; i<WorkDay.MAX_SLOT_COUNT; i++) {
+                if(!IDs.includes(i)) {
+                    nextID = i;
+                    break;
                 }
+            }
 
-                const query = "UPDATE shift_slots SET plannedStartTime=?, plannedEndTime=?, roleRequiredID=? WHERE workDayID=? AND privateSlotID=?";
-                const response = await this._db.performQuery<"Other">(query,[startTime.toFormat("HH:mm:ss"),endTime?.toFormat("HH:mm:ss") ?? null,roleID.data, this._workDayID, slotID],connection);
+            if(nextID!==undefined) {
+                const response = await this._db.performQuery<"Other">("INSERT INTO shift_slots(workDayID, privateSlotID, plannedStartTime, plannedEndTime, roleRequiredID) VALUES(?,?,?,?,?)",[this._workDayID,nextID,startTime.toFormat("HH:mm:ss"),endTime?.toFormat("HH:mm:ss") ?? null,roleID],connection);
                 if(response) {
                     if(response.affectedRows==1) {
-                        connection.commit();
-                        connection.release();
-                        return true;
-                    }else return "DBError";
-                }else result = this._db.getLastQueryFailureReason();
-
-                connection.rollback();
-                connection.release();
-            }else result = "NoConnection";
-        }
+                        if(!conn) {
+                            connection.commit();
+                            connection.release();
+                        }
+                        
+                        return;
+                    }else errCode = "DBError";
+                }else errCode = this._db.getLastQueryFailureReason();
+            }else errCode = "MaxSlotCountReached";
             
+            if(!conn || errCode) connection.release();
+            if(errCode) throw new ScheduleAPIError(errCode);
+        }
 
-        return result;
+        throw new ScheduleAPIError("NoConnection");
     }
 
-    public async deleteSlot(id: number, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Schedule.WorkDayAPI.TDeleteSlot> {
-        let result: WebAPI.Schedule.WorkDayAPI.TDeleteSlot = "InvalidSlot";
+    public async editSlot(slotID: number, requiredRole: string, startTime: DateTime, endTime?: DateTime | undefined, conn?: WebAPI.Mysql.IPoolConnection) {
 
+        if(!startTime.isValid&&(endTime?!endTime.isValid:false)) {
+            conn?.release();
+            throw new ScheduleAPIError("InvalidDate");
+        }
+
+        const roleID = await (global.app.webAuthManager as InternalWebAuthManager).getRoleID(requiredRole, conn);
+            
+        if(roleID===null) {
+            conn?.release();
+            throw new ScheduleAPIError("InvalidRole");
+        }
+
+        const connection = conn ?? await this._db.getConnection();
+
+        if(connection) {
+            let errCode: WebAPI.APIErrors<"Schedule">;
+            if(!conn) connection.beginTransaction();
+            
+            const query = "UPDATE shift_slots SET plannedStartTime=?, plannedEndTime=?, roleRequiredID=? WHERE workDayID=? AND privateSlotID=?";
+            const response = await this._db.performQuery<"Other">(query,[startTime.toFormat("HH:mm:ss"),endTime?.toFormat("HH:mm:ss") ?? null,roleID, this._workDayID, slotID],connection);
+            if(response) {
+                if(response.affectedRows==1) {
+                    if(!conn) {
+                        connection.commit();
+                        connection.release();
+                    }
+                   
+                    return;
+                }else errCode = "DBError";
+            }else errCode = this._db.getLastQueryFailureReason();
+
+            connection.release();
+            throw new ScheduleAPIError(errCode);
+        }
+
+        throw new ScheduleAPIError("NoConnection");
+    }
+
+    public async deleteSlot(id: number, conn?: WebAPI.Mysql.IPoolConnection) {
         const connection = conn ?? await this._db.getConnection();
 
         if(connection) {
             if(!conn) connection.beginTransaction();
             const slot = await this.getSlot(id, connection);
+            let errCode: WebAPI.APIErrors<"Schedule"> | null = null;
 
-            if(slot.result=="Success") {
+            if(slot) {
                 
                 let canGo: boolean = false;
 
-                if(slot.data.assignedShift) {
-                    const response = await this._db.performQuery<"Other">("DELETE FROM shifts WHERE shiftID=?",[slot.data.assignedShift.ID]);
+                if(slot.assignedShift) {
+                    const response = await this._db.performQuery<"Other">("DELETE FROM shifts WHERE shiftID=?",[slot.assignedShift.ID], connection);
     
                     if(response&&response.affectedRows==1) canGo=true;
                 }else canGo = true;
                 
                 if(canGo) {
-                    const response = await this._db.performQuery<"Other">("DELETE FROM shift_slots WHERE workDayID=? AND privateSlotID=?",[this._workDayID,id]);
+                    const response = await this._db.performQuery<"Other">("DELETE FROM shift_slots WHERE workDayID=? AND privateSlotID=?",[this._workDayID,id], connection);
     
                     if(response) {
                         if(response.affectedRows==1) {
@@ -407,91 +395,77 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
                             }
                             return true;
                         }
-                    }else result = this._db.getLastQueryFailureReason();
-                }else result = "DBError";
-    
-            }else result = slot.result;
-
-           
-            if(!conn) {
-                connection.rollback();
-                connection.release();
+                    }else errCode = this._db.getLastQueryFailureReason();
+                }else errCode = "DBError";
             }
-        }else result = "NoConnection";
-
-        return result;
-    }
-
-    public async deleteAllSlots(): Promise<WebAPI._.TGenericActionResult> {
-        let result: WebAPI._.TGenericActionResult = "NoConnection";
-
-        const connection = await this._db.getConnection();
-
-        if(connection) {
-            connection.beginTransaction();
-            const IDs = await this.getSlotIDs(connection);
-
-            if(IDs.result=="Success") {
-                for (const ID of IDs.data) {
-                    const response = await this.deleteSlot(ID,connection);
-                    if(response!==true) {
-                        connection.rollback();
-                        connection.release();
-                        return "DBError";
-                    }
-                }
-                connection.commit();
-                connection.release();
-                return true;
-            }else result = IDs.result;
-
-            connection.release();
+           
+            if(!conn || errCode) connection.release();
+            if(errCode) throw new ScheduleAPIError(errCode);
+            return false;
         }
 
-        return result;
+        throw new ScheduleAPIError("NoConnection");
     }
 
-    public async assignUser(slotID: number, userID: number): Promise<WebAPI.Schedule.WorkDayAPI.TAssignUserResult> {
-        let result: WebAPI.Schedule.WorkDayAPI.TAssignUserResult = "DBError";
-
-        const connection = await this._db.getConnection();
+    public async deleteAllSlots(conn?: WebAPI.Mysql.IPoolConnection) {
+        const connection = conn ?? await this._db.getConnection();
 
         if(connection) {
-            connection.beginTransaction();
-            const slot = await this.getSlot(slotID);
+            if(!conn) connection.beginTransaction();
+            const IDs = await this.getSlotIDs(connection);
 
-            if(slot.result=="Success") {
+            for (const ID of IDs) {
+                const response = await this.deleteSlot(ID,connection);
+                if(response!==true) {
+                    connection.release();
+                    throw new ScheduleAPIError("DBError");
+                }
+            }
+
+            if(!conn) {
+                connection.commit();
+                connection.release();
+            }
+           
+            return;
+        }
+
+        throw new ScheduleAPIError("NoConnection");
+    }
+
+    public async assignUser(slotID: number, userID: number, conn?: WebAPI.Mysql.IPoolConnection){
+        const connection = conn ?? await this._db.getConnection();
+
+        if(connection) {
+            if(!conn) connection.beginTransaction();
+            const slot = await this.getSlot(slotID, connection);
+            let errCode: WebAPI.APIErrors<"Schedule"> = "DBError";
+
+            if(slot) {
                 let canProceed = false;
 
-                if(slot.data.assignedShift!==null) {
-                    const response = await this.unassignUser(slotID);
+                if(slot.assignedShift!==null) {
+                    const response = await this.unassignUser(slotID, connection);
                     if(response===true) canProceed=true;
                 }else canProceed = true;
 
-                const user = await global.app.webAuthManager.getUser(userID);
 
-                if(user.result!="Success") {
-                    connection.release();
-                    return "NoUser";
+                const roleResult = await (global.app.webAuthManager as InternalWebAuthManager).hasRole(userID, slot.requiredRole, connection);
+
+                if(roleResult===false) {
+                    throw new ScheduleAPIError("UserWithoutRole");
                 }
 
-                const roleResult = await global.app.webAuthManager.hasRole(user.data.userID, slot.data.requiredRole);
-
-                if(roleResult!==true) {
-                    connection.release();
-                    return roleResult===false||roleResult==="InvalidRole"?"UserWithoutRole":roleResult;
-                }
-
-                const otherSlotsCheck = await this._db.performQuery<"Select">("SELECT privateSlotID FROM shift_slots NATURAL JOIN shifts WHERE workDayID=? AND userID=?", [this._workDayID, user.data.userID], connection);
+                const otherSlotsCheck = await this._db.performQuery<"Select">("SELECT privateSlotID FROM shift_slots NATURAL JOIN shifts WHERE workDayID=? AND userID=?", [this._workDayID, userID], connection);
 
                 if(otherSlotsCheck) {
                     if(otherSlotsCheck.length>0) {
                         connection.release();
-                        return "AlreadyAssigned";
+                        throw new ScheduleAPIError("AlreadyAssigned");
                     }
                 }else {
                     connection.release();
-                    return this._db.getLastQueryFailureReason();
+                    throw new ScheduleAPIError(this._db.getLastQueryFailureReason());
                 }
 
                 if(canProceed) {
@@ -502,44 +476,48 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
                             response = await this._db.performQuery<"Other">("UPDATE shift_slots SET shiftID=? WHERE workDayID=? AND privateSlotID=?",[response.insertId, this._workDayID, slotID],connection);
 
                             if(response&&response.affectedRows===1) {
-                                connection.commit();
-                                connection.release();
-                                return true;
+                                if(!conn) {
+                                    connection.commit();
+                                    connection.release();
+                                }
+                                
+                                return;
                             }
                         }
-                    }else result = this._db.getLastQueryFailureReason();
-
+                    }else errCode = this._db.getLastQueryFailureReason();
                 }
-            }else result = slot.result;
+            }else errCode = "InvalidSlot";
 
-            connection.rollback();
             connection.release();
-        }else result = "NoConnection";
+            throw new ScheduleAPIError(errCode);
+        }
 
-        return result;
+        throw new ScheduleAPIError("NoConnection");
     }
 
-    public async unassignUser(slotID: number, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Schedule.WorkDayAPI.TUnassignUserResult> {
-        let result: WebAPI.Schedule.WorkDayAPI.TUnassignUserResult = "InvalidSlot";
-
+    public async unassignUser(slotID: number, conn?: WebAPI.Mysql.IPoolConnection) {
         const connection = conn ?? await this._db.getConnection();
 
         if(connection) {
             if(!conn) connection.beginTransaction();
             const slot = await this.getSlot(slotID, connection);
+            let errCode: WebAPI.APIErrors<"Schedule"> | null = null;
 
-            if(slot.result=="Success") {
+            if(slot) {
                 
                 let canProceed: boolean = false;
 
-                if(slot.data.assignedShift) {
-                    const response = await this._db.performQuery<"Other">("DELETE FROM shifts WHERE shiftID=?",[slot.data.assignedShift.ID]);
+                if(slot.assignedShift) {
+                    const response = await this._db.performQuery<"Other">("DELETE FROM shifts WHERE shiftID=?",[slot.assignedShift.ID], connection);
     
                     if(response&&response.affectedRows==1) canProceed=true;
-                }else canProceed = true;
+                }else {
+                    if(!conn) connection.release();
+                    return true;
+                }
                 
                 if(canProceed) {
-                    const response = await this._db.performQuery<"Other">("UPDATE shift_slots SET shiftID=null WHERE workDayID=? AND privateSlotID=?",[this._workDayID,slotID]);
+                    const response = await this._db.performQuery<"Other">("UPDATE shift_slots SET shiftID=null WHERE workDayID=? AND privateSlotID=?",[this._workDayID,slotID], connection);
     
                     if(response) {
                         if(response.affectedRows==1) {
@@ -549,19 +527,18 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
                             }
                             return true;
                         }
-                    }else result = this._db.getLastQueryFailureReason();
-                }else result = "DBError";
+                    }else errCode = this._db.getLastQueryFailureReason();
+                }else errCode = "DBError";
     
-            }else result = slot.result;
-
-           
-            if(!conn) {
-                connection.rollback();
-                connection.release();
             }
-        }else result = "NoConnection";
+           
+            if(!conn || errCode) connection.release();
+            if(errCode) throw new ScheduleAPIError(errCode);
+            
+            return false;
+        }
 
-        return result;
+        throw new ScheduleAPIError("NoConnection");
     }
 
 }
@@ -605,28 +582,30 @@ class Shift implements WebAPI.Schedule.IShift {
         return this._endTime;
     }
 
-    public async getUser(): Promise<WebAPI.Schedule.ShiftAPI.TGetUserResult> {
-        const result = await global.app.webAuthManager.getUser(this._userID);
+    public async getUser(conn?: WebAPI.Mysql.IPoolConnection) {
+        const result = await (global.app.webAuthManager as InternalWebAuthManager).getUser(this._userID, conn);
 
-        if(result.result=="Success") return result;
-        else return {result: "NoUser"}
+        if(result) return result;
+        
+        conn?.release();
+        throw new ScheduleAPIError("NoUser");
     }
 
-    public async updateData(startTime: luxon.DateTime, endTime: luxon.DateTime): Promise<WebAPI.Schedule.ShiftAPI.TUpdateDataResult> {
-        let result: WebAPI.Schedule.ShiftAPI.TUpdateDataResult = "InvalidInput";
-
+    public async updateData(startTime: luxon.DateTime, endTime: luxon.DateTime, conn?: WebAPI.Mysql.IPoolConnection) {
+        let errCode: WebAPI.APIErrors<"Schedule"> = "InvalidDate";
+        
         if(startTime.isValid&&endTime.isValid&&endTime > startTime) {
-            const response = await this._db.performQuery("UPDATE shifts SET startTime=?, endTime=? WHERE shiftID=?",[startTime.toISO(), endTime.toISO(), this._shiftID]);
+            const response = await this._db.performQuery("UPDATE shifts SET startTime=?, endTime=? WHERE shiftID=?",[startTime.toISO(), endTime.toISO(), this._shiftID], conn);
             if(response) {
                 if((response as WebAPI.Mysql.IMysqlQueryResult).affectedRows==1) {
                     this._startTime = startTime;
                     this._endTime = endTime;
-                    return true;
-                }else return "InvalidShift";
-            }else result = this._db.getLastQueryFailureReason();
+                    return;
+                }else errCode = "DBError";
+            }else errCode = this._db.getLastQueryFailureReason();
         }
 
-        return result;
+        throw new ScheduleAPIError(errCode);
     }
 
 }

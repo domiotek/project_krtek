@@ -1,23 +1,8 @@
 import { DateTime } from "luxon";
 import {Command } from "../commands-handler.js";
 import { insertColor } from "../output.js";
-import { fillWith, getPrintableDataTable, initArrayOfArrays } from "../util.js";
-
-function describeAPIError(errorCode: string) {
-    let message;
-
-    switch(errorCode) {
-        case "AccountExists": message = "Account with that email address already exists."; break;
-        case "InvalidEmail": message = "Given email address is invalid."; break;
-        case "InviteExists": message = "There is already active invite for the specifed email address."; break;
-        case "DBError": message = "There was an issue with database."; break;
-        case "NoConnection": message = "Server couldn't establish connection with the database.";break;
-        case "InvalidToken": message = "Given token doesn't exist."; break;
-        default: message = "No additional information.";
-    } 
-
-    return message;
-}
+import { getPrintableDataTable, initArrayOfArrays } from "../util.js";
+import { getCommandErrorDisplayText } from "./common/utils.js";
 
 export default function(){
 
@@ -25,34 +10,37 @@ export default function(){
 
     command.mainHandler(async (request, data)=>{
         
-        const invitesResult = await global.app.webAuthManager.getAllInvites();
+        let invites;
 
-        if(invitesResult.result=="Success") {
-
-            const headers = ["Token", "Email","Created at", "Expires at"];
-            const dataTable = initArrayOfArrays<string>(headers.length);
-
-            for(let i=0; i< headers.length; i++)
-                dataTable[i].push(headers[i]);
-
-            for (const invite of invitesResult.data) {
-
-                const values = [
-                    invite.token, 
-                    invite.email,
-                    invite.creationDate.toFormat(`dd LLL yyyy HH:mm`),
-                    insertColor(DateTime.now() > invite.expirationDate?"fg_red":"fg_green",invite.expirationDate.toFormat(`dd LLL yyyy HH:mm`),data.colorsMode)
-                ];
-
-                for(let i=0; i<values.length; i++)
-                    dataTable[i].push(values[i]);
-            }
-
-            request.respond(getPrintableDataTable(dataTable));
-        }else {
-            const message = describeAPIError(invitesResult.result);
-            request.respond(`Couldn't fetch invites - ${insertColor("fg_red",invitesResult.result,data.colorsMode)}\n${insertColor("fg_grey",message,data.colorsMode)}`);
+        try {
+            invites = await global.app.webAuthManager.getAllInvites();
+        } catch (error: any) {
+            if(!error.errCode) throw error;
+            request.respond(getCommandErrorDisplayText("Couldn't fetch invites",error.errCode,data.colorsMode));
+            return;
         }
+
+
+        const headers = ["Token", "Email","Created at", "Expires at"];
+        const dataTable = initArrayOfArrays<string>(headers.length);
+
+        for(let i=0; i< headers.length; i++)
+            dataTable[i].push(headers[i]);
+
+        for (const invite of invites) {
+
+            const values = [
+                invite.token, 
+                invite.email,
+                invite.creationDate.toFormat(`dd LLL yyyy HH:mm`),
+                insertColor(DateTime.now() > invite.expirationDate?"fg_red":"fg_green",invite.expirationDate.toFormat(`dd LLL yyyy HH:mm`),data.colorsMode)
+            ];
+
+            for(let i=0; i<values.length; i++)
+                dataTable[i].push(values[i]);
+        }
+
+        request.respond(getPrintableDataTable(dataTable));
         
     });
 
@@ -68,16 +56,17 @@ export default function(){
                 caseSensitive: false
             }
         ]
-    }, async (request, data)=>{
+    }, async (req, data)=>{
         const email = data.parameters["email"] as string;
 
-        const token = await global.app.webAuthManager.generateInvite(email);
+        
 
-        if(token.result=="Success") {
-            request.respond(`${insertColor("fg_green","Invite generated!",data.colorsMode)}\nToken: ${insertColor("fg_cyan",token.data,data.colorsMode)}\nLink: ${insertColor("fg_cyan",`${global.app.env.server.url}/p/invite?token=${token.data}`,data.colorsMode)}`);
-        }else {
-            const message = describeAPIError(token.result);
-            request.respond(`Couldn't generate new invite for the ${insertColor("fg_cyan", email, data.colorsMode)} email address: ${insertColor("fg_red",token.result,data.colorsMode)}\n  ${insertColor("fg_grey",message,data.colorsMode)}`);
+        try {
+            const token = await global.app.webAuthManager.generateInvite(email);
+            req.respond(`${insertColor("fg_green","Invite generated!",data.colorsMode)}\nToken: ${insertColor("fg_cyan",token,data.colorsMode)}\nLink: ${insertColor("fg_cyan",`${global.app.env.server.url}/p/invite?token=${token}`,data.colorsMode)}`);
+        } catch (error: any) {
+            if(!error.errCode) throw error;
+            req.respond(getCommandErrorDisplayText(`Couldn't generate new invite for the ${insertColor("fg_cyan", email, data.colorsMode)} email address`, error.errCode,data.colorsMode));
         }
     });
     
@@ -93,20 +82,27 @@ export default function(){
             }
         ]
     }, async (req, data)=>{
-        const token = data.parameters["tokenOrEmail"] as string;
+        const tokenID = data.parameters["tokenOrEmail"] as string;
 
-        const tokenDetails = await global.app.webAuthManager.getInviteDetails(token);
+        let token;
+        let errCode;
+        
+        try {
+            token = await global.app.webAuthManager.getInviteDetails(tokenID);
+        } catch (error: any) {
+            if(!error.errCode) throw error;
+            errCode = error.errCode;
+        }
 
-        if(tokenDetails.result=="Success") {
+        if(token) {
             req.respond("Invite Details:\n========================================", false);
-            req.respond(`Token: ${insertColor("fg_cyan",token, data.colorsMode)}`, false);
-            req.respond(`Email: ${insertColor("fg_cyan",tokenDetails.data.email, data.colorsMode)}`,false);
-            req.respond(`Created at: ${insertColor("fg_cyan", tokenDetails.data.creationDate.toFormat(`dd LLL yyyy HH:mm`), data.colorsMode)}`, false);
-            req.respond(`Expires at: ${insertColor("fg_cyan",tokenDetails.data.expirationDate.toFormat(`dd LLL yyyy HH:mm`), data.colorsMode)}`, false);
-            req.respond(`Expired: ${DateTime.now() > tokenDetails.data.expirationDate?insertColor("fg_red","True",data.colorsMode):insertColor("fg_green","False",data.colorsMode)}`);
+            req.respond(`Token: ${insertColor("fg_cyan",tokenID, data.colorsMode)}`, false);
+            req.respond(`Email: ${insertColor("fg_cyan",token.email, data.colorsMode)}`,false);
+            req.respond(`Created at: ${insertColor("fg_cyan", token.creationDate.toFormat(`dd LLL yyyy HH:mm`), data.colorsMode)}`, false);
+            req.respond(`Expires at: ${insertColor("fg_cyan",token.expirationDate.toFormat(`dd LLL yyyy HH:mm`), data.colorsMode)}`, false);
+            req.respond(`Expired: ${DateTime.now() > token.expirationDate?insertColor("fg_red","True",data.colorsMode):insertColor("fg_green","False",data.colorsMode)}`);
         }else {
-            const message = describeAPIError(tokenDetails.result);
-            req.respond(`Couldn't get details of ${insertColor("fg_cyan",token, data.colorsMode)} invite - ${insertColor('fg_red',tokenDetails.result,data.colorsMode)}\n${insertColor("fg_grey",message,data.colorsMode)}`);
+            req.respond(getCommandErrorDisplayText(`Couldn't get details of ${insertColor("fg_cyan",tokenID, data.colorsMode)} invite`, errCode ?? "InvalitToken", data.colorsMode));
         }
     });
 
@@ -123,14 +119,21 @@ export default function(){
         ]
     }, async (req, data)=>{
         const token = data.parameters["token"] as string;
+        
+        let result;
+        let errCode;
+        try {
+            result = await global.app.webAuthManager.dropInvite(token);
+        } catch (error: any) {
+            if(!error.errCode) throw error;
 
-        const result = await global.app.webAuthManager.dropInvite(token);
+            errCode = error.errCode;
+        }
 
         if(result===true) {
             req.respond(insertColor("fg_green","Invite deleted successfully.",data.colorsMode));
         }else {
-            const message = describeAPIError(result);
-            req.respond(`Couldn't delete ${insertColor("fg_cyan",token, data.colorsMode)} invite - ${insertColor('fg_red',result,data.colorsMode)}\n${insertColor("fg_grey",message,data.colorsMode)}`);
+            req.respond(getCommandErrorDisplayText(`Couldn't delete ${insertColor("fg_cyan",token, data.colorsMode)} invite`,errCode, data.colorsMode));
         }
     });
 
@@ -151,19 +154,25 @@ export default function(){
 
         const input = data.parameters["tokenOrEmail"] as string;
 
-        const inviteDetails = await global.app.webAuthManager.getInviteDetails(input);
+        let invite;
+        let errCode;
 
-        if(inviteDetails.result=="Success") {
+        try {
+            invite = await global.app.webAuthManager.getInviteDetails(input);
+        } catch (error: any) {
+            if(!error.errCode) throw error;
+            errCode = error.errCode;
+        }
 
+        if(invite) {
             if(template&&sender) {
-                const sendResult = await global.app.mailer.send(sender, inviteDetails.data.email,template, { invitation_link: `http://127.0.0.1:3000/p/Invite?token=${inviteDetails.data.token}`});
+                const sendResult = await global.app.mailer.send(sender, invite.email,template, { invitation_link: `http://127.0.0.1:3000/p/Invite?token=${invite.token}`});
                 if(sendResult) {
                     req.respond(insertColor("fg_green",`Email has been sent!`, data.colorsMode));
                 }else req.respond(insertColor("fg_red","Couldn't send that email right now. No additional information available.", data.colorsMode));
             }else req.respond(insertColor("fg_red","We couldn't sent that email right now due to mailer configuration error.", data.colorsMode));
         }else {
-            const message = describeAPIError(inviteDetails.result);
-            req.respond(`Couldn't send invite identified by: ${insertColor("fg_cyan",input, data.colorsMode)} - ${insertColor('fg_red',inviteDetails.result,data.colorsMode)}\n${insertColor("fg_grey",message,data.colorsMode)}`);
+            req.respond(getCommandErrorDisplayText(`Couldn't send invite identified by: ${insertColor("fg_cyan",input, data.colorsMode)}`, errCode, data.colorsMode));
         }
     });
 
@@ -172,13 +181,12 @@ export default function(){
         desc: "Deletes all expired invites.",
         params: []
     }, async (req, data)=>{
-        const response = await global.app.webAuthManager.dropAllExpiredInvites();
-
-        if(response===true) {
+        try {
+            await global.app.webAuthManager.dropAllExpiredInvites();
             req.respond(insertColor("fg_green","Successfully deleted all expired invites.",data.colorsMode));
-        }else {
-            const message = describeAPIError(response);
-            req.respond(`Couldn't delete invites - ${insertColor("fg_red",response, data.colorsMode)}\n${insertColor("fg_grey",message, data.colorsMode)}`);
+        } catch (error: any) {
+            if(!error.errCode) throw error;
+            req.respond(getCommandErrorDisplayText("Couldn't delete invites", error.errCode, data.colorsMode));
         }
     });
 

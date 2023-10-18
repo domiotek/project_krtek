@@ -33,6 +33,11 @@ namespace WebAPI {
             performQuery<T extends "Select" | "Other">(queryStr: string, values: Array<string | number | null>, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Mysql.TGenericMysqlResult<T> | null>
 
             /**
+             * Escape an untrusted string to be used as a SQL value. Use this on user provided data.
+             */
+            escapeValue(value: string): string;
+
+            /**
              * Returns error of last performQuery call
              * @throws Do not use if performQuery returned positive response. Will throw.
              * @returns Mysql Error
@@ -44,7 +49,7 @@ namespace WebAPI {
              * @throws Do not use if performQuery returned positive response. Will throw.
              * @returns Failure reason
              */
-            getLastQueryFailureReason(): _.TGenericAPIError
+            getLastQueryFailureReason(): "NoConnection" | "DBError"
         }
 
         type TMysqlSelectQueryResult = Array<{[field: string]: any}>
@@ -68,26 +73,14 @@ namespace WebAPI {
         }
     }
 
-    namespace _ {
-        type TGenericAPIError = "NoConnection" | "DBError";
-
-        type TGenericActionResult = true | TGenericAPIError;
-
-        interface IActionSuccess<T> {
-            result: "Success"
-            data: T
-        }
-
-        interface IActionFailure<T> {
-            result: TGenericAPIError | T
-        }
-
-        type TGetAllActionResult<T, S=TGenericAPIError> = IActionSuccess<T> | IActionFailure<S>;
-        
-        type TGenericObjectActionResult<T,S> = IActionSuccess<T> | IActionFailure<S>
-    }
-
     namespace Auth {
+        type TAuthAPITypes = "UserAPI" | "RoleAPI" | "AccountTokenAPI" | "InviteAPI";
+        type TErrorTypes<T extends "All" | TAuthAPITypes="All"> = 
+            (T extends "All" | "UserAPI"?UserAPI.TErrorTypes:never) | 
+            (T extends "All" | "RoleAPI"?RoleAPI.TErrorTypes:never) | 
+            (T extends "All" | "AccountTokenAPI"?AccountsTokenAPI.TErrorTypes:never) | 
+            (T extends "All" | "InviteAPI"?InviteAPI.TErrorTypes:never);
+
         namespace SessionAPI {
             interface ISessionDetails {
                 sessionID: string
@@ -97,21 +90,14 @@ namespace WebAPI {
                 lastAccessDate: import("luxon").DateTime
                 expirationDate: import("luxon").DateTime
             }
-
-            type TLoginResult = _.TGenericObjectActionResult<string, "InvalidCredentials">;
-
-            type TGetSessionValidResult = boolean | WebAPI._.TGenericAPIError;
-
-            type TProlongSessionResult = boolean | WebAPI._.TGenericAPIError | "InvalidSession";
-
-            type TGetSessionDetailsResult = _.TGenericObjectActionResult<ISessionDetails, "InvalidSession">;
-
-            type TDropSessionResult = WebAPI._.TGenericActionResult | "InvalidSession";
-
-            type TGetAllSessionsResult = WebAPI._.TGetAllActionResult<ISessionDetails[]>
         }
 
         namespace UserAPI {
+            type TErrorTypes = TUserCreationErrors | TSetPasswordErrors | TAssignRankErrors;
+
+            type TUserCreationErrors = "InvalidEmail" | "InvalidPassword" | "UserExists";
+            type TSetPasswordErrors = "NoUser";
+            type TAssignRankErrors = "InvalidRank";
 
             interface IUserRegistrationData {
                 email: string
@@ -120,10 +106,6 @@ namespace WebAPI {
                 surname: string
                 gender: string
             }
-
-            type TCreateUserResult = WebAPI._.TGenericActionResult | "InvalidEmail" | "UserExists" | "InvalidPassword";
-
-            type TUserExistsResult = WebAPI._.TGenericActionResult | false;
 
             interface IUserDetails {
                 userID: number
@@ -139,53 +121,35 @@ namespace WebAPI {
                 lastPasswordChangeDate: import("luxon").DateTime
             }
 
-            type TGetUserResult = _.TGenericObjectActionResult<IUserDetails, "NoUser">
-
-            type TSetPasswordResult = WebAPI._.TGenericActionResult | "InvalidPassword" | "NoUser";
-
-            type TGetAllUsersResult = WebAPI._.TGetAllActionResult<IUserDetails[]>
-
             interface IRankDetails {
                 ID: number
                 rankName: string
                 displayName: string
             }
-
-            type TAssignRankResult = _.TGenericActionResult | "NoUser" | "InvalidRank"
-
-            type TGetRankResult = _.TGenericObjectActionResult<IRankDetails,"InvalidRank">
-
-            type TGetRanksResult = _.TGenericObjectActionResult<IRankDetails[], _.TGenericAPIError>
-
-            type TGetUsersWithRankResult = _.TGenericObjectActionResult<IUserDetails[],"InvalidRank">
         }
 
         namespace RoleAPI {
+            type TErrorTypes = THasRoleErrors | TAssignRoleErrors | TUnAssignRoleErrors;
+
+            type THasRoleErrors = "InvalidRole" | "NoUser";
+            type TAssignRoleErrors = "AlreadyAssigned" | THasRoleErrors;
+            type TUnAssignRoleErrors = "NotAssigned" | THasRoleErrors;
+
             interface IRoleDetails {
                 ID: number
                 name: string
                 displayName: string
             }
 
-            type TGetRoleIDResult = _.TGenericObjectActionResult<number, "InvalidRole">
-            type TGetRoleDisplayName = _.TGenericObjectActionResult<string, "InvalidRole">
-            type TGetDefinedRolesResult = _.TGenericObjectActionResult<IRoleDetails[], _.TGenericAPIError>
-            type TListRoleUsersResult = _.TGenericObjectActionResult<UserAPI.IUserDetails[], "InvalidRole">
-            type TGetRolesResult = _.TGenericObjectActionResult<IRoleDetails[], "NoUser">
-            type THasRoleResult = boolean | _.TGenericAPIError | "NoUser" | "InvalidRole"
-            type TAssignRoleResult = _.TGenericActionResult | "NoUser" | "InvalidRole" | "AlreadyAssigned"
-            type TUnassignRoleResult = _.TGenericActionResult | "InvalidRole" | "NoUser" | "NotAssigned"
-            type TUnassignAllRolesResult = _.TGenericActionResult | "NoUser"
-
         }
 
         namespace AccountsTokenAPI {
+            type TErrorTypes = TTokenCreationErrors;
 
-            type TCreateTokenResult = _.TGenericObjectActionResult<string, "NoUser" | "TooMuchTokens" | "InvalidAction">
+            type TTokenCreationErrors = "TooMuchTokens" | "InvalidAction";
+
 
             type TAccountActionName = "ChangePassword";
-
-            type TGetTokenCountResult = _.TGenericObjectActionResult<number | "NoUser">
 
             interface ITokenDetails {
                 tokenID: string
@@ -195,31 +159,19 @@ namespace WebAPI {
                 creationDate: import("luxon").DateTime
                 expirationDate: import("luxon").DateTime
             }
-
-            type TGetTokenDetailsResult = _.TGenericObjectActionResult<ITokenDetails | "InvalidToken">
-
-            type TDropTokenResult = WebAPI._.TGenericActionResult | "InvalidToken";
-
-            type TGetAllTokensResult = WebAPI._.TGetAllActionResult<ITokenDetails[]>
-
-            type TGetTokenTypesResult = WebAPI._.TGetAllActionResult<string[]>
         }
 
         namespace InviteAPI {
+            type TErrorTypes = TInviteCreationErrors;
+
+            type TInviteCreationErrors = "InviteExists" | "UserExists" | "InvalidEmail"
+
             interface IInviteDetails {
                 token: string
                 email: string
                 creationDate: import("luxon").DateTime
                 expirationDate: import("luxon").DateTime
             }
-
-            type TInviteGenResult = _.TGenericObjectActionResult<string, "InviteExists" | "AccountExists" | "InvalidEmail">
-
-            type TGetInviteDetailsResult = _.TGenericObjectActionResult<IInviteDetails | "InvalidToken">
-    
-            type TDropInviteResult = WebAPI._.TGenericActionResult | "InvalidToken";
-
-            type TGetAllTokensResult = WebAPI._.TGetAllActionResult<IInviteDetails[]>
         }
 
         interface ILastFailureReasonObject {
@@ -238,17 +190,23 @@ namespace WebAPI {
              * @param email Account's email address
              * @param password Password in plain form.
              * @param ipAddress Client's IP address
+             * 
+             * @returns Either new session ID or null if credentials are incorrect.
+             * 
+             * @throws Can throw with NoConnection and DBError errors
              */
-            tryLogin(email: string, password: string,ipAddress: string): Promise<SessionAPI.TLoginResult>
+            tryLogin(email: string, password: string,ipAddress: string): Promise<string | null>
 
             /**
              * Checks whether session with that session token exists and hasn't exipired.
              * @param sessionToken Session Token.
              * 
              * @async
-             * @returns Boolean on successfull request with either True if it is or False if it isn't, string error code on failure.
+             * @returns Boolean on successfull request with either True if it is or False if it isn't
+             * 
+             * @throws Can throw with NoConnection and DBError errors
              */
-            isSessionValid(sessionToken: string): Promise<SessionAPI.TGetSessionValidResult>
+            isSessionValid(sessionToken: string): Promise<boolean>
 
             /**
              * Tries to prolong session with given token, if it exists and hasn't expired yet.
@@ -256,41 +214,53 @@ namespace WebAPI {
              * @param ipAddress In case session exists, this will be new IP address stored.
              * 
              * @async
-             * @returns Boolean on successfull request with either True if it was prolonged or False if it wasn't, string error code on failure.
+             * @returns Boolean on successfull request with either True if it was prolonged or False if it wasn't
+             * 
+             * @throws Can throw with NoConnection and DBError errors
              */
-            prolongSession(sessionToken: string, ipAddress: string): Promise<SessionAPI.TProlongSessionResult>
+            prolongSession(sessionToken: string, ipAddress: string): Promise<boolean>
 
             /**
              * Returns details about auth session with given session token.
              * @param sessionToken Session token.
              * 
              * @async
-             * @returns Object with string result and session object in data prop if result is Success
+             * @returns session object or null if session not found
+             * 
+             * @throws Can throw with NoConnection and DBError errors
              */
-            getSessionDetails(sessionToken: string): Promise<SessionAPI.TGetSessionDetailsResult>
+            getSessionDetails(sessionToken: string): Promise<SessionAPI.ISessionDetails | null>
             
             /**
              * Removes session with given session token.
              * @param sessionToken Session token
              * 
              * @async
-             * @returns True on successfull request, string error code on failure.
+             * @returns True on successfull request, false if not found.
+             * 
+             * @throws Can throw with NoConnection and DBError errors
              */
-            dropSession(sessionToken: string): Promise<SessionAPI.TDropSessionResult>
+            dropSession(sessionToken: string): Promise<boolean>
 
             /**
              * Returns all not expired authentication sessions
              * @param userID Can be used to limit actions only to these of specified user.
              * 
              * @async
-             * @returns Object with string result and session objects array in data prop if result is Success
+             * @returns Session objects array
+             * 
+             * @throws Can throw with NoConnection and DBError errors
              */
-            getAllSessions(userID?: number): Promise<SessionAPI.TGetAllSessionsResult>
+            getAllSessions(userID?: number): Promise<SessionAPI.ISessionDetails[]>
 
             /**
              * Removes all expired authentication sessions.
+             * 
+             * @async
+             * 
+             * @throws Can throw with NoConnection and DBError errors
              */
-            dropAllExpiredSessions(): Promise<WebAPI._.TGenericActionResult>
+            dropAllExpiredSessions(): Promise<void>
 
 
 
@@ -312,27 +282,31 @@ namespace WebAPI {
              * 
              * @async
              * 
-             * @returns True on successfull request, string error code on failure.
+             * @throws Can throw with NoConnection, DBError, InvalidEmail, UserExists or InvalidPassword errors.
              */
-            createUser(userData: UserAPI.IUserRegistrationData): Promise<UserAPI.TCreateUserResult>
+            createUser(userData: UserAPI.IUserRegistrationData): Promise<void>
 
             /**
              * Checks whether user with given user key exists or not.
              * @param userKey Email address or UserID
              * 
              * @async
-             * @returns Boolean on successfull request with either True if exists or False if it doesn't, string error code on failure.
+             * @returns Boolean on successfull request with either True if exists or False if it doesn't.
+             * 
+             * @throws Can throw with NoConnection and DBError errors
              */
-            userExists(userKey: string | number): Promise<UserAPI.TUserExistsResult>
+            userExists(userKey: string | number): Promise<boolean>
 
             /**
              * Returns details about user that matches given query specifics.
              * @param userKey Either address email or userID.
              * 
              * @async
-             * @returns Object with string result and User details object in data prop if result is Success
+             * @returns User details object or null if user not found.
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
              */
-            getUser(userKey: string | number): Promise<UserAPI.TGetUserResult>
+            getUser(userKey: string | number): Promise<UserAPI.IUserDetails | null>
 
             /**
              * Sets new password for specified user
@@ -340,17 +314,20 @@ namespace WebAPI {
              * @param newPassword Password in plain form. It will be hashed and salted before putting it into db.
              * 
              * @async
-             * @returns True on successfull request, string error code on failure.
+             * 
+             * @throws Can throw with NoConnection, DBError, InvalidPassword or NoUser errors.
              */
-            setPassword(userKey: number | string, newPassword: string): Promise<UserAPI.TSetPasswordResult>
+            setPassword(userKey: number | string, newPassword: string): Promise<void>
 
             /**
              * Returns all registered users.
              * 
              * @async
-             * @returns Object with string result and User details objects array in data prop if result is Success
+             * @returns User details objects array
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
              */
-            getAllUsers(): Promise<UserAPI.TGetAllUsersResult>
+            getAllUsers(): Promise<UserAPI.IUserDetails[]>
 
             /**
              * Will delete account. Should we allow user initiated deletion? Do we remove the content user posted or
@@ -367,35 +344,42 @@ namespace WebAPI {
              * @param rankName Rank's code name.
              * 
              * @async
-             * @returns True on successfull request, string error code on failure.
+             * 
+             * @throws Can throw with NoConnection, DBError, NoUser or InvalidRank errors.
              */
-            assignRank(userKey: string | number, rankName: string): Promise<UserAPI.TAssignRankResult>
+            assignRank(userKey: string | number, rankName: string): Promise<void>
 
             /**
              * Returns details of the specified rank.
              * @param rankName Rank's code name.
              * 
              * @async
-             * @returns Object with string result and rank details object in data prop if result is Success
+             * @returns Rank details object or null if rank not found.
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
              */
-            getRank(rankName: string): Promise<UserAPI.TGetRankResult>
+            getRank(rankName: string): Promise<UserAPI.IRankDetails | null>
 
             /**
              * Returns details of all defined ranks.
              * 
              * @async
-             * @returns Object with string result and rank details objects array in data prop if result is Success
+             * @returns Rank details objects array.
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
              */
-            getRanks(): Promise<UserAPI.TGetRanksResult>
+            getRanks(): Promise<UserAPI.IRankDetails[]>
 
             /**
              * Returns all users that have specified rank.
              * @param rankName Rank's code name.
              * 
              * @async
-             * @returns Object with string result and User details objects array in data prop if result is Success
+             * @returns User details objects array.
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
              */
-            getUsersWithRank(rankName: string): Promise<UserAPI.TGetUsersWithRankResult>
+            getUsersWithRank(rankName: string): Promise<UserAPI.IUserDetails[]>
 
 
 
@@ -406,40 +390,57 @@ namespace WebAPI {
             /**
              * Returns internal DB roleID of role with given codeName
              * @param roleName role's codeName
+             * @async
+             * 
+             * @returns role's ID in number format or null if role not found.
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
              */
-            getRoleID(roleName: string): Promise<RoleAPI.TGetRoleIDResult>
+            getRoleID(roleName: string): Promise<number | null>
 
             /**
              * Returns friendly, display name of the role
              * @param roleName role's code name.
+             * 
+             * @async
+             * 
+             * @returns role's display name in string format or null if role not found.
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
              */
-            getRoleDisplayName(roleName: string): Promise<RoleAPI.TGetRoleDisplayName>
+            getRoleDisplayName(roleName: string): Promise<string | null>
 
             /**
              * Returns details of all defined roles
              * 
              * @async
-             * @returns Object with string result and role detail objects array in data prop if result is Success
+             * @returns Role detail objects array.
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
              */
-            getDefinedRoles(): Promise<RoleAPI.TGetDefinedRolesResult>
+            getDefinedRoles(): Promise<RoleAPI.IRoleDetails[]>
 
             /**
              * Returns array of all users that have specified role assigned.
              * @param roleName Role's code name.
              * 
              * @async
-             * @returns Object with string result and User details objects array in data prop if result is Success
+             * @returns User details objects array or null if role not found.
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
              */
-            listUsersWithRole(roleName: string): Promise<RoleAPI.TListRoleUsersResult>
+            listUsersWithRole(roleName: string): Promise<UserAPI.IUserDetails[] | null>
 
             /**
              * Returns details of all roles that have been assigned to the specified user.
              * @param userKey Either email or user ID
              * 
              * @async
-             * @returns Object with string result and role detail objects array in data prop if result is Success
+             * @returns Role detail objects array or null if user not found.
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
              */
-            getUserRoles(userKey: string | number): Promise<RoleAPI.TGetRolesResult>
+            getUserRoles(userKey: string | number): Promise<RoleAPI.IRoleDetails[] | null>
 
             /**
              * Checks whether given user has specified role assigned. 
@@ -447,9 +448,11 @@ namespace WebAPI {
              * @param roleName Role's code name.
              * 
              * @async
-             * @returns Boolean on successfull request with either True if they have or False if they don't, string error code on failure.
+             * @returns Boolean on successfull request with either True if they have or False if they don't.
+             * 
+             * @throws Can throw with NoConnection, DBError, NoUser or InvalidRole errors.
              */
-            hasRole(userKey: string | number, roleName: string): Promise<RoleAPI.THasRoleResult>
+            hasRole(userKey: string | number, roleName: string): Promise<boolean>
 
             /**
              * Assigns specified role to the given user.
@@ -457,9 +460,10 @@ namespace WebAPI {
              * @param roleName Role's code name.
              * 
              * @async 
-             * @returns True on successfull request, string error code on failure.
+             * 
+             * @throws Can throw with NoConnection, DBError, NoUser, InvalidRole or AlreadyAssigned errors.
              */
-            assignRole(userKey: string | number, roleName: string): Promise<RoleAPI.TAssignRoleResult>
+            assignRole(userKey: string | number, roleName: string): Promise<void>
 
             /**
              * Unassigns specified role from the given user.
@@ -467,18 +471,21 @@ namespace WebAPI {
              * @param roleName Role's code name.
              * 
              * @async
-             * @returns True on successfull request, string error code on failure.
+             * 
+             * @throws Can throw with NoConnection, DBError, NoUser, InvalidRole or NotAssigned, errors.
              */
-            unassignRole(userKey: string | number, roleName: string): Promise<RoleAPI.TUnassignRoleResult>
+            unassignRole(userKey: string | number, roleName: string): Promise<void>
             
             /**
              * Unassigns all roles that the specified user was given.
              * @param userKey Either email or userID.
              * 
              * @async
-             * @returns True on successfull request, string error code on failure.
+             * @returns True on successfull request or false if user not found.
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
              */
-            unassignAllRoles(userKey: string | number): Promise<RoleAPI.TUnassignAllRolesResult>
+            unassignAllRoles(userKey: string | number): Promise<boolean>
 
 
 
@@ -491,9 +498,11 @@ namespace WebAPI {
              * @param userKey Either email address or userID.
              * @async
              * 
-             * @returns Object with string result and token in data prop if result is Success
+             * @returns New Token in string form.
+             * 
+             * @throws Can throw with NoConnection, DBError, TooMuchTokens, NoUser or InvalidAction errors.
              */
-            createToken(actionType: AccountsTokenAPI.TAccountActionName, userKey: number | string): Promise<AccountsTokenAPI.TCreateTokenResult>
+            createToken(actionType: AccountsTokenAPI.TAccountActionName, userKey: number | string): Promise<string>
 
             /**
              * Returns number of active tokens for given user.
@@ -502,9 +511,11 @@ namespace WebAPI {
              * @param actionTypeID Account action type.
              * 
              * @async
-             * @returns Object with string result and number of tokens in data prop if result is Success
+             * @returns Number of tokens or null if user not found.
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
              */
-            getTokensCount(userKey: number | string, actionTypeID: AccountsTokenAPI.TAccountActionName): Promise<AccountsTokenAPI.TGetTokenCountResult>
+            getTokensCount(userKey: number | string, actionTypeID: AccountsTokenAPI.TAccountActionName): Promise<number | null>
 
             /**
              * Returns account action details with given token.
@@ -513,43 +524,52 @@ namespace WebAPI {
              * @param token Token ID.
              * 
              * @async
-             * @returns Object with string result and account action details in data prop if result is Success
+             * @returns Account action details or null if token not found.
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
              */
-            getTokenDetails(token: string): Promise<AccountsTokenAPI.TGetTokenDetailsResult>
+            getTokenDetails(token: string): Promise<AccountsTokenAPI.ITokenDetails | null>
 
             /**
              * Removes account action with given token.
              * @param token Token ID.
              * 
              * @async
-             * @returns True on successfull request, string error code on failure.
+             * @returns True on successfull request, false if token not found.
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
              */
-            dropToken(token: string): Promise<AccountsTokenAPI.TDropTokenResult>
+            dropToken(token: string): Promise<boolean>
 
             /**
              * Returns all account actions, even these expired.
              * @param userID Can be used to limit actions only to these of specified user.
              * 
              * @async
-             * @returns
+             * @returns Array of token objects.
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
              */
-            getAllTokens(userID?: number): Promise<AccountsTokenAPI.TGetAllTokensResult>
+            getAllTokens(userID?: number): Promise<AccountsTokenAPI.ITokenDetails[]>
 
             /**
              * Removes all account actions that already expired.
              * 
              * @async
-             * @returns True on successfull request, string error code on failure.
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
              */
-            dropAllExpiredTokens(): Promise<WebAPI._.TGenericActionResult>
+            dropAllExpiredTokens(): Promise<void>
 
             /**
              * Returns all possible account action types
              * 
              * @async
-             * @return Object with string result and account action types array in data prop if result is Success
+             * @return Array of account action types
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
              */
-            getTokenTypes(): Promise<AccountsTokenAPI.TGetTokenTypesResult>
+            getTokenTypes(): Promise<string[]>
 
             
 
@@ -566,48 +586,65 @@ namespace WebAPI {
              * 
              * @param query Either invite ID or email address.
              * @async
-             * @returns Object with string result and invite details in data prop if result is Success
+             * @returns Invite details
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
              */
-            getInviteDetails(query: string): Promise<InviteAPI.TGetInviteDetailsResult>
+            getInviteDetails(query: string): Promise<InviteAPI.IInviteDetails | null>
 
             /**
              * Generates new invite for given email, but only if there is no account with that email and
              * there is no invite already for that email address.
              * @param email Valid email address. Will fail if doesn't meet requirement.
              * @async
-             * @returns Object with string result and invite token in data prop if result is Success
+             * @returns New Invite token
+             * 
+             * @throws Can throw with NoConnection, DBError, InvalidEmail, UserExsits or InviteExists errors.
              */
-            generateInvite(email: string): Promise<InviteAPI.TInviteGenResult>
+            generateInvite(email: string): Promise<string>
 
             /**
              * Deletes invite with given invite ID.
              * @param token Invite ID
              * @async
-             * @returns True on successfull request, string error code on failure.
+             * @returns True on successfull request, false if invite not found.
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
              */
-            dropInvite(token: string): Promise<InviteAPI.TDropInviteResult>
+            dropInvite(token: string): Promise<boolean>
 
             /**
              * Returns all defined invites (even these expired)
              * @async
-             * @returns Object with string result and invites details array in data prop if result is Success
+             * @returns Array of invite details.
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
              */
-            getAllInvites(): Promise<InviteAPI.TGetAllTokensResult>
+            getAllInvites(): Promise<InviteAPI.IInviteDetails[]>
 
             /**
              * Deletes all expired invites.
              * @async
-             * @returns True on successfull request, string error code on failure.
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
              */
-            dropAllExpiredInvites(): Promise<WebAPI._.TGenericActionResult>
+            dropAllExpiredInvites(): Promise<void>
         }
     }
 
     namespace Schedule {
+        type TScheduleAPITypes = "ScheduleManager" | "WorkDayAPI" | "ShiftAPI";
+        type TErrorTypes<T extends "All" | TScheduleAPITypes="All"> = 
+            (T extends "All" | "ScheduleManager"?ScheduleManager.TErrorTypes:never) | 
+            (T extends "All" | "WorkDayAPI"?WorkDayAPI.TErrorTypes:never) | 
+            (T extends "All" | "ShiftAPI"?ShiftAPI.TErrorTypes:never);
 
         type DateTime = import("luxon").DateTime;
 
         namespace ScheduleManager {
+            type TErrorTypes = TGetUserShiftsErrors;
+            type TGetUserShiftsErrors = "NoUser" | "InvalidRange"
+
             interface IDateRangeOptions {
                 before?: DateTime
                 after?: DateTime
@@ -617,14 +654,16 @@ namespace WebAPI {
                 shifts: IWorkDay[]
                 userSlots: number[]
             }
-
-            type TGetWorkDayResult = _.TGenericObjectActionResult<IWorkDay, "InvalidDate">
-            type TGetUserShiftsResult = WebAPI._.TGenericObjectActionResult<IUserShifts,"InvalidUser" | "InvalidRange">
-            type TGetWeekResult = WebAPI._.TGenericObjectActionResult<IWorkDay[],"InvalidDate">
-            
         }
 
         namespace WorkDayAPI {
+            type TErrorTypes = TSetNoteErrors | TAddSlotErrors | TEditSlotErrors | TAssignUserErrors;
+
+            type TSetNoteErrors = "NoteTooLong";
+            type TAddSlotErrors = TEditSlotErrors | "MaxSlotCountReached";
+            type TEditSlotErrors = "InvalidDate" | "InvalidRole"
+            type TAssignUserErrors = "UserWithoutRole" | "AlreadyAssigned" | "InvalidSlot"
+
             interface ISlots {
                 [privateID: number]: IShiftSlot | undefined
             }
@@ -635,21 +674,13 @@ namespace WebAPI {
                 requiredRole: string
                 assignedShift: IShift | null
             }
-            
-            type TSetNoteResult = WebAPI._.TGenericActionResult | "NoteTooLong"
-            type TGetSlotResult = WebAPI._.TGenericObjectActionResult<IShiftSlot, "InvalidSlot">
-            type TGetSlotIDsResult = WebAPI._.TGenericObjectActionResult<number[],WebAPI._.TGenericAPIError>
-            type TGetAllSlots = WebAPI._.TGetAllActionResult<ISlots>
-            type TAddSlot = WebAPI._.TGenericActionResult | "InvalidRole" | "InvalidDateTimeInput" | "MaxSlotCountReached"
-            type TEditSlotResult = WebAPI._.TGenericActionResult | "InvalidRole" | "InvalidDateTimeInput"
-            type TDeleteSlot = WebAPI._.TGenericActionResult | "InvalidSlot"
-            type TAssignUserResult = WebAPI._.TGenericActionResult | "InvalidSlot" | "NoUser" | "UserWithoutRole" | "AlreadyAssigned"
-            type TUnassignUserResult = WebAPI._.TGenericActionResult | "InvalidSlot"
+
         }
 
         namespace ShiftAPI {
-            type TGetUserResult = WebAPI._.IActionSuccess<Auth.UserAPI.IUserDetails> | WebAPI._.IActionFailure<"NoUser">
-            type TUpdateDataResult = WebAPI._.TGenericActionResult | "InvalidInput" | "InvalidShift"
+            type TErrorTypes =  TGetUserErrors | TUpdateDataErrors;
+            type TGetUserErrors = "NoUser"
+            type TUpdateDataErrors = "InvalidDate"
         }
 
         interface IScheduleManager {
@@ -659,9 +690,11 @@ namespace WebAPI {
              * @param when DateTime object with the requested day.
              * 
              * @async
-             * @returns Object with string result and Workday instance in data prop if result is Success
+             * @returns Workday instance or null if when is not valid date.
+             * 
+             * @throws Can throw NoConnection and DBError errors.
              */
-            getWorkDay(when: DateTime): Promise<ScheduleManager.TGetWorkDayResult>
+            getWorkDay(when: DateTime): Promise<IWorkDay | null>
 
             /**
              * Returns all shifts from specified period of time, where given user was in one of the slots.
@@ -669,28 +702,34 @@ namespace WebAPI {
              * properties - before and after. You can use both or only one of them to specify search range.
              * 
              * @async 
-             * @returns Object with string result and user shifts object in data prop if result is Success. 
+             * @returns User shifts object.
              * User shifts object consists of two properties - shifts which is an array of work days where user is assigned
              * and userSlots which is also an array and its values are the slot IDs to which user is assigned in the corresponding work day.
+             * 
+             * @throws Can throw NoConnection, DBError, NoUser or InvalidRange errors.
              */
-            getUserShifts(userID: number, from?: ScheduleManager.IDateRangeOptions): Promise<ScheduleManager.TGetUserShiftsResult>
+            getUserShifts(userID: number, from?: ScheduleManager.IDateRangeOptions): Promise<ScheduleManager.IUserShifts>
 
             /**
              * Returns all work days from the current week.
              * 
              * @async
-             * @returns Object with string result and work day instance array in data prop if result is Success
+             * @returns WorkDay instance array
+             * 
+             * @throws Can throw NoConnection and DBError errors.
              */
-            getCurrentWeek(): Promise<ScheduleManager.TGetWeekResult>
+            getCurrentWeek(): Promise<IWorkDay[]>
 
             /**
              * Returns all work days from the week from the given day is.
              * @param ofDay Target date.
              * 
              * @async
-             * @returns Object with string result and work day instance array in data prop if result is Success
+             * @returns Work day instance array or null if ofDay isn't valid date.
+             * 
+             * @throws Can throw NoConnection and DBError errors.
              */
-            getWeek(ofDay: DateTime): Promise<ScheduleManager.TGetWeekResult>
+            getWeek(ofDay: DateTime): Promise<IWorkDay[] | null>
         }
 
         interface IWorkDay {
@@ -703,35 +742,40 @@ namespace WebAPI {
              * @param newNote Maximum of 255 characters. Note can be cleared if null is given.
              * 
              * @async
-             * @returns True on successfull request, string error code on failure.
+             * @throws Can throw NoConnection, DBError or NoteTooLong errors.
              */
-            setNote(newNote: string | null): Promise<WorkDayAPI.TSetNoteResult>;
+            setNote(newNote: string | null): Promise<void>;
 
             /**
              * Returns details about the slot with given slot ID
              * @param id Slot ID
              * 
              * @async 
-             * @returns Object with string result and slot details object in data prop if result is Success
+             * @returns Slot details object or null if slot not found.
+             * @throws Can throw NoConnection and DBError errors.
              */
-            getSlot(id: number): Promise<WorkDayAPI.TGetSlotResult>
+            getSlot(id: number): Promise<WorkDayAPI.IShiftSlot | null>
 
             /**
              * Returns IDs of all defined slots.
              * 
              * @async
-             * @returns Object with string result and IDs array in data prop if result is Success
+             * @returns IDs array
+             * 
+             * @throws Can throw NoConnection and DBError errors.
              */
-            getSlotIDs(): Promise<WorkDayAPI.TGetSlotIDsResult>
+            getSlotIDs(): Promise<number[]>
 
             /**
              * Returns details of all defined slots.
              * 
              * @async
-             * @returns Object with string result and slots object in data prop if result is Success.
+             * @returns Slot objects array.
              * Slots object is a key-value map with slot IDs as keys and slot details object as value.
+             * 
+             * @throws Can throw NoConnection and DBError errors.
              */
-            getAllSlots(): Promise<WorkDayAPI.TGetAllSlots>
+            getAllSlots(): Promise<WorkDayAPI.ISlots>
 
             /**
              * Adds new slot to the work day. 
@@ -742,9 +786,9 @@ namespace WebAPI {
              * @param endTime Planned end time for that slot. Optional.
              * 
              * @async
-             * @returns True on successfull request, string error code on failure.
+             * @throws Can throw NoConnection, DBError, InvalidDate, InvalidRole and MaxSlotCountReached errors.
              */
-            addSlot(requiredRole: string, startTime: DateTime, endTime?: DateTime): Promise<WorkDayAPI.TAddSlot>
+            addSlot(requiredRole: string, startTime: DateTime, endTime?: DateTime): Promise<void>
 
             /**
              * Edits existing slot with given data.
@@ -754,26 +798,27 @@ namespace WebAPI {
              * @param endTime Planned end time for that slot. Optional.
              * 
              * @async
-             * @returns True on successfull request, string error code on failure.
+             * @throws Can throw NoConnection, DBError, InvalidDate or InvalidRole errors.
              */
-            editSlot(slotID: number, requiredRole: string, startTime: DateTime, endTime?: DateTime): Promise
+            editSlot(slotID: number, requiredRole: string, startTime: DateTime, endTime?: DateTime): Promise<void>
 
             /**
              * Deletes existing slot with specified ID. Will also delete shift details associated with it.
              * @param id Target slot ID.
              * 
              * @async 
-             * @returns True on successfull request, string error code on failure.
+             * @returns True on successfull request, false if slot doesn't exist.
+             * @throws Can throw NoConnection and DBError errors.
              */
-            deleteSlot(id: number): Promise<WorkDayAPI.TDeleteSlot>
+            deleteSlot(id: number): Promise<boolean>
 
             /**
              * Deletes all defined slots and shifts associated with them.
              * 
              * @async
-             * @returns True on successfull request, string error code on failure.
+             * @throws Can throw NoConnection and DBError errors.
              */
-            deleteAllSlots(): Promise<WebAPI._.TGenericActionResult>
+            deleteAllSlots(): Promise<void>
 
             /**
              * Assigns given user to the specified slot.
@@ -782,9 +827,9 @@ namespace WebAPI {
              * already assigned to any other slot on the same work day.
              * 
              * @async
-             * @returns True on successfull request, string error code on failure.
+             * @throws Can throw NoConnection, DBError, InvalidSlot. UserWithoutRole or AlreadyAssigned errors.
              */
-            assignUser(slotID: number, userID: number): Promise<WorkDayAPI.TAssignUserResult>
+            assignUser(slotID: number, userID: number): Promise<void>
 
 
             /**
@@ -792,9 +837,10 @@ namespace WebAPI {
              * @param slotID Target slot.
              * 
              * @async
-             * @returns True on successfull request, string error code on failure.
+             * @returns True on successfull request, false if slot doesn't exist.
+             * @throws Can throw NoConnection and DBError errors.
              */
-            unassignUser(slotID: number): Promise<WorkDayAPI.TUnassignUserResult>
+            unassignUser(slotID: number): Promise<boolean>
         }
 
         interface IShift {
@@ -806,17 +852,19 @@ namespace WebAPI {
              * Returns details of the user associated with the shift.
              * 
              * @async 
-             * @returns Object with string result and User details object in data prop if result is Success
+             * @returns User details object
+             * 
+             * @throws Can throw NoConnection, DBError or NoUser errors.
              */
-            getUser(): Promise<ShiftAPI.TGetUserResult>
+            getUser(): Promise<Auth.UserAPI.IUserDetails>
 
             /**
              * Updates start and end times for this shift.
              * 
              * @async
-             * @returns True on successfull request, string error code on failure.
+             * @throws Can throw NoConnection, DBError or InvaliDate errors.
              */
-            updateData(startTime: DateTime, endTime: DateTime): Promise<ShiftAPI.TUpdateDataResult>
+            updateData(startTime: DateTime, endTime: DateTime): Promise<void>
         }
     }
 
@@ -855,5 +903,19 @@ namespace WebAPI {
         public clearLinks()
     }
 
+    type APITypes = "Auth" | "Schedule";
+    type SubAPITypes<T extends APITypes> =
+        (T extends "Auth"?Auth.TAuthAPITypes:never) | 
+        (T extends "Schedule"?Schedule.TScheduleAPITypes:never);
+
+    type APIErrors<T extends APITypes, S extends "All" | SubAPITypes<T>="All"> = "NoConnection" | "DBError" |
+        (T extends "Auth"?Auth.TErrorTypes<S>:never) |
+        (T extends "Schedule"?Schedule.TErrorTypes<S>:never);
+
+    type AdditionalAPIErrors = "InvalidSession" | "InvalidToken"
+
+    interface APIError<T extends APITypes> {
+        errCode: APIErrors<T>
+    }
 
 }

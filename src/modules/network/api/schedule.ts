@@ -24,18 +24,17 @@ const getSchedule: RouteOptions = {
     url: "/api/app/schedule",
     handler: async (req, res)=>{
         res.header("cache-control","private, no-cache");
-        const session = req.cookies.session;
+        const sessionID = req.cookies.session;
 
         let result: API.App.Schedule.GetSchedule.TResponse = {
             status: "Failure",
             errCode: "NotSignedIn"
         }
 
-        if(session) {
-            const sessionValidity = await global.app.webAuthManager.getSessionDetails(session);
+        if(sessionID) {
+            const session = await global.app.webAuthManager.getSessionDetails(sessionID);
 
-            if(sessionValidity.result=="Success") {
-
+            if(session) {
                 let params: API.App.Schedule.GetSchedule.IRequest;
 
                 try {
@@ -47,10 +46,9 @@ const getSchedule: RouteOptions = {
                     return result;
                 }
 
-                const scheduleResponse = await global.app.scheduleManager.getWeek(DateTime.fromISO(params.withDay));
+                const workDays = await global.app.scheduleManager.getWeek(DateTime.fromISO(params.withDay));
 
-                if(scheduleResponse.result=="Success") {
-                    const workDays = scheduleResponse.data;
+                if(workDays) {
                     result = {
                         status: "Success",
                         data: {
@@ -63,36 +61,29 @@ const getSchedule: RouteOptions = {
                     for (const day of workDays) {
                         const slots = await day.getAllSlots();
 
-                        if(slots.result!="Success") {
-                            result = {status: "Failure", errCode: "InternalError"}
-                            return result;
-                        }
-
                         const dayData: API.App.Schedule.GetSchedule.IResponseData["workDays"][number] = {
                             ID: day.ID,
                             date: day.date.toString(),
                             slots: []
                         }
 
-                        for (const slotID in slots.data) {
-                            const slot = slots.data[slotID] as WebAPI.Schedule.WorkDayAPI.IShiftSlot;
+                        for (const slotID in slots) {
+                            const slot = slots[slotID] as WebAPI.Schedule.WorkDayAPI.IShiftSlot;
 
                             const user = await slot.assignedShift?.getUser();
                             const role = await global.app.webAuthManager.getRoleDisplayName(slot.requiredRole);
                             dayData.slots.push({
                                 ID: parseInt(slotID),
-                                requiredRole: role.result=="Success"?role.data:"Invalid Role",
-                                employeeName: (user&&user.result=="Success")?user.data.name:null,
+                                requiredRole: role ?? "Invalid Role",
+                                employeeName: user?.name ?? null,
                                 startTime: slot.plannedStartTime.toString(),
                                 endTime: slot.plannedEndTime?.toString() ?? null
                             });
                         }
-
                         result.data.workDays.push(dayData);
                     }
-                }else result.errCode = scheduleResponse.result;
-
-            }else if(sessionValidity.result!="InvalidSession") result.errCode = sessionValidity.result;
+                }else result.errCode = "InvalidDate";
+            }
         }
 
         return result;

@@ -2,59 +2,46 @@ import { DateTime } from "luxon";
 import {Command } from "../commands-handler.js";
 import { insertColor } from "../output.js";
 import { getPrintableDataTable, initArrayOfArrays } from "../util.js";
-
-function describeAPIError(errorCode: string) {
-    let message;
-
-    switch(errorCode) {
-        case "DBError": message = "There was an issue with database."; break;
-        case "NoConnection": message = "Server couldn't establish connection with the database.";break;
-        case "InvalidToken": message = "Given token doesn't exist."; break;
-        case "NoUser": message = "Couldn't find user matching given criteria."; break;
-        case "InvalidAction": message = "Given action doesn't exist. Check available action names with account-actions list-types."; break;
-        default: message = "No additional information.";
-    } 
-
-    return message;
-}
+import { getCommandErrorDisplayText } from "./common/utils.js";
 
 export default function(){
 
     const command = new Command("account-actions","Used to create, manage and view action tokens for accounts for WebAPI. ",[],false);
 
     command.mainHandler(async (request, data)=>{
-        
-        const actionResult = await global.app.webAuthManager.getAllTokens();
 
-        if(actionResult.result=="Success") {
-            const headers = ["Token", "Action name","User","Created at", "Expires at"];
-            const dataTable = initArrayOfArrays<string>(headers.length);
-
-            
-            for(let i=0; i< headers.length; i++)
-                dataTable[i].push(headers[i]);
-
-            for (const action of actionResult.data) {
-                const user = await global.app.webAuthManager.getUser(action.userID);
-
-                const values = [
-                    action.tokenID, 
-                    action.actionTypeName, 
-                    user.result=="Success"?user.data.email:insertColor("fg_yellow",action.userID.toString(), data.colorsMode),
-                    action.creationDate.toFormat(`dd LLL yyyy HH:mm`),
-                    insertColor(DateTime.now() > action.expirationDate?"fg_red":"fg_green",action.expirationDate.toFormat(`dd LLL yyyy HH:mm`),data.colorsMode)
-                ];
-
-                for(let i=0; i<values.length; i++)
-                    dataTable[i].push(values[i]);
-            }
-
-            request.respond(getPrintableDataTable(dataTable));
-        }else {
-            const message = describeAPIError(actionResult.result);
-            request.respond(`Couldn't fetch account actions- ${insertColor("fg_red",actionResult.result,data.colorsMode)}\n${insertColor("fg_grey",message,data.colorsMode)}`);
+        let tokens;
+        try {
+            tokens = await global.app.webAuthManager.getAllTokens();
+        } catch (error: any) {
+            if(!error.errCode) throw error;
+            request.respond(getCommandErrorDisplayText("Couldn't fetch account actions",error.errCode, data.colorsMode));
+            return;
         }
+
+        const headers = ["Token", "Action name","User","Created at", "Expires at"];
+        const dataTable = initArrayOfArrays<string>(headers.length);
+
         
+        for(let i=0; i< headers.length; i++)
+            dataTable[i].push(headers[i]);
+
+        for (const action of tokens) {
+            const user = await global.app.webAuthManager.getUser(action.userID);
+
+            const values = [
+                action.tokenID, 
+                action.actionTypeName, 
+                user?user.email:insertColor("fg_yellow",action.userID.toString(), data.colorsMode),
+                action.creationDate.toFormat(`dd LLL yyyy HH:mm`),
+                insertColor(DateTime.now() > action.expirationDate?"fg_red":"fg_green",action.expirationDate.toFormat(`dd LLL yyyy HH:mm`),data.colorsMode)
+            ];
+
+            for(let i=0; i<values.length; i++)
+                dataTable[i].push(values[i]);
+        }
+
+        request.respond(getPrintableDataTable(dataTable));
     });
 
 
@@ -90,14 +77,12 @@ export default function(){
 
         const actionType = data.parameters["actionType"] as WebAPI.Auth.AccountsTokenAPI.TAccountActionName;
 
-        const token = await global.app.webAuthManager.createToken(actionType,userID ?? email ?? "");
-        
-
-        if(token.result=="Success") {
-            request.respond(`${insertColor("fg_green","Action token generated!",data.colorsMode)}\nToken: ${insertColor("fg_cyan",token.data,data.colorsMode)}\n`);
-        }else {
-            const message = describeAPIError(token.result);
-            request.respond(`Couldn't generate new action token for the user identified with: ${insertColor("fg_cyan", userID?.toString() ?? email ?? "", data.colorsMode)} -  ${insertColor("fg_red",token.result,data.colorsMode)}\n  ${insertColor("fg_grey",message,data.colorsMode)}`);
+        try {
+            const token = await global.app.webAuthManager.createToken(actionType,userID ?? email ?? "");
+            request.respond(`${insertColor("fg_green","Action token generated!",data.colorsMode)}\nToken: ${insertColor("fg_cyan",token,data.colorsMode)}\n`);
+        } catch (error: any) {
+            if(!error.errCode) throw error;
+            request.respond(getCommandErrorDisplayText(`Couldn't generate new action token for the user identified with: ${insertColor("fg_cyan", userID?.toString() ?? email ?? "", data.colorsMode)}`,error.errCode, data.colorsMode));
         }
     });
     
@@ -112,23 +97,30 @@ export default function(){
             }
         ]
     }, async (req, data)=>{
-        const token = data.parameters["token"] as string;
+        const tokenID = data.parameters["token"] as string;
 
-        const tokenDetails = await global.app.webAuthManager.getTokenDetails(token);
+        let token;
+        let errCode;
 
-        if(tokenDetails.result=="Success") {
-            const user = await global.app.webAuthManager.getUser(tokenDetails.data.userID);
+        try {
+            token = await global.app.webAuthManager.getTokenDetails(tokenID);
+        } catch (error: any) {
+            if(!error.errCode) throw error;
+            errCode = error.errCode;
+        }
+
+        if(token) {
+            const user = await global.app.webAuthManager.getUser(token.userID);
 
             req.respond("Account action Details:\n========================================", false);
-            req.respond(`Token: ${insertColor("fg_cyan",token, data.colorsMode)}`, false);
-            req.respond(`User: ${insertColor(user.result=="Success"?"fg_cyan":"fg_yellow",user.result=="Success"?`${user.data.email} (${user.data.userID})`:tokenDetails.data.userID.toString(), data.colorsMode)}`,false);
-            req.respond(`Action type: ${insertColor("fg_cyan",tokenDetails.data.actionTypeName,data.colorsMode)}`, false);
-            req.respond(`Created at: ${insertColor("fg_cyan", tokenDetails.data.creationDate.toFormat(`dd LLL yyyy HH:mm`), data.colorsMode)}`, false);
-            req.respond(`Expires at: ${insertColor("fg_cyan",tokenDetails.data.expirationDate.toFormat(`dd LLL yyyy HH:mm`), data.colorsMode)}`, false);
-            req.respond(`Expired: ${DateTime.now() > tokenDetails.data.expirationDate?insertColor("fg_red","True",data.colorsMode):insertColor("fg_green","False",data.colorsMode)}`);
+            req.respond(`Token: ${insertColor("fg_cyan",tokenID, data.colorsMode)}`, false);
+            req.respond(`User: ${insertColor(user?"fg_cyan":"fg_yellow",user?`${user.email} (${user.userID})`:token.userID.toString(), data.colorsMode)}`,false);
+            req.respond(`Action type: ${insertColor("fg_cyan",token.actionTypeName,data.colorsMode)}`, false);
+            req.respond(`Created at: ${insertColor("fg_cyan", token.creationDate.toFormat(`dd LLL yyyy HH:mm`), data.colorsMode)}`, false);
+            req.respond(`Expires at: ${insertColor("fg_cyan",token.expirationDate.toFormat(`dd LLL yyyy HH:mm`), data.colorsMode)}`, false);
+            req.respond(`Expired: ${DateTime.now() > token.expirationDate?insertColor("fg_red","True",data.colorsMode):insertColor("fg_green","False",data.colorsMode)}`);
         }else {
-            const message = describeAPIError(tokenDetails.result);
-            req.respond(`Couldn't get details of ${insertColor("fg_cyan",token, data.colorsMode)} account action - ${insertColor('fg_red',tokenDetails.result,data.colorsMode)}\n${insertColor("fg_grey",message,data.colorsMode)}`);
+            req.respond(getCommandErrorDisplayText(`Couldn't get details of ${insertColor("fg_cyan",tokenID, data.colorsMode)} account action`,errCode ?? "InvalidToken", data.colorsMode));
         }
     });
 
@@ -145,13 +137,13 @@ export default function(){
     }, async (req, data)=>{
         const token = data.parameters["token"] as string;
 
-        const result = await global.app.webAuthManager.dropToken(token);
-
-        if(result===true) {
+        try {
+            const result = await global.app.webAuthManager.dropToken(token);
+            if(!result) throw {errCode: "InvalidToken"}
             req.respond(insertColor("fg_green","Action token deleted successfully.",data.colorsMode));
-        }else {
-            const message = describeAPIError(result);
-            req.respond(`Couldn't delete ${insertColor("fg_cyan",token, data.colorsMode)} action token - ${insertColor('fg_red',result,data.colorsMode)}\n${insertColor("fg_grey",message,data.colorsMode)}`);
+        } catch (error: any) {
+            if(!error.errCode) throw error.errCode;
+            req.respond(getCommandErrorDisplayText(`Couldn't delete ${insertColor("fg_cyan",token, data.colorsMode)} action token`,error.errCode, data.colorsMode));
         }
     });
 
@@ -160,13 +152,12 @@ export default function(){
         desc: "Deletes all expired account actions.",
         params: []
     }, async (req, data)=>{
-        const response = await global.app.webAuthManager.dropAllExpiredTokens();
-
-        if(response===true) {
+        try {
+            await global.app.webAuthManager.dropAllExpiredTokens();
             req.respond(insertColor("fg_green","Successfully deleted all expired account actions.",data.colorsMode));
-        }else {
-            const message = describeAPIError(response);
-            req.respond(`Couldn't delete account actions - ${insertColor("fg_red",response, data.colorsMode)}\n${insertColor("fg_grey",message, data.colorsMode)}`);
+        } catch (error:any) {
+            if(!error.errCode) throw error;
+            req.respond(getCommandErrorDisplayText(`Couldn't delete account actions`,error.errCode, data.colorsMode));
         }
     });
 
@@ -177,16 +168,15 @@ export default function(){
     }, async (req, data)=>{
         req.respond("Defined action types\n=================================================", false);
 
-        const types = await global.app.webAuthManager.getTokenTypes();
-
-        if(types.result=="Success") {
-            for (const type of types.data) {
+        try {
+            const types = await global.app.webAuthManager.getTokenTypes();
+            for (const type of types) {
                 req.respond(`${insertColor("fg_cyan","●",data.colorsMode)} ${type}`,false);
             }
             req.respond("");
-        }else {
-            const message = describeAPIError(types.result);
-            req.respond(`Couldn't delete account actions - ${insertColor("fg_red",types.result, data.colorsMode)}\n${insertColor("fg_grey",message, data.colorsMode)}`);
+        } catch (error: any) {
+            if(!error.errCode) throw error;
+            req.respond(getCommandErrorDisplayText(`Couldn't list types of account actions`,error.errCode, data.colorsMode));
         }
     });
 

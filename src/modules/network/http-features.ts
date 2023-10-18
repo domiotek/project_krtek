@@ -73,20 +73,25 @@ export default async function initializeFeatures(instance: FastifyInstance | nul
         }
         
         if(sessionID) {
-            const isSessionValid = await global.app.webAuthManager.prolongSession(sessionID,req.ip);
+            let isSessionValid: boolean;
+            try {
+                isSessionValid = await global.app.webAuthManager.prolongSession(sessionID,req.ip);
+            } catch (error) {
+                isSessionValid = false;
+            }
 
             if(url.startsWith("/p/recover")||url.startsWith("/p/invite")) {
                 res.redirect(302, `/Logout?then=${global.app.env.server.url}${url}`);
                 return;
             }
 
-            if(isSessionValid!==true&&!isTargetLoginPage&&!isTargetAnonymousRoute) {
+            if(isSessionValid===false&&!isTargetLoginPage&&!isTargetAnonymousRoute) {
                 res.clearCookie("session");
                 res.redirect(302,"/login?r=session_expired");
                 return;
             }
 
-            if(isTargetLoginPage&&isSessionValid===true) {
+            if(isTargetLoginPage&&isSessionValid) {
                 res.redirect(302,"/Home");
                 return;
             }
@@ -100,20 +105,24 @@ export default async function initializeFeatures(instance: FastifyInstance | nul
 
                 const token = query["token"];
 
-                let result: {result: "Success" | "InvalidToken" | "NoConnection" | "Other" | "DBError"};
-
-                switch(true) {
-                    case url.startsWith("/p/invite"):
-                        result = await global.app.webAuthManager.getInviteDetails(token ?? "");
-                    break;
-                    default:
-                        result = await global.app.webAuthManager.getTokenDetails(token ?? "");
-                    break;
+                let portalValidationResult: true | string = true;
+                
+                try {
+                    switch(true) {
+                        case url.startsWith("/p/invite"):
+                            await global.app.webAuthManager.getInviteDetails(token ?? "");
+                        break;
+                        default: 
+                            await global.app.webAuthManager.getTokenDetails(token ?? "")
+                    }
+                } catch (error: any) {
+                    if(!error.errCode) throw error;
+                    portalValidationResult = error.errCode;
                 }
 
-                if(result.result!="Success") {
+                if(portalValidationResult!==true) {
                     
-                    if(result.result=="InvalidToken") {
+                    if(portalValidationResult=="InvalidToken") {
                         res.redirect(302, invalidLinkUrl);
                         return;
                     }else {

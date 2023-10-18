@@ -74,6 +74,10 @@ export class MysqlController implements WebAPI.Mysql.IMysqlController {
         }
     }
 
+    public escapeValue(value: string) {
+        return this.pool.escape(value);
+    }
+
     public getLastQueryError() {
         if(this._lastFailure.error)
             return this._lastFailure.error;

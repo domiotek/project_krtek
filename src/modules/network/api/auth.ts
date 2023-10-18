@@ -11,7 +11,8 @@ const errorHandler = async (err:FastifyError, req: FastifyRequest)=> {
     return {
         status: "Failure",
         errCode: "InternalError",
-        message: "Uncaughted Internal Server Error."
+        message: "Uncaughted Internal Server Error.",
+        devDetails: global.app.env.debuggingEnabled?(err as any).errCode ?? "None":undefined
     }
 }
 
@@ -46,27 +47,30 @@ const signUpRoute: RouteOptions = {
         }
 
         if(params.token) {
-            const inviteDetails = await authManager.getInviteDetails(params.token);
+            const invite = await authManager.getInviteDetails(params.token);
 
-            if(inviteDetails.result=="Success") {
+            if(invite) {
 
                 const registrationData: WebAPI.Auth.UserAPI.IUserRegistrationData = {
-                    email: inviteDetails.data.email,
+                    email: invite.email,
                     password: params.password,
                     name: params.name,
                     surname: params.surname,
                     gender: params.gender
                 } 
 
-                const response = await authManager.createUser(registrationData);
+                try {
+                    await authManager.createUser(registrationData);
 
-                if(response===true) {
                     result = {
                         status: "Success"
                     }
                     authManager.dropInvite(params.token);
-                }else result.errCode = response;
-            }else result.errCode = inviteDetails.result;
+                } catch (error: any) {
+                    if(!error.errCode) throw error;
+                    result.errCode = error.errCode;
+                }
+            }else result.errCode = "InvalidToken";
         }else {
             result.errCode = "InvalidToken";
             result.message = "No token given.";
@@ -115,16 +119,15 @@ const signInRoute: RouteOptions = {
 
         const usePersistentSession = params.rememberMe==="true";
 
-        const loginResult = await authManager.tryLogin(params.username ?? "",params.password ?? "",req.ip);
-
-        if(loginResult.result=="Success") {
-            res.setCookie("session",loginResult.data,{path:"/",expires: usePersistentSession?now().plus({days: 7}).toJSDate():undefined});
-            return result;
-        }else { 
+        const sessionID = await authManager.tryLogin(params.username ?? "",params.password ?? "",req.ip);
+        if(sessionID) {
+            res.setCookie("session",sessionID,{path:"/",expires: usePersistentSession?now().plus({days: 7}).toJSDate():undefined});
+        }else {
             result.status = "Failure";
-            result.errCode = loginResult.result
-            return result;
+            result.errCode = "InvalidCredentials";
         }
+        
+        return result;
     },
     errorHandler
 }
@@ -197,34 +200,35 @@ const recoverAccountRoute: RouteOptions = {
         }
         
         if(params.username) {
-            const token = await authManager.createToken("ChangePassword",params.username);
+            let token;
 
-            if(token.result=="Success") {
-                const user = await authManager.getUser(params.username);
+            try {
+                token = await authManager.createToken("ChangePassword",params.username);
+            } catch (error: any) {
+                if(!error.errCode) throw error;
 
-                if(user.result=="Success") {
-                    const template = mailer.getTemplate("PasswordRecovery");
-                    const sender = mailer.getSender("aas");
-    
-                    if(template&&sender) {
-                        const sendResult = await mailer.send(sender, params.username,template, {name: user.data.name, email_address: params.username, reset_link: `http://127.0.0.1:3000/p/ResetPassword?token=${token.data}`});
-                        if(sendResult) {
-                            result.status="Success";
-                        }
-                    }else {
-                        result.errCode="MailerError";
-                        result.message="No such template or sender.";
-                    }
-                }else result.errCode="Other";
-            }else {
-                switch(token.result) {
-                    case "NoConnection": result.errCode="NoConnection"; break;
-                    case "NoUser": result.status="Success"; break; //Covering the fact, that given email doesn't match any account
-                    case "TooMuchTokens": result.errCode="Other"; break;
-                    default: 
-                        result.errCode="DBError";
-                }
+                if(error.errCode=="NoUser") result.status = "Success";//Covering the fact, that given email doesn't match any account
+                else result.errCode = error.errCode;
+
+                return result;
             }
+
+            const user = await authManager.getUser(params.username);
+
+            if(user) {
+                const template = mailer.getTemplate("PasswordRecovery");
+                const sender = mailer.getSender("aas");
+
+                if(template&&sender) {
+                    const sendResult = await mailer.send(sender, params.username,template, {name: user.name, email_address: params.username, reset_link: `http://127.0.0.1:3000/p/ResetPassword?token=${token}`});
+                    if(sendResult) {
+                        result.status="Success";
+                    }
+                }else {
+                    result.errCode="MailerError";
+                    result.message="No such template or sender.";
+                }
+            }else result.errCode="Other";
         }else {
             result.errCode="Other";
             result.message="Missing parameter.";
@@ -264,20 +268,19 @@ const setPasswordRoute: RouteOptions = {
             result.errCode="InvalidToken";
             return result;
         }
+        
+        const token = await authManager.getTokenDetails(params.token);
 
-        const tokenResult = await authManager.getTokenDetails(params.token);
-
-        if(tokenResult.result=="Success") {
-            const token = tokenResult.data as WebAPI.Auth.AccountsTokenAPI.ITokenDetails;
-
-            const response = await authManager.setPassword(token.userID,params.password);
-
-            if(response===true) {
+        if(token) {
+            try {
+                await authManager.setPassword(token.userID,params.password);
                 result.status = "Success";
                 authManager.dropToken(params.token);
-            }else result.errCode = response;
-            
-        }else result.errCode=tokenResult.result;
+            }catch (error:any) {
+                if(!error.errCode) throw error;
+                result.errCode = error.errCode;
+            }
+        }else result.errCode="InvalidToken";
 
         return result;
     },
@@ -308,24 +311,24 @@ const getEmailFromToken: RouteOptions = {
         }
 
         if(params.type=="invite") {
-            const response = await global.app.webAuthManager.getInviteDetails(params.token);
-            if(response.result=="Success") {
+            const invite = await global.app.webAuthManager.getInviteDetails(params.token);
+            if(invite) {
                 result.status="Success";
-                result.email=response.data.email;
-            }else result.errCode = response.result;
+                result.email=invite.email;
+            }else result.errCode = "InvalidToken";
         }else {
-            const response = await global.app.webAuthManager.getTokenDetails(params.token);
+            const token = await global.app.webAuthManager.getTokenDetails(params.token);
+            result.errCode = "InvalidToken";
 
-            if(response.result=="Success") {
-                const user = await global.app.webAuthManager.getUser(response.data.userID);
-                if(user.result=="Success") {
+            if(token) {
+                const user = await global.app.webAuthManager.getUser(token.userID);
+                if(user) {
                     result.status="Success";
-                    result.email=user.data.email;
-                }else if(user.result=="NoUser") result.errCode = "InvalidToken";
-                else result.errCode = user.result;
-            }else result.errCode = response.result;
+                    result.errCode = undefined;
+                    result.email=user.email;
+                }
+            }
         }
-        
 
         return result;
     },

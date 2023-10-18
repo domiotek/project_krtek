@@ -1,23 +1,7 @@
 import {Command } from "../commands-handler.js";
 import { insertColor } from "../output.js";
 import { getPrintableDataTable, initArrayOfArrays } from "../util.js";
-
-function describeAPIError(errorCode: string) {
-    let message;
-
-    switch(errorCode) {
-        case "DBError": message = "There was an issue with database."; break;
-        case "NoConnection": message = "Server couldn't establish connection with the database.";break;
-        case "InvalidToken": message = "Given token doesn't exist."; break;
-        case "NoUser": message = "Couldn't find user matching given criteria."; break;
-        case "UserExists": message = "There is already user with that email address."; break;
-        case "InvalidPassword": message = "Given password doesn't meet the requirements."; break;
-        case "InvalidRank": message = "Requested rank isn't defined."; break;
-        default: message = "No additional information.";
-    } 
-
-    return message;
-}
+import { getCommandErrorDisplayText } from "./common/utils.js";
 
 export default function(){
 
@@ -25,38 +9,42 @@ export default function(){
 
     command.mainHandler(async (request, data)=>{
         
-        const usersResult = await global.app.webAuthManager.getAllUsers();
+        let users;
 
-        if(usersResult.result=="Success") {
-            const headers = ["UserID", "Email","Name","Surname", "Gender", "Rank", "Created at", "Last accessed at", "Password last changed at"];
-            const dataTable = initArrayOfArrays<string>(headers.length);
-
-            
-            for(let i=0; i< headers.length; i++)
-                dataTable[i].push(headers[i]);
-
-            for (const user of usersResult.data) {
-                const values = [
-                    user.userID.toString(), 
-                    user.email, 
-                    user.name,
-                    user.surname,
-                    user.gender,
-                    user.rankName, 
-                    user.creationDate.toFormat(`dd LLL yyyy HH:mm`),
-                    user.lastAccessDate.toFormat(`dd LLL yyyy HH:mm`),
-                    user.lastPasswordChangeDate.toFormat(`dd LLL yyyy HH:mm`)
-                ];
-
-                for(let i=0; i<values.length; i++)
-                    dataTable[i].push(values[i]);
-            }
-
-            request.respond(getPrintableDataTable(dataTable));
-        }else {
-            const message = describeAPIError(usersResult.result);
-            request.respond(`Couldn't fetch accounts- ${insertColor("fg_red",usersResult.result,data.colorsMode)}\n${insertColor("fg_grey",message,data.colorsMode)}`);
+        try {
+            users = await global.app.webAuthManager.getAllUsers();
+        } catch (error: any) {
+            if(!error.errCode) throw error;
+            request.respond(getCommandErrorDisplayText("Couldn't fetch accounts",error.errCode, data.colorsMode));
+            return;
         }
+
+
+        const headers = ["UserID", "Email","Name","Surname", "Gender", "Rank", "Created at", "Last accessed at", "Password last changed at"];
+        const dataTable = initArrayOfArrays<string>(headers.length);
+
+        
+        for(let i=0; i< headers.length; i++)
+            dataTable[i].push(headers[i]);
+
+        for (const user of users) {
+            const values = [
+                user.userID.toString(), 
+                user.email, 
+                user.name,
+                user.surname,
+                user.gender,
+                user.rankName, 
+                user.creationDate.toFormat(`dd LLL yyyy HH:mm`),
+                user.lastAccessDate.toFormat(`dd LLL yyyy HH:mm`),
+                user.lastPasswordChangeDate.toFormat(`dd LLL yyyy HH:mm`)
+            ];
+
+            for(let i=0; i<values.length; i++)
+                dataTable[i].push(values[i]);
+        }
+
+        request.respond(getPrintableDataTable(dataTable));
         
     });
 
@@ -103,13 +91,12 @@ export default function(){
             gender: data.parameters["gender"] as string
         }
 
-        const response = await global.app.webAuthManager.createUser(userDetails);
-
-        if(response===true) {
+        try {
+            await global.app.webAuthManager.createUser(userDetails);
             request.respond(`${insertColor("fg_green","Account created!",data.colorsMode)}`);
-        }else {
-            const message = describeAPIError(response);
-            request.respond(`Couldn't user with that parameters - ${insertColor("fg_red",response,data.colorsMode)}\n  ${insertColor("fg_grey",message,data.colorsMode)}`);
+        } catch (error: any) {
+            if(!error.errCode) throw error;
+            request.respond(getCommandErrorDisplayText("Couldn't user with that parameters",error.errCode, data.colorsMode));
         }
     });
     
@@ -138,10 +125,17 @@ export default function(){
         const userID = data.parameters["userID"] as number | undefined;
         const email = data.parameters["email"] as string | undefined;
 
-        const userDetails = await global.app.webAuthManager.getUser(userID ?? email ?? "");
+        let errCode;
+        let user;
 
-        if(userDetails.result=="Success") {
-            const user = userDetails.data;
+        try {
+            user = await global.app.webAuthManager.getUser(userID ?? email ?? "");
+        } catch (error: any) {
+            if(!error.errCode) throw error;
+            errCode = error.errCode;
+        }
+
+        if(user) {
             req.respond("Account Details:\n========================================", false);
             req.respond(`User ID: ${insertColor("fg_cyan",user.userID.toString(), data.colorsMode)}`, false);
             req.respond(`Email: ${insertColor("fg_cyan",user.email,data.colorsMode)}`,false);
@@ -153,8 +147,7 @@ export default function(){
             req.respond(`Last accessed at: ${insertColor("fg_cyan",user.lastAccessDate.toFormat(`dd LLL yyyy HH:mm`), data.colorsMode)}`, false);
             req.respond(`Password last changed at: ${insertColor("fg_cyan",user.lastPasswordChangeDate.toFormat(`dd LLL yyyy HH:mm`), data.colorsMode)}`);
         }else {
-            const message = describeAPIError(userDetails.result);
-            req.respond(`Couldn't get details of account identified by: ${insertColor("fg_cyan",userID?.toString() ?? email ?? "", data.colorsMode)} - ${insertColor('fg_red',userDetails.result,data.colorsMode)}\n${insertColor("fg_grey",message,data.colorsMode)}`);
+            req.respond(getCommandErrorDisplayText(`Couldn't get details of account identified by: ${insertColor("fg_cyan",userID?.toString() ?? email ?? "", data.colorsMode)}`,errCode ?? "NoUser", data.colorsMode));
         }
     });
 
@@ -188,13 +181,12 @@ export default function(){
         const email = data.parameters["email"] as string | undefined;
         const password = data.parameters["password"] as string;
 
-        const result = await global.app.webAuthManager.setPassword(userID ?? email ?? "", password);
-
-        if(result===true) {
+        try {
+            await global.app.webAuthManager.setPassword(userID ?? email ?? "", password);
             req.respond(insertColor("fg_green","Password set successfully.",data.colorsMode));
-        }else {
-            const message = describeAPIError(result);
-            req.respond(`Couldn't set password for an account identified by: ${insertColor("fg_cyan",userID?.toString() ?? email ?? "", data.colorsMode)} - ${insertColor('fg_red',result,data.colorsMode)}\n${insertColor("fg_grey",message,data.colorsMode)}`);
+        } catch (error: any) {
+            if(!error.errCode) throw error;
+            req.respond(getCommandErrorDisplayText(`Couldn't set password for an account identified by: ${insertColor("fg_cyan",userID?.toString() ?? email ?? "", data.colorsMode)}`,error.errCode, data.colorsMode));
         }
     });
 
@@ -228,13 +220,12 @@ export default function(){
         const email = data.parameters["email"] as string | undefined;
         const rankName = data.parameters["rankName"] as string;
 
-        const result = await global.app.webAuthManager.assignRank(userID ?? email ?? "",rankName);
-
-        if(result===true) {
+        try {
+            await global.app.webAuthManager.assignRank(userID ?? email ?? "",rankName);
             req.respond(insertColor("fg_green","Rank has been successfully assigned.",data.colorsMode));
-        }else {
-            const message = describeAPIError(result);
-            req.respond(`Couldn't assign rank for an account identified by: ${insertColor("fg_cyan",userID?.toString() ?? email ?? "", data.colorsMode)} - ${insertColor('fg_red',result,data.colorsMode)}\n${insertColor("fg_grey",message,data.colorsMode)}`);
+        } catch (error:any) {
+            if(!error.errCode) throw error;
+            req.respond(getCommandErrorDisplayText(`Couldn't assign rank for an account identified by: ${insertColor("fg_cyan",userID?.toString() ?? email ?? "", data.colorsMode)}`,error.errCode, data.colorsMode));
         }
     });
 
@@ -243,32 +234,34 @@ export default function(){
         desc: "Lists all defined ranks.",
         params: []
     }, async (req, data)=>{
-        const ranks = await global.app.webAuthManager.getRanks();
-
-        if(ranks.result=="Success") {
-            const headers = ["Rank ID", "Name","Display name"];
-            const dataTable = initArrayOfArrays<string>(headers.length);
-
-            
-            for(let i=0; i< headers.length; i++)
-                dataTable[i].push(headers[i]);
-
-            for (const rank of ranks.data) {
-                const values = [
-                    rank.ID.toString(), 
-                    rank.rankName, 
-                    rank.displayName,
-                ];
-
-                for(let i=0; i<values.length; i++)
-                    dataTable[i].push(values[i]);
-            }
-
-            req.respond(getPrintableDataTable(dataTable));
-        }else {
-            const message = describeAPIError(ranks.result);
-            req.respond(`Couldn't fetch ranks - ${insertColor('fg_red',ranks.result,data.colorsMode)}\n${insertColor("fg_grey",message,data.colorsMode)}`);
+        let ranks;
+        try {
+            ranks = await global.app.webAuthManager.getRanks();
+        } catch (error: any) {
+            if(!error.errCode) throw error;
+            req.respond(getCommandErrorDisplayText("Couldn't fetch ranks",error.errCode, data.colorsMode));
+            return;
         }
+
+        const headers = ["Rank ID", "Name","Display name"];
+        const dataTable = initArrayOfArrays<string>(headers.length);
+
+        
+        for(let i=0; i< headers.length; i++)
+            dataTable[i].push(headers[i]);
+
+        for (const rank of ranks) {
+            const values = [
+                rank.ID.toString(), 
+                rank.rankName, 
+                rank.displayName,
+            ];
+
+            for(let i=0; i<values.length; i++)
+                dataTable[i].push(values[i]);
+        }
+
+        req.respond(getPrintableDataTable(dataTable));
     });
 
     

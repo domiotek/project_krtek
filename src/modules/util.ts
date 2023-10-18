@@ -221,3 +221,13 @@ export function initArrayOfArrays<T>(count: number) {
 
     return result;
 }
+
+
+export class APIError<T extends WebAPI.APITypes> extends Error implements WebAPI.APIError<T> {
+    public errCode;
+
+    constructor(module: string, errCode: WebAPI.APIErrors<T>) {
+        super(`[API][${module}] API call failed with code: ${errCode}.`);
+        this.errCode = errCode;
+    }
+}

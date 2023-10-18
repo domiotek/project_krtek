@@ -17,32 +17,32 @@ const basicData: RouteOptions = {
     url: "/api/app/basic-user-data",
     handler: async (req, res)=>{
         res.header("cache-control","private, no-cache");
-        const session = req.cookies.session;
+        const sessionID = req.cookies.session;
 
         let result: API.App.BasicData.TResponse = {
             status: "Failure",
             errCode: "NotSignedIn"
         }
 
-        if(session) {
+        if(sessionID) {
             const auth = global.app.webAuthManager;
 
-            const response = await auth.getSessionDetails(session);
+            let session = await auth.getSessionDetails(sessionID);
 
-            if(response.result=="Success") {
-                const user = await auth.getUser(response.data.userID);
+            if(session) {
+                const user = await auth.getUser(session.userID);
 
-                if(user.result=="Success") {
+                if(user) {
                     result = {
                         status: "Success",
                         data: {
-                            name: user.data.name,
-                            surname: user.data.surname,
-                            rankName: user.data.rankName
+                            name: user.name,
+                            surname: user.surname,
+                            rankName: user.rankName
                         }
                     }
-                }else if(user.result!="NoUser") result.errCode = user.result;
-            }else if(response.result!="InvalidSession") result.errCode = response.result;
+                }
+            }
         }
 
         return result;
@@ -55,19 +55,19 @@ const navMenu: RouteOptions = {
     url: "/api/app/nav-menu-entries",
     handler: async (req, res)=>{
         res.header("cache-control","private, no-cache");
-        const session = req.cookies.session;
+        const sessionID = req.cookies.session;
 
         let result: API.App.NavMenu.TResponse = {
             status: "Failure",
             errCode: "NotSignedIn"
         }
 
-        if(session) {
+        if(sessionID) {
             const auth = global.app.webAuthManager;
 
-            const response = await auth.getSessionDetails(session);
+            let session = await auth.getSessionDetails(sessionID);
 
-            if(response.result=="Success") {
+            if(session) {
                 const entries = [
                     {displayName: "Home", linkDest: "/Home", imageName: "/ui/home.png", imageAlt: "Home tab link"},
                     {displayName: "Announcements", linkDest: "/Announcements", imageName: "/ui/announcement.png", imageAlt: "Announcement tab link"},
@@ -82,9 +82,7 @@ const navMenu: RouteOptions = {
                     status: "Success",
                     data: entries
                 }
-
-
-            }else if(response.result!="InvalidSession") result.errCode = response.result;
+            }
         }
 
         return result;
