@@ -7,7 +7,7 @@ import EventEmitter from "events";
 import wireUpServer from "socket.io-fix-close";
 
 export class SocketServer implements FramAPI.SocketServer.ISocketServer {
-    static readonly version = "1.2.0";
+    static readonly version = "1.2.1";
 
     private _server : io.Server;
     private readonly _apiBridge: FramAPI.SocketServer.IAPIBridge;

@@ -100,7 +100,6 @@ export class RequestsHandler implements FramAPI.SocketServer.IRequestsHandler {
                         request.crashError = error.message;
                         request.state = "CRASHED";
                         this.api.writeDebug(`[Requests] Request ${ID} processing crashed with and error ${error.message}`);
-                        throw error;
                     }
 
                     if(request.state=="PENDING") request.cancel("NoFinalResponseProduced");
