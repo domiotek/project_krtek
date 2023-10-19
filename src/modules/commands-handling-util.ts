@@ -1,3 +1,5 @@
+import { DateTime } from "luxon";
+
 /**
  * Checks whether given parameters item is an single parameter or a group of parameters.
  */
@@ -107,6 +109,7 @@ function usedTypesHas(set: Set<{type: CommandsHandling.IParameter["type"], enum?
             case "boolean":
             case "number":
             case "date":
+            case "time":
             case "string":
                 return item.type==query;
             case "enum":
@@ -151,7 +154,7 @@ export function matchParamsWithScheme(inputParams: Array<string>, scheme: Comman
                         matchingResult.errMessage = checkResult.errMessage;
                         matchingResult.errItemPath = [i];
                         break;
-                    }
+                    }else namedPairs[name] = checkResult.parsedValue;
                 }
             }
         }
@@ -352,19 +355,42 @@ function matchParameter(param: string | undefined, scheme: CommandsHandling.IPar
             else result.matches = false;
         break;
         case "date":
+            let matches = true;
             if(param&&param.search(/\d{1,2}\/\d{1,2}\/\d{4}/)!=-1) {
-                let date = (param as string).split("/");
-                result.parsedValue = {
+                let date = param.split("/");
+                const dateObj = DateTime.fromObject({
                     day: parseInt(date[0]),
                     month: parseInt(date[1]),
                     year: parseInt(date[2])
-                }
+                });
 
-            }else {
+                if(dateObj.isValid) result.parsedValue = dateObj;
+                else matches = false;
+            }else matches = false;
+            
+            if(!matches) {
                 result.matches = false;
                 result.errMessage = param!=undefined?`Expected '${param}' to be a valid date string in 'DD/MM/YYYY' format.`:`Expected valid date in 'DD/MM/YYYY' format as '${scheme.name}' parameter.`;
             }
         break;
+        case "time":{
+            let matches = true;
+            if(param&&param.search(/\d{1,2}\:\d{1,2}/)!=-1) {
+                let time = param.split(":");
+                const timeObj = DateTime.fromObject({
+                    hour: parseInt(time[0]),
+                    minute: parseInt(time[1])
+                });
+                
+                if(timeObj.isValid) result.parsedValue = timeObj;
+                else matches = false;
+            }else matches = false;
+
+            if(!matches) {
+                result.matches = false;
+                result.errMessage = param!=undefined?`Expected '${param}' to be a valid time string in 24-hour 'HH:MM' format.`:`Expected valid time in 24-hour 'HH:MM' format as '${scheme.name}' parameter.`;
+            }
+        }break;
         case "number":
             if(!isNaN(param as any)) {
                 result.parsedValue = parseInt(param as string);

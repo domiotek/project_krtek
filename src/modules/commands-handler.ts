@@ -301,12 +301,20 @@ export class Command implements CommandsHandling.ICommand {
         const result = matchParamsWithScheme(requestParams,parameters);
 
         if(result.matchingResult.matches) {
-            await executionHandler(request,{
-                colorsMode: _colorsMode,
-                parameters: result.matchingResult.processedParams,
-                rawParameters: result.matchingResult.params,
-                switches: result.namedPairs
-            })
+            try {
+                await executionHandler(request,{
+                    colorsMode: _colorsMode,
+                    parameters: result.matchingResult.processedParams,
+                    rawParameters: result.matchingResult.params,
+                    switches: result.namedPairs
+                })
+            } catch (error: any) {
+                const newErr = new Error(`[CommandsHandling] Command execution failed with error '${error.message}'. Execution details: command - '${request.command}'; params - '${request.params}'`);
+                newErr.stack = error.stack;
+                Output.category("debug").print("error",newErr);
+                throw error;
+            }
+            
         }else {
             if(request.origin=="SOCKET"&&request.client?.datastore.get("int_clientVersion")>=100020000) {
                 request.respond({

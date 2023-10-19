@@ -103,7 +103,7 @@ export function parseErrorObject(err: IGenericError) {
         attachedData: undefined
     }
     const parts = (err.stack ?? "").split("\n");
-    result.message = parts[0].substring(7);
+    result.message = err.message;
 
     for (let i=1; i<parts.length;i++) {
         const startPos = parts[i].search("file://");

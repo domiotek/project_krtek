@@ -259,13 +259,13 @@ namespace CommandsHandling {
         [inSchemeParamName: string] : string; 
     }
     interface IParsedParamsCollection {
-        [inSchemeParamName: string] : string | number | boolean | {day: number, month: number, year: number} | null
+        [inSchemeParamName: string] : string | number | boolean | luxon.DateTime | null
     }
 
     interface IParameter {
         readonly name : string;
         readonly desc : string;
-        readonly type : "string" | "number" | "boolean" | "date" | "enum" | "literal";
+        readonly type : "string" | "number" | "boolean" | "date" | "time" | "enum" | "literal";
         /**
          * Must be specified if type equals 'enum'. Contains list of all possible options parameter can take.
          */
