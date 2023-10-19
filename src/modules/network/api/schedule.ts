@@ -70,14 +70,30 @@ const getSchedule: RouteOptions = {
                         for (const slotID in slots) {
                             const slot = slots[slotID] as WebAPI.Schedule.WorkDayAPI.IShiftSlot;
 
-                            const user = await slot.assignedShift?.getUser();
                             const role = await global.app.webAuthManager.getRoleDisplayName(slot.requiredRole);
+
+                            let user, startTime, endTime;
+                            if(slot.assignedShift) {
+                                let userResult;
+                                try {
+                                    userResult = await slot.assignedShift?.getUser();
+                                    user = userResult;
+                                } catch (error: any) {
+                                    if(!error.errCode) throw error;
+                                }
+
+                                startTime = slot.assignedShift.startTime ?? slot.plannedStartTime;
+                                endTime = slot.assignedShift.endTime;
+                            }else {
+                                startTime = slot.plannedStartTime;
+                                endTime = slot.plannedEndTime;
+                            }
                             dayData.slots.push({
                                 ID: parseInt(slotID),
                                 requiredRole: role ?? "Invalid Role",
                                 employeeName: user?.name ?? null,
-                                startTime: slot.plannedStartTime.toString(),
-                                endTime: slot.plannedEndTime?.toString() ?? null
+                                startTime: startTime.toString(),
+                                endTime: endTime?.toString() ?? null
                             });
                         }
                         result.data.workDays.push(dayData);
