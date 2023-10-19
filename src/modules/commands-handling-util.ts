@@ -356,7 +356,7 @@ function matchParameter(param: string | undefined, scheme: CommandsHandling.IPar
         break;
         case "date":
             let matches = true;
-            if(param&&param.search(/\d{1,2}\/\d{1,2}\/\d{4}/)!=-1) {
+            if(param&&param.search(/^\d{1,2}\/\d{1,2}\/\d{4}$/)!=-1) {
                 let date = param.split("/");
                 const dateObj = DateTime.fromObject({
                     day: parseInt(date[0]),
@@ -375,7 +375,7 @@ function matchParameter(param: string | undefined, scheme: CommandsHandling.IPar
         break;
         case "time":{
             let matches = true;
-            if(param&&param.search(/\d{1,2}\:\d{1,2}/)!=-1) {
+            if(param&&param.search(/^\d{1,2}\:\d{1,2}$/)!=-1) {
                 let time = param.split(":");
                 const timeObj = DateTime.fromObject({
                     hour: parseInt(time[0]),
