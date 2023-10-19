@@ -10,6 +10,7 @@ namespace CLIUserAuthentication {
     "viewUsers" | "manageUsers" | 
     "viewInvites" | "manageInvites" | 
     "viewTokens" | "manageTokens" | 
-    "viewSessions" | "manageSessions";
+    "viewSessions" | "manageSessions" |
+    "viewSchedule" | "manageSchedule";
 
 }

@@ -102,7 +102,7 @@ export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
                 }else rangeErr = false;
 
                 if(!rangeErr) {
-                    const query = `SELECT workDayID, privateSlotID, date, note FROM shifts NATURAL JOIN shift_slots NATURAL JOIN work_days WHERE userID=? ${rangeStr};`;
+                    const query = `SELECT workDayID, privateSlotID, date, note FROM shifts NATURAL JOIN shift_slots NATURAL JOIN work_days WHERE userID=? ${rangeStr} ORDER BY date ASC;`;
 
                     const response = await this._db.performQuery<"Select">(query, [userID], connection);
 
@@ -222,11 +222,24 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
         if(response) {
             if(response.length==1) {
                 const data = response[0];
+                const shift = data["shiftID"]!=null?new Shift(data["shiftID"],this._db,data["userID"],data["startTime"]?DateTime.fromISO(data["startTime"]):null, data["endTime"]?DateTime.fromISO(data["endTime"]):null):null;
+
+                let status: WebAPI.Schedule.WorkDayAPI.IShiftSlot["status"];
+
+                if(shift) {
+                    if(shift.startTime&&shift.endTime) status = "Finished";
+                    else {
+                        if(DateTime.now().startOf("day") < this._date.startOf("day")) status = "Assigned";
+                        else status = "Pending";
+                    }
+                }else status = "Unassigned";
+
                 return {
+                    status,
                     requiredRole: data["roleName"],
                     plannedStartTime: DateTime.fromFormat(data["plannedStartTime"],"HH:mm:ss"),
                     plannedEndTime: data["plannedEndTime"]?DateTime.fromFormat(data["plannedEndTime"],"HH:mm:ss"):null,
-                    assignedShift: data["shiftID"]!=null?new Shift(data["shiftID"],this._db,data["userID"],data["startTime"], data["endTime"]):null
+                    assignedShift: shift
                 }
             }else return null;
         }
@@ -256,14 +269,25 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
         const response = await this._db.performQuery<"Select">("SELECT * FROM shift_slots NATURAL LEFT JOIN shifts INNER JOIN roles ON roleRequiredID=roleID WHERE workDayID=?;",[this._workDayID], conn);
 
         if(response) {
-            const result: Awaited<ReturnType<WorkDay["getAllSlots"]>> = {};
+            const result: WebAPI.Schedule.WorkDayAPI.ISlots = {};
+
+            const statusCache: WebAPI.Schedule.WorkDayAPI.IShiftSlot["status"] = DateTime.now().startOf("day") < this._date.startOf("day")?"Assigned":"Pending";
 
             for (const row of response) {
+                const shift = row["shiftID"]!=null?new Shift(row["shiftID"],this._db,row["userID"],row["startTime"]?DateTime.fromISO(row["startTime"]):null, row["endTime"]?DateTime.fromISO(row["endTime"]):null):null;
+
+                let status: WebAPI.Schedule.WorkDayAPI.IShiftSlot["status"];
+                if(shift) {
+                    if(shift.startTime&&shift.endTime) status = "Finished";
+                    else status = statusCache;
+                }else status = "Unassigned";
+
                 result[row["privateSlotID"]] = {
+                    status,
                     requiredRole: row["roleName"],
                     plannedStartTime: DateTime.fromFormat(row["plannedStartTime"],"HH:mm:ss"),
                     plannedEndTime: row["plannedEndTime"]?DateTime.fromFormat(row["plannedEndTime"],"HH:mm:ss"):null,
-                    assignedShift: row["shiftID"]!=null?new Shift(row["shiftID"],this._db,row["userID"],row["startTime"], row["endTime"]):null
+                    assignedShift: shift
                 };
             }
             
@@ -274,7 +298,7 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
         throw new ScheduleAPIError(this._db.getLastQueryFailureReason());
     }
 
-    public async addSlot(requiredRole: string, startTime: DateTime, endTime?: DateTime | undefined, conn?: WebAPI.Mysql.IPoolConnection): Promise<void> {
+    public async addSlot(requiredRole: string, startTime: DateTime, endTime?: DateTime | undefined, conn?: WebAPI.Mysql.IPoolConnection): Promise<number> {
 
         if(!startTime.isValid||(endTime?!endTime.isValid:false)) {
             conn?.release();
@@ -314,7 +338,7 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
                             connection.release();
                         }
                         
-                        return;
+                        return nextID;
                     }else errCode = "DBError";
                 }else errCode = this._db.getLastQueryFailureReason();
             }else errCode = "MaxSlotCountReached";
@@ -356,7 +380,7 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
                     }
                    
                     return;
-                }else errCode = "DBError";
+                }else errCode = "InvalidSlot";
             }else errCode = this._db.getLastQueryFailureReason();
 
             connection.release();
@@ -461,7 +485,7 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
                 if(otherSlotsCheck) {
                     if(otherSlotsCheck.length>0) {
                         connection.release();
-                        throw new ScheduleAPIError("AlreadyAssigned");
+                        throw new ScheduleAPIError("UserAlreadyAssigned");
                     }
                 }else {
                     connection.release();
@@ -546,16 +570,16 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
 
 class Shift implements WebAPI.Schedule.IShift {
     private _shiftID: number;
-    private _startTime: luxon.DateTime;
+    private _startTime: luxon.DateTime | null;
     private _endTime: luxon.DateTime | null;
     private _userID: number;
     private _db: WebAPI.Mysql.IMysqlController;
 
 
-    constructor(shiftID: number, db: WebAPI.Mysql.IMysqlController,userID: number, startTime: luxon.DateTime, endTime: luxon.DateTime) {
+    constructor(shiftID: number, db: WebAPI.Mysql.IMysqlController,userID: number, startTime: luxon.DateTime | null, endTime: luxon.DateTime | null) {
         this._shiftID = shiftID;
         this._startTime = startTime;
-        this._endTime = startTime;
+        this._endTime = endTime;
         this._db = db;
         this._userID = userID;
     }
@@ -574,7 +598,7 @@ class Shift implements WebAPI.Schedule.IShift {
         return this._shiftID;
     }
 
-    public get startTime(): luxon.DateTime {
+    public get startTime(): luxon.DateTime | null {
         return this._startTime;
     }
 
@@ -595,7 +619,7 @@ class Shift implements WebAPI.Schedule.IShift {
         let errCode: WebAPI.APIErrors<"Schedule"> = "InvalidDate";
         
         if(startTime.isValid&&endTime.isValid&&endTime > startTime) {
-            const response = await this._db.performQuery("UPDATE shifts SET startTime=?, endTime=? WHERE shiftID=?",[startTime.toISO(), endTime.toISO(), this._shiftID], conn);
+            const response = await this._db.performQuery("UPDATE shifts SET startTime=?, endTime=? WHERE shiftID=?",[startTime.toFormat("HH:mm:ss"), endTime.toFormat("HH:mm:ss"), this._shiftID], conn);
             if(response) {
                 if((response as WebAPI.Mysql.IMysqlQueryResult).affectedRows==1) {
                     this._startTime = startTime;

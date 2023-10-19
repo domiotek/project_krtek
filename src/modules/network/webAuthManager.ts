@@ -671,7 +671,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                                         return;
                                     }else errCode = "DBError";
                                 }else errCode = this.db.getLastQueryFailureReason();
-                            }else errCode = "AlreadyAssigned";
+                            }else errCode = "RoleAlreadyAssigned";
                         }else errCode = this.db.getLastQueryFailureReason();
                     }else errCode = "InvalidRole";
                 }else errCode = this.db.getLastQueryFailureReason();

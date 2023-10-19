@@ -76,12 +76,14 @@ namespace WebAPI {
     namespace Auth {
         type TAuthAPITypes = "UserAPI" | "RoleAPI" | "AccountTokenAPI" | "InviteAPI";
         type TErrorTypes<T extends "All" | TAuthAPITypes="All"> = 
+            (T extends "All" | "SessionAPI"?SessionAPI.TErrorTypes:never) |
             (T extends "All" | "UserAPI"?UserAPI.TErrorTypes:never) | 
             (T extends "All" | "RoleAPI"?RoleAPI.TErrorTypes:never) | 
             (T extends "All" | "AccountTokenAPI"?AccountsTokenAPI.TErrorTypes:never) | 
             (T extends "All" | "InviteAPI"?InviteAPI.TErrorTypes:never);
 
         namespace SessionAPI {
+            type TErrorTypes = "InvalidSession"
             interface ISessionDetails {
                 sessionID: string
                 userID: string
@@ -93,7 +95,7 @@ namespace WebAPI {
         }
 
         namespace UserAPI {
-            type TErrorTypes = TUserCreationErrors | TSetPasswordErrors | TAssignRankErrors;
+            type TErrorTypes = TUserCreationErrors | TSetPasswordErrors | TAssignRankErrors
 
             type TUserCreationErrors = "InvalidEmail" | "InvalidPassword" | "UserExists";
             type TSetPasswordErrors = "NoUser";
@@ -132,7 +134,7 @@ namespace WebAPI {
             type TErrorTypes = THasRoleErrors | TAssignRoleErrors | TUnAssignRoleErrors;
 
             type THasRoleErrors = "InvalidRole" | "NoUser";
-            type TAssignRoleErrors = "AlreadyAssigned" | THasRoleErrors;
+            type TAssignRoleErrors = "RoleAlreadyAssigned" | THasRoleErrors;
             type TUnAssignRoleErrors = "NotAssigned" | THasRoleErrors;
 
             interface IRoleDetails {
@@ -144,7 +146,7 @@ namespace WebAPI {
         }
 
         namespace AccountsTokenAPI {
-            type TErrorTypes = TTokenCreationErrors;
+            type TErrorTypes = TTokenCreationErrors | "InvalidToken";
 
             type TTokenCreationErrors = "TooMuchTokens" | "InvalidAction";
 
@@ -461,7 +463,7 @@ namespace WebAPI {
              * 
              * @async 
              * 
-             * @throws Can throw with NoConnection, DBError, NoUser, InvalidRole or AlreadyAssigned errors.
+             * @throws Can throw with NoConnection, DBError, NoUser, InvalidRole or RoleAlreadyAssigned errors.
              */
             assignRole(userKey: string | number, roleName: string): Promise<void>
 
@@ -662,13 +664,14 @@ namespace WebAPI {
             type TSetNoteErrors = "NoteTooLong";
             type TAddSlotErrors = TEditSlotErrors | "MaxSlotCountReached";
             type TEditSlotErrors = "InvalidDate" | "InvalidRole"
-            type TAssignUserErrors = "UserWithoutRole" | "AlreadyAssigned" | "InvalidSlot"
+            type TAssignUserErrors = "UserWithoutRole" | "UserAlreadyAssigned" | "InvalidSlot"
 
             interface ISlots {
                 [privateID: number]: IShiftSlot | undefined
             }
 
             interface IShiftSlot {
+                status: "Unassigned" | "Assigned" | "Pending" | "Finished"
                 plannedStartTime: DateTime
                 plannedEndTime: DateTime | null
                 requiredRole: string
@@ -786,9 +789,11 @@ namespace WebAPI {
              * @param endTime Planned end time for that slot. Optional.
              * 
              * @async
+             * 
+             * @returns ID of the new slot.
              * @throws Can throw NoConnection, DBError, InvalidDate, InvalidRole and MaxSlotCountReached errors.
              */
-            addSlot(requiredRole: string, startTime: DateTime, endTime?: DateTime): Promise<void>
+            addSlot(requiredRole: string, startTime: DateTime, endTime?: DateTime): Promise<number>
 
             /**
              * Edits existing slot with given data.
@@ -798,7 +803,7 @@ namespace WebAPI {
              * @param endTime Planned end time for that slot. Optional.
              * 
              * @async
-             * @throws Can throw NoConnection, DBError, InvalidDate or InvalidRole errors.
+             * @throws Can throw NoConnection, DBError, InvalidDate, InvalidSlot or InvalidRole errors.
              */
             editSlot(slotID: number, requiredRole: string, startTime: DateTime, endTime?: DateTime): Promise<void>
 
@@ -827,7 +832,7 @@ namespace WebAPI {
              * already assigned to any other slot on the same work day.
              * 
              * @async
-             * @throws Can throw NoConnection, DBError, InvalidSlot. UserWithoutRole or AlreadyAssigned errors.
+             * @throws Can throw NoConnection, DBError, InvalidSlot, NoUser, UserWithoutRole or UserAlreadyAssigned errors.
              */
             assignUser(slotID: number, userID: number): Promise<void>
 
@@ -845,7 +850,7 @@ namespace WebAPI {
 
         interface IShift {
             readonly ID: number;
-            readonly startTime: DateTime;
+            readonly startTime: DateTime | null;
             readonly endTime: DateTime | null;
 
             /**
@@ -911,8 +916,6 @@ namespace WebAPI {
     type APIErrors<T extends APITypes, S extends "All" | SubAPITypes<T>="All"> = "NoConnection" | "DBError" |
         (T extends "Auth"?Auth.TErrorTypes<S>:never) |
         (T extends "Schedule"?Schedule.TErrorTypes<S>:never);
-
-    type AdditionalAPIErrors = "InvalidSession" | "InvalidToken"
 
     interface APIError<T extends APITypes> {
         errCode: APIErrors<T>

@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
 import {Command } from "../commands-handler.js";
 import { insertColor } from "../output.js";
-import { getPrintableDataTable, initArrayOfArrays } from "../util.js";
+import { APIError, getPrintableDataTable, initArrayOfArrays } from "../util.js";
 import { getCommandErrorDisplayText } from "./common/utils.js";
 
 export default function(){
@@ -139,7 +139,7 @@ export default function(){
 
         try {
             const result = await global.app.webAuthManager.dropToken(token);
-            if(!result) throw {errCode: "InvalidToken"}
+            if(!result) throw  new APIError("WebAuthManager","InvalidToken");
             req.respond(insertColor("fg_green","Action token deleted successfully.",data.colorsMode));
         } catch (error: any) {
             if(!error.errCode) throw error.errCode;
