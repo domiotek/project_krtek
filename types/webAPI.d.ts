@@ -1,5 +1,6 @@
 
 namespace WebAPI {
+    type DateTime = import("luxon").DateTime;
 
     namespace Mysql {
         
@@ -121,6 +122,7 @@ namespace WebAPI {
                 creationDate: import("luxon").DateTime
                 lastAccessDate: import("luxon").DateTime
                 lastPasswordChangeDate: import("luxon").DateTime
+                wage: number | null
             }
 
             interface IRankDetails {
@@ -641,8 +643,6 @@ namespace WebAPI {
             (T extends "All" | "WorkDayAPI"?WorkDayAPI.TErrorTypes:never) | 
             (T extends "All" | "ShiftAPI"?ShiftAPI.TErrorTypes:never);
 
-        type DateTime = import("luxon").DateTime;
-
         namespace ScheduleManager {
             type TErrorTypes = TGetUserShiftsErrors;
             type TGetUserShiftsErrors = "NoUser" | "InvalidRange"
@@ -683,7 +683,7 @@ namespace WebAPI {
         namespace ShiftAPI {
             type TErrorTypes =  TGetUserErrors | TUpdateDataErrors;
             type TGetUserErrors = "NoUser"
-            type TUpdateDataErrors = "InvalidDate"
+            type TUpdateDataErrors = "InvalidDate" | "InvalidTipOrDeduction";
         }
 
         interface IScheduleManager {
@@ -852,6 +852,8 @@ namespace WebAPI {
             readonly ID: number;
             readonly startTime: DateTime | null;
             readonly endTime: DateTime | null;
+            readonly tip: number;
+            readonly deduction: number;
 
             /**
              * Returns details of the user associated with the shift.
@@ -864,12 +866,48 @@ namespace WebAPI {
             getUser(): Promise<Auth.UserAPI.IUserDetails>
 
             /**
-             * Updates start and end times for this shift.
+             * Updates details about user shift.
              * 
              * @async
              * @throws Can throw NoConnection, DBError or InvaliDate errors.
              */
-            updateData(startTime: DateTime, endTime: DateTime): Promise<void>
+            updateData(startTime: DateTime, endTime: DateTime, tip: number, deduction: number): Promise<void>
+        }
+    }
+
+    namespace Statistics {
+        type TStatsAPITypes = "StatsManager";
+        type TErrorTypes<T extends "All" | TStatsAPITypes="All"> = 
+            (T extends "All" | "StatsManager"?TStatsErrorTypes:never);
+
+        type TStatsErrorTypes = "NoUser" | "InvalidDate";
+        
+        interface IMonthUserStats {
+            totalHours: number
+            shiftCount: number
+            wagePerHour: number | null
+            totalWage: number | null
+            totalTip: number
+            totalDeduction: number
+            maxTip: number
+            minTip: number
+            avgTip: number
+        }
+
+        interface IHistoricUserData {
+            wage: number
+        }
+
+        interface IUserStatsManager {
+
+            getHistoricUserData(user: string | number, month: DateTime): Promise<IHistoricUserData | null>
+            setHistoricUserData(user: string | number, month: DateTime, data: IHistoricUserData): Promise<void>
+            
+            getCacheState(user: string | number): Promise<IMonthUserStats | null>
+            setCacheState(user: string | number, stats: IMonthUserStats): Promise<void>
+            dropCacheState(user: string | number): Promise<void>
+
+            getStatsOf(user: string | number, month: DateTime): Promise<IMonthUserStats | null>
         }
     }
 
@@ -908,14 +946,15 @@ namespace WebAPI {
         public clearLinks()
     }
 
-    type APITypes = "Auth" | "Schedule";
+    type APITypes = "Auth" | "Schedule" | "Stats";
     type SubAPITypes<T extends APITypes> =
         (T extends "Auth"?Auth.TAuthAPITypes:never) | 
         (T extends "Schedule"?Schedule.TScheduleAPITypes:never);
 
     type APIErrors<T extends APITypes, S extends "All" | SubAPITypes<T>="All"> = "NoConnection" | "DBError" |
         (T extends "Auth"?Auth.TErrorTypes<S>:never) |
-        (T extends "Schedule"?Schedule.TErrorTypes<S>:never);
+        (T extends "Schedule"?Schedule.TErrorTypes<S>:never) | 
+        (T extends "Stats"?Statistics.TErrorTypes<S>:never);
 
     interface APIError<T extends APITypes> {
         errCode: APIErrors<T>

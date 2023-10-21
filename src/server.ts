@@ -13,6 +13,7 @@ import Mailer from "./modules/network/mailer.js";
 import commandRequestHandler, { CommandsHandler, registerCommands } from "./modules/commands-handler.js";
 import AuthenticationManager from "./modules/cli-auth.js";
 import { ScheduleManager } from "./modules/network/scheduleManager.js";
+import { UserStatsManager } from "./modules/network/userStatsManager.js";
 
 
 class App implements IApp {
@@ -27,6 +28,7 @@ class App implements IApp {
 	public readonly localDownloads: WebAPI.IDownloadsManager;
 	public readonly webAuthManager: WebAPI.Auth.IWebAuthManager;
 	public readonly scheduleManager: WebAPI.Schedule.IScheduleManager;
+	public readonly userStatsManager: WebAPI.Statistics.IUserStatsManager;
 	public readonly commands: CommandsHandling.ICommandsHandler;
 	public readonly userAuth: CLIUserAuthentication.IAuthenticationManager;
 	public readonly mailer: Mailer.IMailer;
@@ -49,6 +51,7 @@ class App implements IApp {
 		this.mysqlController = new MysqlController(this.env.mysql);
 		this.webAuthManager = new WebAuthManager(this.mysqlController);
 		this.scheduleManager = new ScheduleManager(this.mysqlController);
+		this.userStatsManager = new UserStatsManager(this.mysqlController);
 		this.commands = new CommandsHandler();
 		this.userAuth = new AuthenticationManager(this.env.auth);
 		this.mailer = new Mailer(this.env.environmentName,envConfig.externalServices.Mailtrap);

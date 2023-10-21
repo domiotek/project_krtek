@@ -26,6 +26,7 @@ export function describeAPIError(errorCode: WebAPI.APIErrors<WebAPI.APITypes> ) 
         case "NoteTooLong": message = "That note is too long. The limit is 255 characters."; break;
         case "UserWithoutRole": message = "Specified user doesn't have role required by the shift slot."; break;
         case "UserAlreadyAssigned": message = "Specified user is already assigned to the other shift slot on the requested work day."; break;
+        case "InvalidTipOrDeduction": message = "Given tip and or deduction amount is invalid. Make sure to provide positive number."; break;
         default: message = "No additional information.";
     } 
 

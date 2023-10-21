@@ -48,6 +48,8 @@ interface IApp {
      */
     public readonly scheduleManager: WebAPI.Schedule.IScheduleManager;
 
+    public readonly userStatsManager: WebAPI.Statistics.IUserStatsManager;
+
     public readonly mailer: Mailer.IMailer;
 
     public readonly commands: CommandsHandling.ICommandsHandler;

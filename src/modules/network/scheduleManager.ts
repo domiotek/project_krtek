@@ -222,7 +222,10 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
         if(response) {
             if(response.length==1) {
                 const data = response[0];
-                const shift = data["shiftID"]!=null?new Shift(data["shiftID"],this._db,data["userID"],data["startTime"]?DateTime.fromISO(data["startTime"]):null, data["endTime"]?DateTime.fromISO(data["endTime"]):null):null;
+                const parsedStartTime = data["startTime"]?DateTime.fromISO(data["startTime"]):null;
+                const parsedEndTime =  data["endTime"]?DateTime.fromISO(data["endTime"]):null;
+
+                const shift = data["shiftID"]!=null?new Shift(data["shiftID"],this._db,data["userID"],parsedStartTime,parsedEndTime, data["tip"] ?? 0, data["deduction"] ?? 0):null;
 
                 let status: WebAPI.Schedule.WorkDayAPI.IShiftSlot["status"];
 
@@ -274,7 +277,10 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
             const statusCache: WebAPI.Schedule.WorkDayAPI.IShiftSlot["status"] = DateTime.now().startOf("day") < this._date.startOf("day")?"Assigned":"Pending";
 
             for (const row of response) {
-                const shift = row["shiftID"]!=null?new Shift(row["shiftID"],this._db,row["userID"],row["startTime"]?DateTime.fromISO(row["startTime"]):null, row["endTime"]?DateTime.fromISO(row["endTime"]):null):null;
+                const parsedStartTime = row["startTime"]?DateTime.fromISO(row["startTime"]):null;
+                const parsedEndTime =  row["endTime"]?DateTime.fromISO(row["endTime"]):null;
+
+                const shift = row["shiftID"]!=null?new Shift(row["shiftID"],this._db,row["userID"],parsedStartTime,parsedEndTime, row["tip"] ?? 0, row["deduction"] ?? 0):null;
 
                 let status: WebAPI.Schedule.WorkDayAPI.IShiftSlot["status"];
                 if(shift) {
@@ -574,14 +580,18 @@ class Shift implements WebAPI.Schedule.IShift {
     private _endTime: luxon.DateTime | null;
     private _userID: number;
     private _db: WebAPI.Mysql.IMysqlController;
+    private _tip: number;
+    private _deduction: number;
 
 
-    constructor(shiftID: number, db: WebAPI.Mysql.IMysqlController,userID: number, startTime: luxon.DateTime | null, endTime: luxon.DateTime | null) {
+    constructor(shiftID: number, db: WebAPI.Mysql.IMysqlController,userID: number, startTime: luxon.DateTime | null, endTime: luxon.DateTime | null, tip?: number, deduction?: number) {
         this._shiftID = shiftID;
         this._startTime = startTime;
         this._endTime = endTime;
         this._db = db;
         this._userID = userID;
+        this._tip = tip ?? 0;
+        this._deduction = deduction ?? 0;
     }
 
     toJSON() {
@@ -606,6 +616,14 @@ class Shift implements WebAPI.Schedule.IShift {
         return this._endTime;
     }
 
+    public get tip(): number {
+        return this._tip;
+    }
+
+    public get deduction(): number {
+        return this._deduction;
+    }
+
     public async getUser(conn?: WebAPI.Mysql.IPoolConnection) {
         const result = await (global.app.webAuthManager as InternalWebAuthManager).getUser(this._userID, conn);
 
@@ -615,20 +633,28 @@ class Shift implements WebAPI.Schedule.IShift {
         throw new ScheduleAPIError("NoUser");
     }
 
-    public async updateData(startTime: luxon.DateTime, endTime: luxon.DateTime, conn?: WebAPI.Mysql.IPoolConnection) {
+    public async updateData(startTime: luxon.DateTime, endTime: luxon.DateTime, tip: number, deduction: number, conn?: WebAPI.Mysql.IPoolConnection) {
         let errCode: WebAPI.APIErrors<"Schedule"> = "InvalidDate";
+
+        if(deduction < 0 || tip < 0) {
+            conn?.release();
+            throw new ScheduleAPIError("InvalidTipOrDeduction");
+        }
         
         if(startTime.isValid&&endTime.isValid&&endTime > startTime) {
-            const response = await this._db.performQuery("UPDATE shifts SET startTime=?, endTime=? WHERE shiftID=?",[startTime.toFormat("HH:mm:ss"), endTime.toFormat("HH:mm:ss"), this._shiftID], conn);
+            const response = await this._db.performQuery("UPDATE shifts SET startTime=?, endTime=?, tip=?, deduction=? WHERE shiftID=?",[startTime.toFormat("HH:mm:ss"), endTime.toFormat("HH:mm:ss"), tip, deduction, this._shiftID], conn);
             if(response) {
                 if((response as WebAPI.Mysql.IMysqlQueryResult).affectedRows==1) {
                     this._startTime = startTime;
                     this._endTime = endTime;
+                    this._tip = tip;
+                    this._deduction = deduction;
                     return;
                 }else errCode = "DBError";
             }else errCode = this._db.getLastQueryFailureReason();
         }
 
+        conn?.release();
         throw new ScheduleAPIError(errCode);
     }
 

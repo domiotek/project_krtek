@@ -60,7 +60,7 @@ export default function(){
             }
         } catch (error: any) {
             if(!error.errCode) throw error;
-            request.respond(getCommandErrorDisplayText("Couldn't fetch schedule", error, data.colorsMode));
+            request.respond(getCommandErrorDisplayText("Couldn't fetch schedule", error.errCode, data.colorsMode));
         }
     });
 
@@ -624,6 +624,17 @@ export default function(){
                 name: "endTime",
                 desc: "Shift's end time.",
                 type: "time"
+            },
+            {
+                name: "tip",
+                desc: "Tip earned on the shift.",
+                type: "number"
+            },
+            {
+                name: "deduction",
+                desc: "Total deductions from the shift wage earnings.",
+                type: "number",
+                optional: true
             }
         ]
     }, async (req, data)=>{
@@ -657,9 +668,11 @@ export default function(){
 
         const startTime = data.parameters["startTime"] as DateTime;
         const endTime = data.parameters["endTime"] as DateTime;
+        const tip = data.parameters["tip"] as number;
+        const deduction = data.parameters["deduction"] as number;
 
         try {
-            await slot.assignedShift.updateData(startTime, endTime);
+            await slot.assignedShift.updateData(startTime, endTime, tip, deduction);
         } catch (error: any) {
             if(!error.errCode) throw error;
             req.respond(getCommandErrorDisplayText("Couldn't update shift's data", error.errCode, data.colorsMode));

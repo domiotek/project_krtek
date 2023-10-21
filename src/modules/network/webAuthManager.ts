@@ -61,7 +61,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
     //Session API
 
-    public async tryLogin(email: string, password: string,ipAddress: string, conn?: WebAPI.Mysql.IPoolConnection) {
+    public async tryLogin(email: string, password: string,ipAddress: string, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["tryLogin"]> {
         const connection = conn ?? await this.db.getConnection();
         
         if(connection) {
@@ -99,7 +99,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError("NoConnection");
     }
 
-    public async isSessionValid(sessionToken: string, conn?: WebAPI.Mysql.IPoolConnection) {
+    public async isSessionValid(sessionToken: string, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["isSessionValid"]> {
         const result = await this.db.performQuery<"Select">(`SELECT userID FROM auth_sessions WHERE sessionID=? AND now() < expirationDate`,[sessionToken], conn);
 
         if(result) {
@@ -110,7 +110,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         }
     }
 
-    public async prolongSession(sessionToken: string, ipAddress: string, conn?: WebAPI.Mysql.IPoolConnection) {
+    public async prolongSession(sessionToken: string, ipAddress: string, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["prolongSession"]> {
 
         const connection = conn ?? await this.db.getConnection();
         if(connection) {
@@ -151,7 +151,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError("NoConnection");
     }
 
-    public async getSessionDetails(sessionToken: string, conn?: WebAPI.Mysql.IPoolConnection) {
+    public async getSessionDetails(sessionToken: string, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["getSessionDetails"]> {
 
         let queryStr = `SELECT * FROM auth_sessions WHERE sessionID=? AND now() < expirationDate;`;
         const response = await this.db.performQuery<"Select">(queryStr,[sessionToken],conn);
@@ -173,7 +173,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
 
-    public async dropSession(sessionToken: string, conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async dropSession(sessionToken: string, conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["dropSession"]> {
         const result = await this.db.performQuery<"Other">(`DELETE FROM auth_sessions WHERE sessionID=?`,[sessionToken],conn);
 
         if(result) {
@@ -186,7 +186,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
 
-    public async getAllSessions(userID: number, conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async getAllSessions(userID: number, conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["getAllSessions"]> {
         let errCode: WebAPI.APIErrors<"Auth">;
 
         let conditionQuery = userID?`WHERE userID=${this.db.escapeValue(userID.toString())}`:"";
@@ -215,7 +215,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError(errCode);
     }
 
-    public async dropAllExpiredSessions(conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async dropAllExpiredSessions(conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["dropAllExpiredSessions"]> {
         const response = await this.db.performQuery(`DELETE FROM auth_sessions WHERE now() > expirationDate;`,[],conn);    
 
         if(response==null) {
@@ -227,7 +227,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
     //User API
 
-    public async createUser(userData: WebAPI.Auth.UserAPI.IUserRegistrationData, conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async createUser(userData: WebAPI.Auth.UserAPI.IUserRegistrationData, conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["createUser"]> {
         const emailRegex = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
         const connection = conn ?? await this.db.getConnection();
     
@@ -240,14 +240,12 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                 const user = await this.userExists(userData.email,connection);
 
                 if(user==false) {
-                    const queryStr = `INSERT INTO users(email, password, name, surname, gender, rankID) VALUES(?,"",?,?,?,2);`;
+                    const queryStr = `SELECT add_user(?,?,?,?);`;
 
-                    if(!["m","f","o"].includes(userData.gender)) userData.gender = 'o';
-
-                    const response = await this.db.performQuery<"Other">(queryStr, [userData.email.toLowerCase(), userData.name, userData.surname, userData.gender], connection);
+                    const response = await this.db.performQuery<"Select">(queryStr, [userData.email.toLowerCase(), userData.name, userData.surname, userData.gender], connection);
 
                     if(response) {
-                        if(response.affectedRows===1){
+                        if(response.length===1){
 
                             try {
                                 await this.setPassword(userData.email,userData.password,connection);
@@ -272,7 +270,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError("NoConnection");
     }
 
-    public async userExists(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection) {
+    public async userExists(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["userExists"]> {
 
         const {field, userKey: safeUserKey} = this._translateUserKey(userKey);
 
@@ -286,10 +284,10 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
 
-    public async getUser(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection) { 
+    public async getUser(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["getUser"]> { 
         const {field, userKey: safeUserKey} = this._translateUserKey(userKey);
 
-        const response = await this.db.performQuery<"Select">(`SELECT * FROM users NATURAL JOIN ranks WHERE ${field}=?;`,[safeUserKey],conn);
+        const response = await this.db.performQuery<"Select">(`SELECT * FROM users NATURAL JOIN ranks NATURAL LEFT JOIN user_prop WHERE ${field}=?;`,[safeUserKey],conn);
 
         if(response) {
             if(response.length===1) {
@@ -304,7 +302,8 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                     rankName: response[0]["displayName"],
                     creationDate: DateTime.fromJSDate(response[0]["creationDate"]),
                     lastAccessDate: DateTime.fromJSDate(response[0]["lastAccessDate"]),
-                    lastPasswordChangeDate: DateTime.fromJSDate(response[0]["lastPasswordChangeDate"])
+                    lastPasswordChangeDate: DateTime.fromJSDate(response[0]["lastPasswordChangeDate"]),
+                    wage: response[0]["wage"]
                 }
             }else return null;
         }
@@ -313,7 +312,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
 
-    public async setPassword(userKey: string | number, newPassword: string, conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async setPassword(userKey: string | number, newPassword: string, conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["setPassword"]> {
 
         const {field, userKey: safeUserKey} = this._translateUserKey(userKey);
 
@@ -336,10 +335,10 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         //[TODO]
     }
 
-    public async getAllUsers(conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async getAllUsers(conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["getAllUsers"]> {
         const result = [];
 
-        const query = `SELECT * FROM users NATURAL JOIN ranks;`;
+        const query = `SELECT * FROM users NATURAL JOIN ranks NATURAL LEFT JOIN user_prop;`;
         const response = await this.db.performQuery<"Select">(query,[],conn);
 
         if(response) {
@@ -356,7 +355,8 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                     rankName: row["displayName"],
                     creationDate: DateTime.fromJSDate(row["creationDate"]),
                     lastAccessDate: DateTime.fromJSDate(row["lastAccessDate"]),
-                    lastPasswordChangeDate: DateTime.fromJSDate(row["lastPasswordChangeDate"])
+                    lastPasswordChangeDate: DateTime.fromJSDate(row["lastPasswordChangeDate"]),
+                    wage: row["wage"]
                 });
             }
             return result;
@@ -366,7 +366,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
 
-    public async assignRank(userKey: string | number, rankName: string,conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async assignRank(userKey: string | number, rankName: string,conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["assignRank"]> {
         const connection = conn ?? await this.db.getConnection();
 
         if(connection) {
@@ -400,7 +400,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError("NoConnection");
     }
 
-    public async getRank(rankName: string, conn?: WebAPI.Mysql.IPoolConnection) {
+    public async getRank(rankName: string, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["getRank"]> {
         const response = await this.db.performQuery<"Select">("SELECT rankID, displayName FROM ranks WHERE rankName=?",[rankName], conn);
         let errCode;
 
@@ -421,7 +421,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         return null;
     }
 
-    public async getRanks(conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async getRanks(conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["getRanks"]> {
         const response = await this.db.performQuery<"Select">("SELECT * FROM ranks",[], conn);
             
         if(response) {
@@ -441,8 +441,8 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
 
-    public async getUsersWithRank(rankName: string,conn?: WebAPI.Mysql.IPoolConnection | undefined) {
-        const response = await this.db.performQuery<"Select">("SELECT * FROM users NATURAL JOIN ranks WHERE rankID=?",[rankName], conn);
+    public async getUsersWithRank(rankName: string,conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["getUsersWithRank"]> {
+        const response = await this.db.performQuery<"Select">("SELECT * FROM users NATURAL JOIN ranks NATURAL LEFT JOIN user_prop WHERE rankID=?",[rankName], conn);
             
         if(response) {
             const result = [];
@@ -459,7 +459,8 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                     rankName: row["displayName"],
                     creationDate: DateTime.fromJSDate(row["creationDate"]),
                     lastAccessDate: DateTime.fromJSDate(row["lastAccessDate"]),
-                    lastPasswordChangeDate: DateTime.fromJSDate(row["lastPasswordChangeDate"])
+                    lastPasswordChangeDate: DateTime.fromJSDate(row["lastPasswordChangeDate"]),
+                    wage: row["wage"]
                 });
             }
 
@@ -472,7 +473,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
     //Role API
 
-    public async getRoleID(roleName: string, conn?: WebAPI.Mysql.IPoolConnection) {
+    public async getRoleID(roleName: string, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["getRoleID"]> {
         const response = await this.db.performQuery<"Select">("SELECT roleID FROM roles where roleName=?",[roleName],conn);
 
         if(response) {
@@ -485,7 +486,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
 
-    public async getRoleDisplayName(roleName: string, conn?: WebAPI.Mysql.IPoolConnection) {
+    public async getRoleDisplayName(roleName: string, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["getRoleDisplayName"]> {
         const response = await this.db.performQuery<"Select">("SELECT displayName FROM roles where roleName=?",[roleName],conn);
 
         if(response) {
@@ -498,7 +499,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
 
-    public async getDefinedRoles(conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async getDefinedRoles(conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["getDefinedRoles"]> {
         const result = [];
 
         const response = await this.db.performQuery<"Select">("SELECT * from roles",[], conn);
@@ -522,7 +523,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         return result;
     }
 
-    public async listUsersWithRole(roleName: string, conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async listUsersWithRole(roleName: string, conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["listUsersWithRole"]> {
         const connection = conn ?? await this.db.getConnection();
 
         if(connection) {
@@ -533,7 +534,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             if(roleDetails) {
 
                 if(roleDetails.length===1) {
-                    const response = await this.db.performQuery<"Select">("SELECT * from role_assignments NATURAL JOIN users WHERE roleID=?",[roleDetails[0]["roleID"]], connection);
+                    const response = await this.db.performQuery<"Select">("SELECT * from role_assignments NATURAL JOIN users NATURAL LEFT JOIN user_prop WHERE roleID=?",[roleDetails[0]["roleID"]], connection);
 
                     if(response) {
                         const result = [];
@@ -550,7 +551,8 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                                 rankName: row["displayName"],
                                 creationDate: DateTime.fromJSDate(row["creationDate"]),
                                 lastAccessDate: DateTime.fromJSDate(row["lastAccessDate"]),
-                                lastPasswordChangeDate: DateTime.fromJSDate(row["lastPasswordChangeDate"])
+                                lastPasswordChangeDate: DateTime.fromJSDate(row["lastPasswordChangeDate"]),
+                                wage: row["wage"]
                             })
                         }
                         if(!conn) {
@@ -572,7 +574,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError("NoConnection");
     }
 
-    public async getUserRoles(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async getUserRoles(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["getUserRoles"]> {
         const connection = conn ?? await this.db.getConnection();
 
         if(connection) {
@@ -609,7 +611,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError("NoConnection");
     }
 
-    public async hasRole(userKey: string | number, roleName: string, conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async hasRole(userKey: string | number, roleName: string, conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["hasRole"]> {
         const connection = conn ?? await this.db.getConnection();
 
         if(connection) {
@@ -642,7 +644,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError("NoConnection");
     }
 
-    public async assignRole(userKey: string | number, roleName: string, conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async assignRole(userKey: string | number, roleName: string, conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["assignRole"]> {
         const connection = await this.db.getConnection();
 
         if(connection) {
@@ -684,7 +686,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError("NoConnection");
     }
 
-    public async unassignRole(userKey: string | number, roleName: string, conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async unassignRole(userKey: string | number, roleName: string, conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["unassignRole"]> {
         const connection = conn ?? await this.db.getConnection();
 
         if(connection) {
@@ -721,7 +723,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError("NoConnection");
     }
 
-    public async unassignAllRoles(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async unassignAllRoles(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["unassignAllRoles"]> {
         const connection = conn ?? await this.db.getConnection();
 
         if(connection) {
@@ -745,7 +747,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
     //Account actions API
 
-    public async createToken(actionName: WebAPI.Auth.AccountsTokenAPI.TAccountActionName ,userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection) {
+    public async createToken(actionName: WebAPI.Auth.AccountsTokenAPI.TAccountActionName ,userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["createToken"]> {
 
         const userID = await this._resolveUserKey(userKey, conn);
 
@@ -792,7 +794,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError("NoConnection");
     }
 
-    public async getTokenDetails(token: string, conn?: WebAPI.Mysql.IPoolConnection) {
+    public async getTokenDetails(token: string, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["getTokenDetails"]> {
         const response = await this.db.performQuery<"Select">(`SELECT * FROM account_actions NATURAL JOIN account_action_types WHERE accountActionTokenID=? AND now() < expirationDate;`,[token],conn);
 
         if(response) {
@@ -812,7 +814,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
 
-    public async getTokensCount(userKey: string | number, actionName: WebAPI.Auth.AccountsTokenAPI.TAccountActionName, conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async getTokensCount(userKey: string | number, actionName: WebAPI.Auth.AccountsTokenAPI.TAccountActionName, conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["getTokensCount"]> {
         const user = await this.getUser(userKey, conn);
 
         if(user) {
@@ -825,7 +827,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         }else return null;
     }
 
-    public async dropToken(token: string, conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async dropToken(token: string, conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["dropToken"]> {
         const result = await this.db.performQuery<"Other">(`DELETE FROM account_actions WHERE accountActionTokenID=?`,[token],conn);
 
         if(result) {
@@ -837,7 +839,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
 
-    public async getAllTokens(userID?: number | undefined, conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async getAllTokens(userID?: number | undefined, conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["getAllTokens"]> {
         let conditionQuery = userID?`WHERE userID=${this.db.escapeValue(userID.toString())}`:"";
 
         const query = `SELECT * FROM account_actions NATURAL JOIN account_action_types ${conditionQuery};`;
@@ -864,7 +866,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
 
-    public async dropAllExpiredTokens(conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async dropAllExpiredTokens(conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["dropAllExpiredTokens"]> {
         const response = await this.db.performQuery(`DELETE FROM account_actions WHERE now() > expirationDate;`,[],conn);    
 
         if(response===null) {
@@ -874,7 +876,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
            
     }
 
-    public async getTokenTypes(conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async getTokenTypes(conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["getTokenTypes"]> {
         const response = await this.db.performQuery<"Select">(`SELECT accountActionName FROM account_action_types;`,[],conn);
 
         if(response) {
@@ -893,7 +895,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     
     //Invites API
 
-    public async generateInvite(email: string, conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async generateInvite(email: string, conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["generateInvite"]> {
         const emailRegex = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
 
         if(!emailRegex.test(email)) {
@@ -939,7 +941,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError("NoConnection");
     }
 
-    public async getInviteDetails(query: string, conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async getInviteDetails(query: string, conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["getInviteDetails"]> {
         const field = query.includes("@")?"email":"inviteTokenID";
         const queryStr = `SELECT * FROM invites WHERE ${field}=? AND now() < expirationDate;`;
 
@@ -960,7 +962,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
 
-    public async dropInvite(token: string, conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async dropInvite(token: string, conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["dropInvite"]> {
         const result = await this.db.performQuery<"Other">(`DELETE FROM invites WHERE inviteTokenID=?`,[token],conn);
 
         if(result) {
@@ -972,7 +974,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
 
-    public async getAllInvites(conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async getAllInvites(conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["getAllInvites"]> {
         const query = `SELECT * FROM invites;`;
         const response = await this.db.performQuery<"Select">(query,[],conn);
 
@@ -995,7 +997,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
 
-    public async dropAllExpiredInvites(conn?: WebAPI.Mysql.IPoolConnection | undefined) {
+    public async dropAllExpiredInvites(conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["dropAllExpiredInvites"]> {
         const response = await this.db.performQuery(`DELETE FROM invites WHERE now() > expirationDate;`,[],conn);    
 
         if(response==null) {
