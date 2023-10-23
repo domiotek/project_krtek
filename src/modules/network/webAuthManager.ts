@@ -303,7 +303,8 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                     creationDate: DateTime.fromJSDate(response[0]["creationDate"]),
                     lastAccessDate: DateTime.fromJSDate(response[0]["lastAccessDate"]),
                     lastPasswordChangeDate: DateTime.fromJSDate(response[0]["lastPasswordChangeDate"]),
-                    wage: response[0]["wage"]
+                    wage: response[0]["wage"],
+                    externalIncome: response[0]["externalIncome"]
                 }
             }else return null;
         }
@@ -356,7 +357,8 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                     creationDate: DateTime.fromJSDate(row["creationDate"]),
                     lastAccessDate: DateTime.fromJSDate(row["lastAccessDate"]),
                     lastPasswordChangeDate: DateTime.fromJSDate(row["lastPasswordChangeDate"]),
-                    wage: row["wage"]
+                    wage: row["wage"],
+                    externalIncome: response[0]["externalIncome"]
                 });
             }
             return result;
@@ -460,7 +462,8 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                     creationDate: DateTime.fromJSDate(row["creationDate"]),
                     lastAccessDate: DateTime.fromJSDate(row["lastAccessDate"]),
                     lastPasswordChangeDate: DateTime.fromJSDate(row["lastPasswordChangeDate"]),
-                    wage: row["wage"]
+                    wage: row["wage"],
+                    externalIncome: response[0]["externalIncome"]
                 });
             }
 
@@ -552,7 +555,8 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                                 creationDate: DateTime.fromJSDate(row["creationDate"]),
                                 lastAccessDate: DateTime.fromJSDate(row["lastAccessDate"]),
                                 lastPasswordChangeDate: DateTime.fromJSDate(row["lastPasswordChangeDate"]),
-                                wage: row["wage"]
+                                wage: row["wage"],
+                                externalIncome: response[0]["externalIncome"]
                             })
                         }
                         if(!conn) {

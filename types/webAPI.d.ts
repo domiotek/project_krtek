@@ -123,6 +123,7 @@ namespace WebAPI {
                 lastAccessDate: import("luxon").DateTime
                 lastPasswordChangeDate: import("luxon").DateTime
                 wage: number | null
+                externalIncome: number
             }
 
             interface IRankDetails {
@@ -892,10 +893,12 @@ namespace WebAPI {
             maxTip: number
             minTip: number
             avgTip: number
+            externalIncome: number
         }
 
         interface IHistoricUserData {
             wage: number
+            externalIncome: number
         }
 
         interface IUserStatsManager {
