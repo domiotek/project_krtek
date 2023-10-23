@@ -5,7 +5,7 @@ import * as yup from "yup";
 import { DateTime } from "luxon";
 
 const errorHandler = async (err:FastifyError, req: FastifyRequest)=> {
-    Output.category("debug").print("notice",`[API][Auth] "${req.method}:${req.url}" request failed with "${err.statusCode}" code. Reason: "${err.message}".`,"webapi");
+    Output.category("debug").print("notice",`[API][Schedule] "${req.method}:${req.url}" request failed with "${err.statusCode}" code. Reason: "${err.message}".`,"webapi");
 
     return {
         status: "Failure",

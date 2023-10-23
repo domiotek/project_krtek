@@ -3,7 +3,7 @@ import Output from "../../output.js";
 import { API } from "../../../public/types/networkAPI.js";
 
 const errorHandler = async (err:FastifyError, req: FastifyRequest)=> {
-    Output.category("debug").print("notice",`[API][Auth] "${req.method}:${req.url}" request failed with "${err.statusCode}" code. Reason: "${err.message}".`,"webapi");
+    Output.category("debug").print("notice",`[API][App] "${req.method}:${req.url}" request failed with "${err.statusCode}" code. Reason: "${err.message}".`,"webapi");
 
     return {
         status: "Failure",
