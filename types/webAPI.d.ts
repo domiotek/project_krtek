@@ -877,9 +877,10 @@ namespace WebAPI {
     }
 
     namespace Statistics {
-        type TStatsAPITypes = "StatsManager";
+        type TStatsAPITypes = "StatsManager" | "GoalAPI";
         type TErrorTypes<T extends "All" | TStatsAPITypes="All"> = 
-            (T extends "All" | "StatsManager"?TStatsErrorTypes:never);
+            (T extends "All" | "StatsManager"?TStatsErrorTypes:never) | 
+            (T extends "All" | "GoalAPI"?GoalAPI.TErrorTypes:never);
 
         type TStatsErrorTypes = "NoUser" | "InvalidDate";
         
@@ -901,16 +902,167 @@ namespace WebAPI {
             externalIncome: number
         }
 
+        namespace GoalAPI {
+            type TErrorTypes = "NotImplemented";
+
+            interface IMilestonesDetails {
+                milestones: IMilestone[]
+                totalAmount: number
+            }
+
+            interface IMilestone {
+                ID: string
+                title: string
+                amount: number
+                orderTag: number
+            }
+
+            interface IMilestoneOrder {
+                [milestoneID: number]: number
+            }
+
+            interface IGoalManager {
+                /**
+                 * Returns defined milestones along with the total goal amount.
+                 * 
+                 * @returns Object with milestones and numeric totalAmount properties, 
+                 * where milestones contain array of milestone details.
+                 * 
+                 * @throws Can throw NoConnection and DBError errors.
+                 */
+                getMilestones(): Promise<IMilestonesDetails>
+
+                /**
+                 * Calculates total earnings of the user in current month.
+                 * 
+                 * @returns Total earnings
+                 * 
+                 * @throws Can throw NoConnection and DBError errors.
+                 */
+                getCurrentAmount(): Promise<number | null>
+
+                /**
+                 * Adds new milestone at the end of the list.
+                 * @param title Milestone's title. Max 30 characters.
+                 * @param amount Target amount for the milestone. Decimal.
+                 * 
+                 * @returns ID of newly added milestone.
+                 * 
+                 * @throws Can throw NoConnection and DBError errors.
+                 */
+                addMilestone(title: string, amount: number): Promise<number>
+
+                /**
+                 * Removes milestone with given ID.
+                 * 
+                 * @param ID Milestone's ID. Milestone must belong to the current user, 
+                 * otherwise deletion will fail.
+                 * 
+                 * @returns True on successful deletion, false otherwise.
+                 * 
+                 * @throws Can throw NoConnection and DBError errors.
+                 */
+                dropMilestone(ID: number): Promise<boolean>
+
+                /**
+                 * Removes all user milestones.
+                 * 
+                 * @throws Can throw NoConnection and DBError errors.
+                 */
+                dropAllMilestones(): Promise<void>
+
+                /**
+                 * Updates details of the given milestone.
+                 * @param ID milestoneID. Must belong to the current user.
+                 * @param title New milestone title.
+                 * @param amount New milestone target amount.
+                 * 
+                 * @returns True on successful edist, false otherwise.
+                 * 
+                 * @throws Can throw NoConnection and DBError errors.
+                 */
+                setMilestone(ID: number, title: string, amount: number): Promise<boolean>
+
+                /**
+                 * [Not implemented] Will allow for changing the order of milestones.
+                 * @param newOrder Milestone order [May change]
+                 * 
+                 * @throws NotImplemented error.
+                 */
+                updateMilestoneOrder(newOrder: IMilestoneOrder): Promise<void>
+            }
+        }
+
+        
+
         interface IUserStatsManager {
 
-            getHistoricUserData(user: string | number, month: DateTime): Promise<IHistoricUserData | null>
-            setHistoricUserData(user: string | number, month: DateTime, data: IHistoricUserData): Promise<void>
+            /**
+             * Fetches user properties from the archive.
+             * @param user Target user. Either userID or email.
+             * @param date Target date. Only month and year are meaningful.  
+             * 
+             * @returns Archived user properties or null if there is no archive for that user in specified period.
+             * 
+             * @throws Can throw NoConnection, DBError, NoUser or InvalidDate errors.
+             */
+            getHistoricUserData(user: string | number, date: DateTime): Promise<IHistoricUserData | null>
+
+            /**
+             * Updates user properties archive with new data for the specified period.
+             * @param user Target user. Either userID or email.
+             * @param date Target date. Only month and year are meaningful.
+             * @param data User properties.
+             * 
+             * @throws Can throw NoConnection, DBError, NoUser or InvalidDate errors.
+             */
+            setHistoricUserData(user: string | number, date: DateTime, data: IHistoricUserData): Promise<void>
             
+            /**
+             * Returns cached user statistics for the current month.
+             * @param user Target user. Either userID or an email.
+             * 
+             * @returns User's statistics or null if there is no cache for specified user.
+             * @throws Can throw NoConnection, DBError or NoUser errors.
+             */
             getCacheState(user: string | number): Promise<IMonthUserStats | null>
+
+            /**
+             * Sets given user statistics as the cache for current month.
+             * @param user Target user. Either userID or an email.
+             * 
+             * @throws Can throw NoConnection, DBError or NoUser errors.
+             */
             setCacheState(user: string | number, stats: IMonthUserStats): Promise<void>
+
+            /**
+             * Drops statistics cache for specified user. Cache should be dropped 
+             * when related properties, from which statistics are calculated, change.
+             * @param user Target user. Either userID or an email.
+             * 
+             * @throws Can throw NoConnection, DBError or NoUser errors.
+             */
             dropCacheState(user: string | number): Promise<void>
 
-            getStatsOf(user: string | number, month: DateTime): Promise<IMonthUserStats | null>
+            /**
+             * Returns user statistics for the given perdiod.
+             * @param user Target user. Either userID or an email. 
+             * @param date Target date. Only month and year are meaningful.
+             * 
+             * @returns User statistics or null if user doesn't exist.
+             * 
+             * @throws Can throw NoConnection and DBError errors.
+             */
+            getStatsOf(user: string | number, date: DateTime): Promise<IMonthUserStats | null>
+
+            /**
+             * Get user's monthly goal management API.
+             * @param user Target user. Either userID or an email.
+             * 
+             * @returns GoalManager or null if such user doesn't exist.
+             * @throws Can throw NoConnection and DBError errors.
+             */
+            getGoalOf(user: string | number): Promise<GoalAPI.IGoalManager | null>
         }
     }
 
@@ -954,7 +1106,7 @@ namespace WebAPI {
         (T extends "Auth"?Auth.TAuthAPITypes:never) | 
         (T extends "Schedule"?Schedule.TScheduleAPITypes:never);
 
-    type APIErrors<T extends APITypes, S extends "All" | SubAPITypes<T>="All"> = "NoConnection" | "DBError" |
+    type APIErrors<T extends APITypes, S extends "All" | SubAPITypes<T>="All"> = "NoConnection" | "DBError" | "NotImplemented"|
         (T extends "Auth"?Auth.TErrorTypes<S>:never) |
         (T extends "Schedule"?Schedule.TErrorTypes<S>:never) | 
         (T extends "Stats"?Statistics.TErrorTypes<S>:never);

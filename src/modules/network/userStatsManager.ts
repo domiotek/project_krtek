@@ -49,7 +49,8 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
                         connection.release();
 
                     return {
-                        wage: response[0]["wage"]
+                        wage: response[0]["wage"],
+                        externalIncome: response[0]["externalIncome"]
                     }
                 }else return null;
             }else errCode = this._db.getLastQueryFailureReason();
@@ -131,7 +132,8 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
                         totalDeduction: response[0]["totalDeduction"],
                         maxTip: response[0]["maxTip"],
                         minTip: response[0]["minTip"],
-                        avgTip: response[0]["avgTip"]
+                        avgTip: response[0]["avgTip"],
+                        externalIncome: response[0]["externalIncome"]
                     }
                 }else return null;
             }else errCode = this._db.getLastQueryFailureReason();
@@ -242,16 +244,19 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
             }
 
             let wagePerHour;
+            let externalIncome;
             let statsData = null;
             let isCurrentMonth = false;
 
             if(date.startOf("month").equals(DateTime.now().startOf("month"))) {
                 isCurrentMonth = true;
                 wagePerHour = user.wage;
+                externalIncome = user.externalIncome;
                 statsData = await this.getCacheState(userKey,connection,user);
             }else {
                 const history = await this.getHistoricUserData(userKey, date, connection, user);
                 wagePerHour = history?.wage ?? null;
+                externalIncome = history?.externalIncome ?? 0;
             }
 
 
@@ -271,7 +276,8 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
                         totalDeduction: response[0]["totalDeduction"] ?? 0,
                         maxTip: response[0]["maxTip"] ?? 0,
                         minTip: response[0]["minTip"] ?? 0,
-                        avgTip: response[0]["avgTip"] ?? 0
+                        avgTip: response[0]["avgTip"] ?? 0,
+                        externalIncome
                     }
                 }else {
                     connection.release();
@@ -295,4 +301,131 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
 
         throw new StatsAPIError("NoConnection");
     }
+
+    public async getGoalOf(userKey: string | number): ReturnType<WebAPI.Statistics.IUserStatsManager["getGoalOf"]> {
+        const user = await global.app.webAuthManager.getUser(userKey);
+
+        if(!user) {
+            return null;
+        }
+
+        return new GoalManager(this, this._db, user.userID);
+    }
+}
+
+
+
+class GoalManager implements WebAPI.Statistics.GoalAPI.IGoalManager {
+    private static readonly MAX_MILESTONE_COUNT: number = 10;
+    private readonly _db: WebAPI.Mysql.IMysqlController;
+    private readonly _userID: number;
+    private readonly _statsManager: UserStatsManager;
+
+    constructor(manager: UserStatsManager, db: WebAPI.Mysql.IMysqlController, userID: number) {
+        this._db = db;
+        this._userID = userID;
+        this._statsManager = manager;
+    }
+
+    public async getMilestones(conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Statistics.GoalAPI.IGoalManager["getMilestones"]> {
+
+        const query = "SELECT * FROM goal_milestones WHERE userID=? ORDER BY orderTag;";
+        const response = await this._db.performQuery<"Select">(query,[this._userID], conn);
+
+        if(response) {
+            const result: WebAPI.Statistics.GoalAPI.IMilestonesDetails = {
+                milestones: [],
+                totalAmount: 0
+            };
+
+            for (const row of response) {
+                result.milestones.push({
+                    ID: row["milestoneID"],
+                    orderTag: row["orderTag"],
+                    title: row["title"],
+                    amount: row["targetAmount"]
+                });
+                result.totalAmount += row["targetAmount"];
+            }
+
+            return result;
+        }
+
+        conn?.release();
+        throw new StatsAPIError(this._db.getLastQueryFailureReason());
+    }
+
+    public async getCurrentAmount(): ReturnType<WebAPI.Statistics.GoalAPI.IGoalManager["getCurrentAmount"]> {
+        const stats = await this._statsManager.getStatsOf(this._userID,DateTime.now());
+
+        if(stats) {
+            if(stats.totalWage&&stats.wagePerHour)
+                return stats.wagePerHour * stats.totalWage + stats.totalTip + stats.externalIncome - stats.totalDeduction;
+            else return null;
+        }
+
+        throw new StatsAPIError(this._db.getLastQueryFailureReason());
+    }
+    
+    public async addMilestone(title: string, amount: number): ReturnType<WebAPI.Statistics.GoalAPI.IGoalManager["addMilestone"]> {
+
+        const connection = await this._db.getConnection();
+
+
+        if(!connection)
+            throw new StatsAPIError("NoConnection");
+
+
+        const milestonesData = await this.getMilestones(connection);
+
+        const nextOrderTag = (milestonesData.milestones[milestonesData.milestones.length-1]?.orderTag ?? -1) + 1;
+        
+        const query = "INSERT INTO goal_milestones(userID, orderTag, title, targetAmount) VALUES(?,?,?,?);";
+        const response = await this._db.performQuery<"Other">(query,[this._userID, nextOrderTag, title, amount], connection);
+        connection.release();
+
+        if(response&&response.affectedRows==1) {
+
+            return response.insertId;
+        }
+
+        throw new StatsAPIError(this._db.getLastQueryFailureReason());
+    }
+    
+    public async dropMilestone(ID: number): ReturnType<WebAPI.Statistics.GoalAPI.IGoalManager["dropMilestone"]> {
+        const query = "DELETE FROM goal_milestones WHERE milestoneID=? AND userID = ?";
+        const response = await this._db.performQuery<"Other">(query,[ID, this._userID]);
+
+        if(response) {
+            if(response.affectedRows==1) return true;
+            else return false;
+        }
+
+        throw new StatsAPIError(this._db.getLastQueryFailureReason());
+    }
+    
+    public async dropAllMilestones(): ReturnType<WebAPI.Statistics.GoalAPI.IGoalManager["dropAllMilestones"]> {
+        const query = "DELETE FROM goal_milestones WHERE userID=?";
+        const response = await this._db.performQuery<"Other">(query,[this._userID]);
+
+        if(response==null) 
+            throw new StatsAPIError(this._db.getLastQueryFailureReason());
+    }
+    
+    public async setMilestone(ID: number, title: string, amount: number): ReturnType<WebAPI.Statistics.GoalAPI.IGoalManager["setMilestone"]> {
+        const query = "UPDATE goal_milestones SET title=?, amount=? WHERE milestoneID=? AND userID=?;";
+        const response = await this._db.performQuery<"Other">(query,[title, amount, ID, this._userID]);
+
+        if(response) {
+            if(response.affectedRows==1) return true;
+            else return false;
+        }
+
+        throw new StatsAPIError(this._db.getLastQueryFailureReason());
+    }
+    
+    public async updateMilestoneOrder(newOrder: WebAPI.Statistics.GoalAPI.IMilestoneOrder): ReturnType<WebAPI.Statistics.GoalAPI.IGoalManager["updateMilestoneOrder"]> {
+        throw new StatsAPIError("NotImplemented");
+    }
+    
 }
