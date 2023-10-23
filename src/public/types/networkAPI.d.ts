@@ -159,5 +159,45 @@ export namespace API {
                 type TResponse = API._.ISuccessGetResponse<IResponseData> | API._.IFailureGetResponse<TCommonResponses | "NotSignedIn" | "InvalidDate">
             }
         }
+
+        namespace Statistics {
+            namespace GetStatistics {
+                interface IRequest {
+                    fromMonth?: string
+                }
+
+                interface IGoalDetails {
+                    milestones: IMilestone[]
+                    totalAmount: number
+                }
+
+                interface IMilestone {
+                    ID: string
+                    title: string
+                    amount: number
+                    orderTag: number
+                }
+
+                interface IUserStats {
+                    totalHours: number
+                        shiftCount: number
+                        wagePerHour: number | null
+                        totalWage: number | null
+                        totalTip: number
+                        totalDeduction: number
+                        maxTip: number
+                        minTip: number
+                        avgTip: number
+                        externalIncome: number
+                }
+
+                interface IResponseData {
+                    stats: IUserStats,
+                    goal: IGoalDetails
+                }
+
+                type TResponse = API._.ISuccessGetResponse<IResponseData> | API._.IFailureGetResponse<TCommonResponses | "NotSignedIn" | "InvalidDate">
+            }
+        }
     }
 }
