@@ -13,7 +13,8 @@ export namespace CustomFormTypes {
     export interface IProps {
         url: string
         method: "POST" | "GET"
-        elements: JSX.Element[]
+        elements?: JSX.Element[]
+        children?: JSX.Element[]
         onFailure: (Response: any)=>Promise<string>
         onSuccess: (response: any)=>void
         onBeforeSubmit?: (setErrorMessage: (text: string)=>void)=>void
@@ -25,6 +26,9 @@ export namespace CustomFormTypes {
 }
 
 export default function CustomForm(props: CustomFormTypes.IProps) {
+    if(!props.children&&!props.elements)
+    throw new Error("No Form elements were given.");
+
     const [submitDisabled, setSubmitDisabled] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -93,7 +97,7 @@ export default function CustomForm(props: CustomFormTypes.IProps) {
             <p className={`${classes.ErrorDialog} ${errorMessage!==null?classes.DialogShown:""}`}>
                 {errorMessage}
             </p>
-            {props.elements}
+            {props.elements ?? props.children}
             <button type="submit" disabled={submitDisabled}>{props.submitCaption}</button>
         </form>
     );
