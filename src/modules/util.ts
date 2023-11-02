@@ -90,6 +90,51 @@ export function prependZero(input: string | number) : string {
 }
 
 /**
+ * Analyzes single stack entry and extracts module, method and location from it, if possible.
+ */
+function parseErrorStackEntry(errStackEntry: string) {
+    const result: IStackRecord = {
+        module: undefined,
+        method: undefined,
+        location: ""
+    }
+
+    const dotPos = errStackEntry.indexOf(".");
+    const pPos = errStackEntry.indexOf(" (");
+    const atPos = errStackEntry.indexOf("at ")+3;
+    const envType = dotPos!=-1&&pPos!=-1?(dotPos<pPos?"method":"globalFunc"):"other";
+    switch(envType) {
+        case "method":
+            result.module = errStackEntry.substring(atPos,dotPos);
+            result.method = errStackEntry.substring(dotPos+1,pPos);
+            result.location = errStackEntry.substring(pPos+2,errStackEntry.indexOf(")"));
+        break;
+        case "globalFunc":
+            result.method = errStackEntry.substring(atPos,pPos);
+            result.location = errStackEntry.substring(pPos+2,errStackEntry.indexOf(")"));
+        break;
+        case "other":
+            result.location = errStackEntry.substring(atPos,errStackEntry.length-1);
+        break;
+    }
+
+    return result;
+}
+
+/**
+ * Goes up down the stack and returns first function call, that doesn't belong to the given module.
+ * Usefull, when you want to find outside origin of the error in the complex internal module structure. 
+ */
+export function findFirstStackEntryNotFrom(stackEntries: IStackRecord[], module: string) {
+    for (const entry of stackEntries) {
+        if(entry.module!=module) {
+            return entry;
+        }
+    }
+}
+
+
+/**
  * Analyzes given error object and returns information like 
  * thrown error, faulting module and stack with shortened paths.
  */
@@ -100,6 +145,7 @@ export function parseErrorObject(err: IGenericError) {
         faultingMethod: undefined,
         faultLocation: "",
         stack: "",
+        stackParts: [],
         attachedData: undefined
     }
     const parts = (err.stack ?? "").split("\n");
@@ -112,28 +158,17 @@ export function parseErrorObject(err: IGenericError) {
 
         parts[i] = parts[i].substring(0,startPos) + parts[i].substring(endPos+4) + "\n";
         parts[i] = "\t\t"+parts[i].trimStart();
+        
+        result.stackParts.push(parseErrorStackEntry(parts[i]));
         result.stack += parts[i];
     }
     result.stack = result.stack.substring(0,result.stack.length-1);
 
-    const dotPos = parts[1].indexOf(".");
-    const pPos = parts[1].indexOf(" (");
-    const atPos = parts[1].indexOf("at ")+3;
-    const envType = dotPos!=-1&&pPos!=-1?(dotPos<pPos?"method":"globalFunc"):"other";
-    switch(envType) {
-        case "method":
-            result.faultingModule = parts[1].substring(atPos,dotPos);
-            result.faultingMethod = parts[1].substring(dotPos+1,pPos);
-            result.faultLocation = parts[1].substring(pPos+2,parts[1].indexOf(")"));
-        break;
-        case "globalFunc":
-            result.faultingMethod = parts[1].substring(atPos,pPos);
-            result.faultLocation = parts[1].substring(pPos+2,parts[1].indexOf(")"));
-        break;
-        case "other":
-            result.faultLocation = parts[1].substring(atPos,parts[1].length-1);
-        break;
-    }
+    const faultingEntry = parseErrorStackEntry(parts[1]);
+
+    result.faultingModule = faultingEntry.module;
+    result.faultingMethod = faultingEntry.method;
+    result.faultLocation = faultingEntry.location;
 
     if(err.data!=undefined) result.attachedData = JSON.stringify(err.data);
 

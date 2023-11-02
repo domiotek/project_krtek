@@ -1,3 +1,14 @@
+
+
+/**
+ * Parsed error stack entry with all information extracted.
+ */
+interface IStackRecord {
+    module: string | undefined
+    method: string | undefined
+    location: string
+}
+
 interface IParsedErrorData {
     /**
      * Error message.
@@ -27,6 +38,13 @@ interface IParsedErrorData {
      * * Entries originated in the internal node code have been deleted.
      */
     stack: string
+
+    /**
+     * Array of shortened stack entries. 
+     * * Removed internal node code entries
+     * * Paths relative to dist directory
+     */
+    stackParts: IStackRecord[]
 
     /**
      * Additional data attached to the error object on throw in form of JSON string.
