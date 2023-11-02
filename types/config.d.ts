@@ -83,6 +83,7 @@ interface IEnvironmentConfig {
         allowNoMysqlRuns: boolean
         suppressEmailSending: boolean
         disablePortalTokenChecking: boolean
+        printMySQLQueries: boolean
     }
 
     /**
