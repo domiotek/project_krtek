@@ -3,7 +3,7 @@
     background-size: 200% 100%;
     background-position-x: -100%;
     background-repeat: no-repeat;
-    background-color: var(--bg-light-85);
+    background-color: var(--bg-light-85)!important;
     animation: PulseLoadingAnim 2s ease infinite;
     animation-play-state: var(--pulse-anim-play-state, "running");
 }
