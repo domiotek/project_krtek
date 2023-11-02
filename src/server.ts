@@ -118,8 +118,27 @@ class App implements IApp {
 			}
 	
 			this.server.on("APIServerStarted",()=>{
-	
-				Output.category("general").print(`Server started at ${Addr.getAddress()}:${Addr.getPort()}.`);
+				const address = Addr.getAddress();
+				if(address=="0.0.0.0") {
+					const port = Addr.getPort();
+					const output = Output.category("general");
+
+					output.print(`Server started on all supported IPv4 addresses on port ${port}.`).
+					print("Available aliases: ");
+
+					const aliases = Addr.getAllIPv4Addresses();
+					for (const interfaceName in aliases) {
+						const addresses = aliases[interfaceName];
+
+						for (const address of addresses) {
+							output.print(`\thttp://${address}:${port}`);
+						}
+					}
+					
+				}else {
+					Output.category("general").print(`Server started at ${Addr.getAddress()}:${Addr.getPort()}.`);
+				}
+				
 				this._start();
 			});
 

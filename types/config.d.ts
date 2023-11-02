@@ -29,6 +29,7 @@ interface IEnvironmentConfig {
 
         /**
          * Used when addressMode is set to 'address'. Static IP address, which will be used for listening.
+         * When '0.0.0.0' is provided, server will listen on all available IPv4 addresses.
          */
         address: string | undefined
 
