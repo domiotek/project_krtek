@@ -38,8 +38,11 @@ export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
             if(response) {
                 switch(response.length) {
                     case 1:
-                        if(!conn) connection.release();
                         return new WorkDay(response[0]["workDayID"],this._db,when, response[0]["note"]);
+                        if(!conn) {
+                            connection.rollback();
+                            connection.release();
+                        }
                     default:
                         this._db.reportMysqlError(new Error(`[DB][Schedule] Invalid state for workday on '${when.toISODate()}'. Detected more than one entry(${response.length}).`) as MysqlError);
                         errCode = "DBError";
@@ -58,6 +61,7 @@ export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
                 }
             }else errCode = this._db.getLastQueryFailureReason();
 
+            connection.rollback();
             connection.release();
             throw new ScheduleAPIError(errCode);
         }
@@ -117,12 +121,16 @@ export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
                             result.userSlots.push(row["privateSlotID"]);
                         }
 
-                        if(!conn) connection.release();
+                        if(!conn) {
+                            connection.rollback();
+                            connection.release();
+                        }
                         return result;
                     }else errCode = this._db.getLastQueryFailureReason();
                 }else errCode = "InvalidRange";
             }else errCode = "NoUser";
 
+            connection.rollback();
             connection.release();
             if(errCode) throw new ScheduleAPIError(errCode);
         }
@@ -156,6 +164,7 @@ export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
                 if(workDay) {
                     result.push(workDay);
                 }else {
+                    connection.rollback();
                     connection.release();
                     throw new ScheduleAPIError(this._db.getLastQueryFailureReason());
                 }
@@ -208,6 +217,7 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
         const response = await this._db.performQuery<"Other">("UPDATE work_days SET note=? WHERE workDayID=?",[newNote, this._workDayID], conn);
 
         if(!response || response.affectedRows!=1) {
+            conn?.rollback();
             conn?.release();
             throw new ScheduleAPIError(response?"DBError":this._db.getLastQueryFailureReason());
         }
@@ -247,6 +257,7 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
             }else return null;
         }
         
+        conn?.rollback();
         conn?.release();
         throw new ScheduleAPIError(this._db.getLastQueryFailureReason());
     }
@@ -264,6 +275,7 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
             return result;
         }
         
+        conn?.rollback();
         conn?.release();
         throw new ScheduleAPIError(this._db.getLastQueryFailureReason());
     }
@@ -300,6 +312,7 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
             return result;
         }
         
+        conn?.rollback();
         conn?.release();
         throw new ScheduleAPIError(this._db.getLastQueryFailureReason());
     }
@@ -307,6 +320,7 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
     public async addSlot(requiredRole: string, startTime: DateTime, endTime?: DateTime | undefined, conn?: WebAPI.Mysql.IPoolConnection): Promise<number> {
 
         if(!startTime.isValid||(endTime?!endTime.isValid:false)) {
+            conn?.rollback();
             conn?.release();
             throw new ScheduleAPIError("InvalidDate");
         }
@@ -314,6 +328,7 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
         const roleID = await (global.app.webAuthManager as InternalWebAuthManager).getRoleID(requiredRole, conn);
 
         if(roleID===null) {
+            conn?.rollback();
             conn?.release();
             throw new ScheduleAPIError("InvalidRole");
         }
@@ -349,7 +364,10 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
                 }else errCode = this._db.getLastQueryFailureReason();
             }else errCode = "MaxSlotCountReached";
             
-            if(!conn || errCode) connection.release();
+            if(!conn || errCode) {
+                connection.rollback();
+                connection.release();
+            }
             if(errCode) throw new ScheduleAPIError(errCode);
         }
 
@@ -359,6 +377,7 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
     public async editSlot(slotID: number, requiredRole: string, startTime: DateTime, endTime?: DateTime | undefined, conn?: WebAPI.Mysql.IPoolConnection) {
 
         if(!startTime.isValid&&(endTime?!endTime.isValid:false)) {
+            conn?.rollback();
             conn?.release();
             throw new ScheduleAPIError("InvalidDate");
         }
@@ -366,6 +385,7 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
         const roleID = await (global.app.webAuthManager as InternalWebAuthManager).getRoleID(requiredRole, conn);
             
         if(roleID===null) {
+            conn?.rollback();
             conn?.release();
             throw new ScheduleAPIError("InvalidRole");
         }
@@ -429,7 +449,10 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
                 }else errCode = "DBError";
             }
            
-            if(!conn || errCode) connection.release();
+            if(!conn || errCode) {
+                connection.rollback();
+                connection.release();
+            }
             if(errCode) throw new ScheduleAPIError(errCode);
             return false;
         }
@@ -447,6 +470,7 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
             for (const ID of IDs) {
                 const response = await this.deleteSlot(ID,connection);
                 if(response!==true) {
+                    connection.rollback();
                     connection.release();
                     throw new ScheduleAPIError("DBError");
                 }
@@ -490,10 +514,12 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
 
                 if(otherSlotsCheck) {
                     if(otherSlotsCheck.length>0) {
+                        connection.rollback();
                         connection.release();
                         throw new ScheduleAPIError("UserAlreadyAssigned");
                     }
                 }else {
+                    connection.rollback();
                     connection.release();
                     throw new ScheduleAPIError(this._db.getLastQueryFailureReason());
                 }
@@ -518,6 +544,7 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
                 }
             }else errCode = "InvalidSlot";
 
+            connection.rollback();
             connection.release();
             throw new ScheduleAPIError(errCode);
         }
@@ -542,7 +569,10 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
     
                     if(response&&response.affectedRows==1) canProceed=true;
                 }else {
-                    if(!conn) connection.release();
+                    if(!conn) {
+                        connection.rollback();
+                        connection.release();
+                    }
                     return true;
                 }
                 
@@ -562,7 +592,10 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
     
             }
            
-            if(!conn || errCode) connection.release();
+            if(!conn || errCode) {
+                connection.rollback();
+                connection.release();
+            }
             if(errCode) throw new ScheduleAPIError(errCode);
             
             return false;
@@ -629,6 +662,7 @@ class Shift implements WebAPI.Schedule.IShift {
 
         if(result) return result;
         
+        conn?.rollback();
         conn?.release();
         throw new ScheduleAPIError("NoUser");
     }
@@ -637,6 +671,7 @@ class Shift implements WebAPI.Schedule.IShift {
         let errCode: WebAPI.APIErrors<"Schedule"> = "InvalidDate";
 
         if(deduction < 0 || tip < 0) {
+            conn?.rollback();
             conn?.release();
             throw new ScheduleAPIError("InvalidTipOrDeduction");
         }
@@ -654,6 +689,7 @@ class Shift implements WebAPI.Schedule.IShift {
             }else errCode = this._db.getLastQueryFailureReason();
         }
 
+        conn?.rollback();
         conn?.release();
         throw new ScheduleAPIError(errCode);
     }

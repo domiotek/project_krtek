@@ -23,6 +23,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
 
     public async getHistoricUserData(userKey: string | number, date: luxon.DateTime, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Statistics.IUserStatsManager["getHistoricUserData"]> {
         if(!date.isValid) {
+            conn?.rollback();
             conn?.release();
             throw new StatsAPIError("InvalidDate");
         }
@@ -266,7 +267,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
         const connection = conn ?? await this._db.getConnection();
 
         if(connection) {
-            connection.beginTransaction();
+            if(!conn) connection.beginTransaction();
             const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, connection);
 
             if(userID===null) {
@@ -290,6 +291,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
                 }else errCode = "DBError";
             }else errCode = this._db.getLastQueryFailureReason();
 
+            connection.rollback();
             connection.release();
             throw new StatsAPIError(errCode);
         }

@@ -57,7 +57,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                 const newSessionID = randomBytes(16).toString("hex");
 
                 let queryStr = `INSERT INTO auth_sessions(sessionID, userID, ipAddress, expirationDate) VALUES(?, ?, ?,?);`;
-                let response = await this.db.performQuery<"Other">(queryStr,[newSessionID, user.userID, ipAddress, DateTime.now().plus({days: 7}).toISO()]);
+                let response = await this.db.performQuery<"Other">(queryStr,[newSessionID, user.userID, ipAddress, DateTime.now().plus({days: 7}).toISO()], connection);
                 if(response) {
                     if(response.affectedRows===1) {
                         queryStr = `UPDATE users SET lastAccessDate=NOW() WHERE userID=?`;
@@ -104,13 +104,13 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
             if(session) {
                 let queryStr = `UPDATE auth_sessions SET lastAccessDate=current_timestamp(), ipAddress=? WHERE sessionID=? AND NOW() < expirationDate;`;
-                let response = await this.db.performQuery<"Other">(queryStr,[ipAddress,sessionToken],conn);
+                let response = await this.db.performQuery<"Other">(queryStr,[ipAddress,sessionToken],connection);
 
                 if(response) {
                     if(response.affectedRows===1) {
                         queryStr = `UPDATE users SET lastAccessDate=NOW() WHERE userID=?`;     
 
-                        response = await this.db.performQuery<"Other">(queryStr,[session.userID]);
+                        response = await this.db.performQuery<"Other">(queryStr,[session.userID], connection);
 
                         if(response) {
                             if(!conn) {
