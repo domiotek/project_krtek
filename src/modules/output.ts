@@ -1,4 +1,4 @@
-import { parseErrorObject } from "./util.js";
+import { formatErrorStackEntry, parseErrorObject } from "./util.js";
 
 const colors = {
     "fg_white": 37,
@@ -170,7 +170,7 @@ export default class OutputController implements IOutputController {
                 
         }else if(importance=="error") {
             const err = parseErrorObject(param1 as Error);
-            const message = `"${err.message}" error raised ${err.faultingMethod?`in ${err.faultingModule?`${err.faultingModule}.`:""}${err.faultingMethod}() `:""}at ${err.faultLocation}`;
+            const message = `"${err.message}" error raised ${formatErrorStackEntry(err.stackParts[0])}`;
             this._outputMethod(`[LOADER] Error: ${message}`);
         }else if(process.env.PRINT_WHOLE_LOADER) this._outputMethod(`[LOADER] ${text}`);
 

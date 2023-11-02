@@ -90,6 +90,16 @@ export function prependZero(input: string | number) : string {
 }
 
 /**
+ * Formats error stack entry in one of the following ways based on the availability of properties:
+ * * in [module].[method]() at [location]
+ * * in [method]() at [location]
+ * * at [location]
+ */
+export function formatErrorStackEntry(errStackEntry: IStackRecord) {
+    return `${errStackEntry.method?`in ${errStackEntry.module?`${errStackEntry.module}.`:""}${errStackEntry.method}() `:""}at ${errStackEntry.location}`;
+}
+
+/**
  * Analyzes single stack entry and extracts module, method and location from it, if possible.
  */
 function parseErrorStackEntry(errStackEntry: string) {
@@ -124,6 +134,7 @@ function parseErrorStackEntry(errStackEntry: string) {
 /**
  * Goes up down the stack and returns first function call, that doesn't belong to the given module.
  * Usefull, when you want to find outside origin of the error in the complex internal module structure. 
+ * If such can't be found, first entry will be returned.
  */
 export function findFirstStackEntryNotFrom(stackEntries: IStackRecord[], module: string) {
     for (const entry of stackEntries) {
@@ -131,6 +142,8 @@ export function findFirstStackEntryNotFrom(stackEntries: IStackRecord[], module:
             return entry;
         }
     }
+
+    return stackEntries[0];
 }
 
 
