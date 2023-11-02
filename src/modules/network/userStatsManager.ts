@@ -21,7 +21,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
         this._db = db;
     }
 
-    public async getHistoricUserData(userKey: string | number, date: luxon.DateTime, conn?: WebAPI.Mysql.IPoolConnection, user?: WebAPI.Auth.UserAPI.IUserDetails): ReturnType<WebAPI.Statistics.IUserStatsManager["getHistoricUserData"]> {
+    public async getHistoricUserData(userKey: string | number, date: luxon.DateTime, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Statistics.IUserStatsManager["getHistoricUserData"]> {
         if(!date.isValid) {
             conn?.release();
             throw new StatsAPIError("InvalidDate");
@@ -31,9 +31,9 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
 
         if(connection) {
 
-            const userData = user || await (global.app.webAuthManager as InternalWebAuthManager).getUser(userKey, connection);
+            const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, connection);
 
-            if(!userData) {
+            if(userID===null) {
                 if(!conn) connection.release();
                 throw new StatsAPIError("NoUser");
             }
@@ -41,7 +41,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
             let errCode: WebAPI.APIErrors<"Stats">;
 
             let queryStr = `SELECT wage FROM user_prop_history WHERE userID=? AND date=?`;
-            const response = await this._db.performQuery<"Select">(queryStr,[userData.userID, date.toISODate()],connection);
+            const response = await this._db.performQuery<"Select">(queryStr,[userID, date.startOf("month").toISODate()],connection);
 
             if(response) {
                 if(response.length===1) {
@@ -62,7 +62,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
         throw new StatsAPIError("NoConnection");
     }
 
-    public async setHistoricUserData(userKey: string | number, date: DateTime, data: WebAPI.Statistics.IHistoricUserData, conn?: WebAPI.Mysql.IPoolConnection, user?: WebAPI.Auth.UserAPI.IUserDetails): ReturnType<WebAPI.Statistics.IUserStatsManager["setHistoricUserData"]> {
+    public async setHistoricUserData(userKey: string | number, date: DateTime, data: WebAPI.Statistics.IHistoricUserData, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Statistics.IUserStatsManager["setHistoricUserData"]> {
         if(!date.isValid) {
             conn?.release();
             throw new StatsAPIError("InvalidDate");
@@ -72,17 +72,21 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
 
         if(connection) {
             connection.beginTransaction();
-            const userData = user || await (global.app.webAuthManager as InternalWebAuthManager).getUser(userKey, connection);
+            if(!conn) connection.beginTransaction();
 
-            if(!userData) {
-                if(!conn) connection.release();
-                throw new StatsAPIError("NoUser");
+			const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, connection);
+
+			if(userID===null) {
+				if(!conn) connection.release();
+				throw new StatsAPIError("NoUser");
+			}
             }
 
             let errCode: WebAPI.APIErrors<"Stats">;
 
             let queryStr = `INSERT INTO user_prop_history VALUES(?,?,?)`;
-            const response = await this._db.performQuery<"Other">(queryStr,[userData.userID, date.toISODate(), data.wage],connection);
+
+            const response = await this._db.performQuery<"Other">(queryStr,[userID, date.toISODate(), data.wage],connection);
 
             if(response) {
                 if(response.affectedRows==1) {
@@ -101,14 +105,14 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
         throw new StatsAPIError("NoConnection");
     }
 
-    public async getCacheState(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection, user?: WebAPI.Auth.UserAPI.IUserDetails): ReturnType<WebAPI.Statistics.IUserStatsManager["getCacheState"]> {
+    public async getCacheState(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Statistics.IUserStatsManager["getCacheState"]> {
         const connection = conn ?? await this._db.getConnection();
 
         if(connection) {
 
-            const userData = user || await (global.app.webAuthManager as InternalWebAuthManager).getUser(userKey, connection);
+            const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, connection);
 
-            if(!userData) {
+            if(userID===null) {
                 if(!conn) connection.release();
                 throw new StatsAPIError("NoUser");
             }
@@ -116,7 +120,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
             let errCode: WebAPI.APIErrors<"Stats">;
 
             let queryStr = `SELECT * FROM user_stats_cache WHERE userID=?`;
-            const response = await this._db.performQuery<"Select">(queryStr,[userData.userID],connection);
+            const response = await this._db.performQuery<"Select">(queryStr,[userID],connection);
 
             if(response) {
                 if(response.length===1) {
@@ -145,14 +149,14 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
         throw new StatsAPIError("NoConnection");
     }
 
-    public async setCacheState(userKey: string | number, stats: WebAPI.Statistics.IMonthUserStats, conn?: WebAPI.Mysql.IPoolConnection, user?: WebAPI.Auth.UserAPI.IUserDetails): ReturnType<WebAPI.Statistics.IUserStatsManager["setCacheState"]> {
+    public async setCacheState(userKey: string | number, stats: WebAPI.Statistics.IMonthUserStats, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Statistics.IUserStatsManager["setCacheState"]> {
         const connection = conn ?? await this._db.getConnection();
 
         if(connection) {
             if(!conn) connection.beginTransaction();
-            const userData = user || await (global.app.webAuthManager as InternalWebAuthManager).getUser(userKey, connection);
+            const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, connection);
 
-            if(!userData) {
+            if(userID===null) {
                 if(!conn) connection.release();
                 throw new StatsAPIError("NoUser");
             }
@@ -161,7 +165,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
 
             let queryStr = `INSERT INTO user_stats_cache VALUES(?,?,?,?,?,?,?,?,?,?)`;
             const values = [
-                userData.userID,
+                userID,
                 stats.totalHours,
                 stats.shiftCount,
                 stats.wagePerHour,
@@ -191,14 +195,14 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
         throw new StatsAPIError("NoConnection");
     }
 
-    public async dropCacheState(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection, user?: WebAPI.Auth.UserAPI.IUserDetails): ReturnType<WebAPI.Statistics.IUserStatsManager["dropCacheState"]> {
+    public async dropCacheState(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Statistics.IUserStatsManager["dropCacheState"]> {
         const connection = conn ?? await this._db.getConnection();
 
         if(connection) {
             connection.beginTransaction();
-            const userData = user || await (global.app.webAuthManager as InternalWebAuthManager).getUser(userKey, connection);
+            const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, connection);
 
-            if(!userData) {
+            if(userID===null) {
                 if(!conn) connection.release();
                 throw new StatsAPIError("NoUser");
             }
@@ -207,7 +211,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
 
             let queryStr = `DELETE FROM user_stats_cache WHERE userID=?`;
            
-            const response = await this._db.performQuery<"Other">(queryStr,[userData.userID],connection);
+            const response = await this._db.performQuery<"Other">(queryStr,[userID],connection);
 
             if(response) {
                 if(response.affectedRows==1) {
@@ -236,9 +240,9 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
         const connection = conn ?? await this._db.getConnection();
 
         if(connection) {
-            const user = await (global.app.webAuthManager as InternalWebAuthManager).getUser(userKey, connection);
+            const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, connection);
 
-            if(!user) {
+            if(userID===null) {
                 if(!conn) connection.release();
                 return null;
             }
@@ -264,7 +268,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
 
             if(statsData == null) {
                 let queryStr = `SELECT SUM(duration) as totalHours, COUNT(*) as shiftCount, SUM(tip) as totalTip, SUM(deduction) as totalDeduction, MAX(tip) as maxTip, Min(tip) as minTip, AVG(tip) as avgTip FROM shifts NATURAL JOIN shift_slots NATURAL JOIN work_days WHERE userID=? AND MONTH(date) = ? AND YEAR(date) = ?;`;
-                const response = await this._db.performQuery<"Select">(queryStr,[user.userID, date.month, date.year],conn);
+                const response = await this._db.performQuery<"Select">(queryStr,[userID, date.month, date.year],conn);
     
                 if(response&&response.length===1) {
                     statsData = {
@@ -288,7 +292,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
             }
 
             if(recalculatedStats&&isCurrentMonth) {
-                await this.setCacheState(userKey, statsData, connection, user);
+                await this.setCacheState(userID, statsData, connection);
             }
 
             if(!conn) {

@@ -281,6 +281,15 @@ namespace WebAPI {
              */
 
             /**
+             * Resolves userKey into userID.
+             * @param conn existing connection. Can be passed to avoid creating another connection just for that.
+             * @returns userID or null if user is not found.
+             * 
+             * @throws Can throw NoConnection and DBError errors.
+             */
+            resolveUserKey(userKey: string | number): Promise<number | null>
+
+            /**
              * Creates new user based on the provided data.
              * Implementation guarantees that the user will be valid when created or not created at all.
              * 

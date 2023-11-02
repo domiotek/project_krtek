@@ -29,24 +29,6 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     }
 
     /**
-     * Resolves userKey into userID.
-     * @param conn existing connection. Can be passed to avoid creating another connection just for that.
-     * @returns userID or -1 if user is not found.
-     * 
-     * @throws Can throw NoConnection and DBError errors.
-     */
-    private async _resolveUserKey(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection) {
-        switch(typeof userKey) {
-            case "string": 
-                const userData = await this.getUser(userKey,conn);
-                if(userData) return userData.userID;
-                else return -1;
-            case "number": return userKey;
-            default: throw new TypeError("Invalid user key. Expected either number or a string.");
-        }
-    }
-
-    /**
      * Translates userKey into more descriptive form.
      * @returns object containing field property which holds db field name in users table to search in and userKey which still
      * holds either userID or email, but with email lowercased.
@@ -227,6 +209,17 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
     //User API
 
+    public async resolveUserKey(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["resolveUserKey"]> {
+        switch(typeof userKey) {
+            case "string": 
+                const userData = await this.getUser(userKey,conn);
+                if(userData) return userData.userID;
+                else return null;
+            case "number": return userKey;
+            default: throw new TypeError("Invalid user key. Expected either number or a string.");
+        }
+    }
+
     public async createUser(userData: WebAPI.Auth.UserAPI.IUserRegistrationData, conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["createUser"]> {
         const emailRegex = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
         const connection = conn ?? await this.db.getConnection();
@@ -315,7 +308,9 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
     public async setPassword(userKey: string | number, newPassword: string, conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["setPassword"]> {
 
-        const {field, userKey: safeUserKey} = this._translateUserKey(userKey);
+        const userID = await this.resolveUserKey(userKey, conn);
+
+        if(userID===null) return;
 
         if(!/(?=.*\d)(?=.*[a-z])(?=.*[A-Z])((?=.*\W)|(?=.*_))^[^ ]+$/.test(newPassword)) {
             conn?.release();
@@ -324,7 +319,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
         const hashedPassword = await hash(newPassword,10);
         
-        const result = await this.db.performQuery<"Other">(`UPDATE users SET password=?, lastPasswordChangeDate=NOW() WHERE ${field}=?`,[hashedPassword, safeUserKey],conn);
+        const result = await this.db.performQuery<"Other">(`UPDATE users SET password=?, lastPasswordChangeDate=NOW() WHERE userID=?`,[hashedPassword, userID],conn);
 
         if(!result||result.changedRows!==1) {
             conn?.release();
@@ -375,8 +370,9 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             if(!conn) connection.beginTransaction();
             let errCode: WebAPI.APIErrors<"Auth">;
 
-            const userID = await this._resolveUserKey(userKey, connection);
-            if(userID!=-1) {
+            const userID = await this.resolveUserKey(userKey, connection);
+
+            if(userID!=null) {
                 const rankDetails = await this.getRank(rankName, connection);
 
                 if(rankDetails) {
@@ -696,9 +692,9 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         if(connection) {
             connection.beginTransaction();
 
-            const userID = await this._resolveUserKey(userKey, connection);
+            const userID = await this.resolveUserKey(userKey, connection);
 
-            if(userID==-1) {
+            if(userID==null) {
                 connection.release();
                 throw new WebAuthAPIError("NoUser");
             }
@@ -731,9 +727,9 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         const connection = conn ?? await this.db.getConnection();
 
         if(connection) {
-            const userID = await this._resolveUserKey(userKey, connection);
+            const userID = await this.resolveUserKey(userKey, connection);
 
-            if(userID==-1) {
+            if(userID==null) {
                 if(!conn) connection.release();
                 return false;
             }
@@ -753,9 +749,9 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
     public async createToken(actionName: WebAPI.Auth.AccountsTokenAPI.TAccountActionName ,userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["createToken"]> {
 
-        const userID = await this._resolveUserKey(userKey, conn);
+        const userID = await this.resolveUserKey(userKey, conn);
 
-        if(userID!=-1) {
+        if(userID==null) {
             conn?.release();
             throw new WebAuthAPIError("NoUser");
         }
