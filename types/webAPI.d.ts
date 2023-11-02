@@ -3,7 +3,13 @@ namespace WebAPI {
     type DateTime = import("luxon").DateTime;
 
     namespace Mysql {
-        
+        interface IConnectionRecord {
+            timeout: NodeJS.Timeout
+            acquiringLocation: string
+            lastQuery: string | null
+            queryingLocation: string | null
+        }
+
         interface IMysqlController {
 
             /**
