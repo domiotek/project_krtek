@@ -4,15 +4,22 @@
     color: #4e4d59
 }
 
-.InputContainer input {
+.InputContainer input, .InputContainer textarea {
     margin-top: 0.25rem;
     width: 100%;
     padding: 0.5rem;
-    border: solid 1px #a9a1e3;
-    background: #e4e2ef;
+    border: solid 1px var(--bg-dark);
+    background: var(--bg-light-85);
     color: black;
     border-radius: 0.4rem;
 
+}
+
+.InputContainer textarea {
+    resize: vertical;
+    min-height: 34px;
+    height: 60px;
+    max-height: 150px;
 }
 
 .InputContainer.hidden {
@@ -29,4 +36,93 @@
 .InputContainer.checkbox input {
     margin: 0 0.25rem 0 0.5rem;
     width: auto;
+}
+
+input[hidden] {
+    display: none;
+}
+
+.HorizontalContainer {
+    display: flex;
+    align-items: baseline;
+    width: 100%;
+    border: solid 1px var(--bg-dark);
+    background: var(--bg-light-85);
+    border-radius: 0.4rem;
+    font-size: 14px;
+    padding: 0 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.HorizontalContainer:focus-within {
+    outline: solid 2px black;
+    border-color: var(--bg-light-85);
+}
+
+.InputContainer.currency input::-webkit-outer-spin-button,
+.InputContainer.currency input::-webkit-inner-spin-button {
+    /* display: none; <- Crashes Chrome on hover */
+    -webkit-appearance: none;
+    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+.InputContainer.currency input[type=number] {
+    -moz-appearance: textfield; /* Firefox */
+    appearance: textfield;
+}
+
+.InputContainer.currency .HorizontalContainer input:nth-of-type(1) {
+    outline: none;
+    text-align: right;
+    margin: 0;
+    border: 0;
+    padding: 0.5rem 0.15rem;
+    font-size: inherit;
+}
+
+.InputContainer.currency .HorizontalContainer span {
+    width: 0;
+    overflow: hidden;
+    margin-left: 0.15rem;
+}
+
+.InputContainer.currency .HorizontalContainer span.Active {
+    width: unset;
+    margin-left: 0.15rem;
+    margin-right: 0.05rem;
+}
+
+
+.InputContainer.currency .HorizontalContainer input:nth-of-type(2) {
+    outline: none;
+    margin: 0;
+    border: 0;
+    width: 5%;
+    padding: 0.5rem 0;
+    font-size: inherit;
+}
+
+.InputContainer.currency .HorizontalContainer span:not(.Active) + input{
+    width: 8%;
+}
+
+.InputContainer >span {
+    width: 100%;
+    display: inline-block;
+    text-align: right;
+    font-size: x-small;
+    margin-top: 0;
+}
+
+.ResizableContainer {
+    resize: vertical;
+    overflow: auto;
+    width: 100%;
+    min-height: 34px;
+    max-height: 150px;
+}
+
+.ResizableContainer >* {
+    width: 100%;
+    height: 100%;
 }
