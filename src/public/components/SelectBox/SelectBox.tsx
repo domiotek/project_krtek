@@ -11,7 +11,6 @@ interface IProps {
     label: string
     formControlID: string
     stateUpdater: ChangeEventHandler<HTMLSelectElement>
-    requiredOtherThanDefault: boolean
     initialValue: string
     options: IOptionDef[]
     autocomplete: string

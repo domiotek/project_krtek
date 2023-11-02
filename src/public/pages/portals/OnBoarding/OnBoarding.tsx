@@ -74,8 +74,7 @@ export default function OnBoardingPortal() {
                             <SelectBox 
                                 key="gender" 
                                 label="Gender" 
-                                formControlID="gender" 
-                                requiredOtherThanDefault={false} 
+                                formControlID="gender"
                                 initialValue={gender}
                                 autocomplete="sex" 
                                 stateUpdater={ev=>setGender(ev.target.value)} 
