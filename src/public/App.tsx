@@ -14,11 +14,20 @@ import NavMenu from './components/NavMenu/NavMenu';
 import FooterContent from './components/FooterContent/FooterContent';
 import AccountPanelPopup from './components/AccountPanelPopup/AccountPanelPopup';
 import { manageClassState } from './modules/utils';
+import Modal from './components/Modal/Modal';
+import useScrollBlocker from './hooks/useScrollBlocker/useScrollBlocker';
 
 export default function App() {
     const [userData, setUserData] = useState<WebApp.IAccountDetails | null>(null);
 
 	const [activeTab, setActiveTab] = useState(window.location.pathname.substring(1));
+
+    const [modalContent, setModalContent] = useState<JSX.Element | null>(null);
+
+     const [blockScroll, allowScroll] = useScrollBlocker(styles.BlockScroll);
+
+    if(modalContent) blockScroll();
+    else allowScroll();
 
 	useEffect(()=>{
 		setActiveTab(window.location.pathname.substring(1));
@@ -82,12 +91,13 @@ export default function App() {
                     <FooterContent />
                 </section>
             </section>
-            <Outlet context={[userData]}/>
+            <Outlet context={[userData, setModalContent]}/>
           </section>
           <section className={styles.Footer}>
                 <FooterContent />
           </section>
           <AccountPanelPopup accountDetails={userData}/>
+          <div className='Modal'>{modalContent?<Modal>{modalContent}</Modal>:""}</div>
       </div>
     );
 }

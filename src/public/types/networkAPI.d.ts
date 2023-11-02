@@ -5,6 +5,10 @@ export namespace WebApp {
         accountRole: string
         accountImage: string
     }
+
+    type TSetModalContent = (newModalContent: JSX.Element | null)=>void
+
+    type TAppOutletContext = [IAccountDetails, TSetModalContent];
 }
 
 

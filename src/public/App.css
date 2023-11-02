@@ -5,6 +5,10 @@
   flex-direction: column;
 }
 
+.BlockScroll {
+  overflow: hidden;
+}
+
 .Header {
   padding: 0.5rem 0.5rem;
   display: flex;
