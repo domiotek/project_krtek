@@ -128,8 +128,6 @@ namespace WebAPI {
                 creationDate: import("luxon").DateTime
                 lastAccessDate: import("luxon").DateTime
                 lastPasswordChangeDate: import("luxon").DateTime
-                wage: number | null
-                externalIncome: number
             }
 
             interface IRankDetails {
@@ -913,8 +911,13 @@ namespace WebAPI {
         }
 
         interface IHistoricUserData {
-            wage: number
-            externalIncome: number
+            wage: number | null
+            externalIncome: number | null
+        }
+
+        interface IUnsureHistoricUserData {
+            wage?: number | null
+            externalIncome?: number | null
         }
 
         namespace GoalAPI {
@@ -1031,7 +1034,7 @@ namespace WebAPI {
              * 
              * @throws Can throw NoConnection, DBError, NoUser or InvalidDate errors.
              */
-            setHistoricUserData(user: string | number, date: DateTime, data: IHistoricUserData): Promise<void>
+            setHistoricUserData(user: string | number, date: DateTime, data: IUnsureHistoricUserData): Promise<void>
             
             /**
              * Returns cached user statistics for the current month.

@@ -280,7 +280,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     public async getUser(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["getUser"]> { 
         const {field, userKey: safeUserKey} = this._translateUserKey(userKey);
 
-        const response = await this.db.performQuery<"Select">(`SELECT * FROM users NATURAL JOIN ranks NATURAL LEFT JOIN user_prop WHERE ${field}=?;`,[safeUserKey],conn);
+        const response = await this.db.performQuery<"Select">(`SELECT * FROM users NATURAL JOIN ranks WHERE ${field}=?;`,[safeUserKey],conn);
 
         if(response) {
             if(response.length===1) {
@@ -295,9 +295,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                     rankName: response[0]["displayName"],
                     creationDate: DateTime.fromJSDate(response[0]["creationDate"]),
                     lastAccessDate: DateTime.fromJSDate(response[0]["lastAccessDate"]),
-                    lastPasswordChangeDate: DateTime.fromJSDate(response[0]["lastPasswordChangeDate"]),
-                    wage: response[0]["wage"],
-                    externalIncome: response[0]["externalIncome"]
+                    lastPasswordChangeDate: DateTime.fromJSDate(response[0]["lastPasswordChangeDate"])
                 }
             }else return null;
         }
@@ -334,7 +332,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     public async getAllUsers(conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["getAllUsers"]> {
         const result = [];
 
-        const query = `SELECT * FROM users NATURAL JOIN ranks NATURAL LEFT JOIN user_prop;`;
+        const query = `SELECT * FROM users NATURAL JOIN ranks;`;
         const response = await this.db.performQuery<"Select">(query,[],conn);
 
         if(response) {
@@ -352,8 +350,6 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                     creationDate: DateTime.fromJSDate(row["creationDate"]),
                     lastAccessDate: DateTime.fromJSDate(row["lastAccessDate"]),
                     lastPasswordChangeDate: DateTime.fromJSDate(row["lastPasswordChangeDate"]),
-                    wage: row["wage"],
-                    externalIncome: response[0]["externalIncome"]
                 });
             }
             return result;
@@ -440,7 +436,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     }
 
     public async getUsersWithRank(rankName: string,conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["getUsersWithRank"]> {
-        const response = await this.db.performQuery<"Select">("SELECT * FROM users NATURAL JOIN ranks NATURAL LEFT JOIN user_prop WHERE rankID=?",[rankName], conn);
+        const response = await this.db.performQuery<"Select">("SELECT * FROM users NATURAL JOIN ranks WHERE rankID=?",[rankName], conn);
             
         if(response) {
             const result = [];
@@ -458,8 +454,6 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                     creationDate: DateTime.fromJSDate(row["creationDate"]),
                     lastAccessDate: DateTime.fromJSDate(row["lastAccessDate"]),
                     lastPasswordChangeDate: DateTime.fromJSDate(row["lastPasswordChangeDate"]),
-                    wage: row["wage"],
-                    externalIncome: response[0]["externalIncome"]
                 });
             }
 
@@ -533,7 +527,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             if(roleDetails) {
 
                 if(roleDetails.length===1) {
-                    const response = await this.db.performQuery<"Select">("SELECT * from role_assignments NATURAL JOIN users NATURAL LEFT JOIN user_prop WHERE roleID=?",[roleDetails[0]["roleID"]], connection);
+                    const response = await this.db.performQuery<"Select">("SELECT * from role_assignments NATURAL JOIN users WHERE roleID=?",[roleDetails[0]["roleID"]], connection);
 
                     if(response) {
                         const result = [];
@@ -551,8 +545,6 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                                 creationDate: DateTime.fromJSDate(row["creationDate"]),
                                 lastAccessDate: DateTime.fromJSDate(row["lastAccessDate"]),
                                 lastPasswordChangeDate: DateTime.fromJSDate(row["lastPasswordChangeDate"]),
-                                wage: row["wage"],
-                                externalIncome: response[0]["externalIncome"]
                             })
                         }
                         if(!conn) {

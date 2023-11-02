@@ -40,7 +40,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
 
             let errCode: WebAPI.APIErrors<"Stats">;
 
-            let queryStr = `SELECT wage FROM user_prop_history WHERE userID=? AND date=?`;
+            let queryStr = `SELECT * FROM user_prop WHERE userID=? AND date <= ? ORDER BY date DESC;`;
             const response = await this._db.performQuery<"Select">(queryStr,[userID, date.startOf("month").toISODate()],connection);
 
             if(response) {
@@ -62,16 +62,17 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
         throw new StatsAPIError("NoConnection");
     }
 
-    public async setHistoricUserData(userKey: string | number, date: DateTime, data: WebAPI.Statistics.IHistoricUserData, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Statistics.IUserStatsManager["setHistoricUserData"]> {
+    public async setHistoricUserData(userKey: string | number, date: DateTime, data: WebAPI.Statistics.IUnsureHistoricUserData, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Statistics.IUserStatsManager["setHistoricUserData"]> {
         if(!date.isValid) {
             conn?.release();
             throw new StatsAPIError("InvalidDate");
         }
 
+		date = date.startOf("month");
+
         const connection = conn ?? await this._db.getConnection();
 
         if(connection) {
-            connection.beginTransaction();
             if(!conn) connection.beginTransaction();
 
 			const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, connection);
@@ -80,13 +81,70 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
 				if(!conn) connection.release();
 				throw new StatsAPIError("NoUser");
 			}
+
+			let isTargetMonthSet = false;
+
+			let checkResponse = await this._db.performQuery<"Select">("SELECT userID FROM user_prop WHERE userID=? AND date=?",[userID, date.toISODate()],connection);
+
+			if(checkResponse&&checkResponse.length==1) {
+				isTargetMonthSet = true;
+			}else {
+				if(!conn) connection.release();
+				throw new StatsAPIError(this._db.getLastQueryFailureReason());
+			}
+
+			let queryStr;
+			let values: Array<string | number | null> = [];
+
+			const historicDataTemplate: WebAPI.Statistics.IHistoricUserData = {
+				externalIncome: null,
+				wage: null,
+                goalAmount: null
+			}
+
+			type TTemplateKeys = keyof typeof historicDataTemplate;
+
+
+            if(isTargetMonthSet) { //Updating already existing record
+				let fieldList = "";
+
+				for (const field of Object.keys(historicDataTemplate)) {
+					if(data[field as TTemplateKeys]!==undefined) {
+						fieldList += field+"=? ";
+						values.push(data[field as TTemplateKeys] as any);
+					}
+				}
+
+				fieldList = fieldList.substring(0,fieldList.length - 1);
+
+				values.push(userID, date.toISODate());
+
+				queryStr = `UPDATE user_prop SET ${fieldList} WHERE userID=? AND date=?`;
+
+            }else { //Inserting new record for the month
+				const existingData = await this.getHistoricUserData(userID, date, connection) ?? {} as typeof historicDataTemplate;
+
+				values.push(userID, date.toISODate());
+
+				let fieldList = "";
+				let valueList = "";
+
+				for (const field of Object.keys(historicDataTemplate)) {
+					fieldList += field+",";
+					valueList += "?,";
+					values.push(data[field as TTemplateKeys] ?? existingData[field as TTemplateKeys] ?? null);
+				}
+
+				fieldList = fieldList.substring(0,fieldList.length - 1);
+				valueList = valueList.substring(0,valueList.length - 1);
+
+				queryStr = `INSERT INTO user_prop(userID, date, ${fieldList}) VALUES(?, ?, ${valueList})`;
             }
 
             let errCode: WebAPI.APIErrors<"Stats">;
 
-            let queryStr = `INSERT INTO user_prop_history VALUES(?,?,?)`;
 
-            const response = await this._db.performQuery<"Other">(queryStr,[userID, date.toISODate(), data.wage],connection);
+            const response = await this._db.performQuery<"Other">(queryStr,values,connection);
 
             if(response) {
                 if(response.affectedRows==1) {
@@ -124,22 +182,30 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
 
             if(response) {
                 if(response.length===1) {
-                    if(!conn) 
-                        connection.release();
+                    const cacheDate = DateTime.fromJSDate(response[0]["targetMonth"]);
 
-                    return {
-                        totalHours: response[0]["totalHours"],
-                        shiftCount: response[0]["shiftCount"],
-                        wagePerHour: response[0]["wagePerHour"],
-                        totalWage: response[0]["totalWage"],
-                        totalTip: response[0]["totalTip"],
-                        totalDeduction: response[0]["totalDeduction"],
-                        maxTip: response[0]["maxTip"],
-                        minTip: response[0]["minTip"],
-                        avgTip: response[0]["avgTip"],
-                        externalIncome: response[0]["externalIncome"]
-                    }
-                }else return null;
+                    if(cacheDate.isValid&&DateTime.now().startOf("month").equals(cacheDate.startOf("month"))) {
+                        if(!conn) 
+                            connection.release();
+
+                        return {
+                            totalHours: response[0]["totalHours"],
+                            shiftCount: response[0]["shiftCount"],
+                            wagePerHour: response[0]["wagePerHour"],
+                            totalWage: response[0]["totalWage"],
+                            totalTip: response[0]["totalTip"],
+                            totalDeduction: response[0]["totalDeduction"],
+                            maxTip: response[0]["maxTip"],
+                            minTip: response[0]["minTip"],
+                            avgTip: response[0]["avgTip"],
+                            externalIncome: response[0]["externalIncome"]
+                        }
+                    }else await this.dropCacheState(userID,connection);
+                }
+
+                if(!conn) connection.release();
+
+                return null;
             }else errCode = this._db.getLastQueryFailureReason();
 
             connection.release();
@@ -163,7 +229,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
 
             let errCode: WebAPI.APIErrors<"Stats">;
 
-            let queryStr = `INSERT INTO user_stats_cache VALUES(?,?,?,?,?,?,?,?,?,?)`;
+            let queryStr = `INSERT INTO user_stats_cache(userID, totalHours, shiftCount, wagePerHour, totalWage, totalTip, totalDeduction, maxTip, minTip, avgTip, externalIncome) VALUES(?,?,?,?,?,?,?,?,?,?,?)`;
             const values = [
                 userID,
                 stats.totalHours,
@@ -174,7 +240,8 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
                 stats.totalDeduction,
                 stats.maxTip,
                 stats.minTip,
-                stats.avgTip
+                stats.avgTip,
+                stats.externalIncome ?? 0
             ]
             const response = await this._db.performQuery<"Other">(queryStr,values,connection);
 
@@ -247,20 +314,18 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
                 return null;
             }
 
-            let wagePerHour;
-            let externalIncome;
+           
             let statsData = null;
             let isCurrentMonth = false;
 
+			const history = await this.getHistoricUserData(userID, date, connection);
+
+			const wagePerHour = history?.wage ?? null
+            const externalIncome = history?.externalIncome ?? null;
+
             if(date.startOf("month").equals(DateTime.now().startOf("month"))) {
                 isCurrentMonth = true;
-                wagePerHour = user.wage;
-                externalIncome = user.externalIncome;
-                statsData = await this.getCacheState(userKey,connection,user);
-            }else {
-                const history = await this.getHistoricUserData(userKey, date, connection, user);
-                wagePerHour = history?.wage ?? null;
-                externalIncome = history?.externalIncome ?? 0;
+                statsData = await this.getCacheState(userID,connection);
             }
 
 
@@ -364,7 +429,7 @@ class GoalManager implements WebAPI.Statistics.GoalAPI.IGoalManager {
 
         if(stats) {
             if(stats.totalWage&&stats.wagePerHour)
-                return stats.wagePerHour * stats.totalWage + stats.totalTip + stats.externalIncome - stats.totalDeduction;
+                return stats.wagePerHour * stats.totalWage + stats.totalTip + (stats.externalIncome ?? 0) - stats.totalDeduction;
             else return null;
         }
 
