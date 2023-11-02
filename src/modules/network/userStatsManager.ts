@@ -282,13 +282,11 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
             const response = await this._db.performQuery<"Other">(queryStr,[userID],connection);
 
             if(response) {
-                if(response.affectedRows==1) {
-                    if(!conn) {
-                        connection.commit();
-                        connection.release();
-                    }
-                    return;
-                }else errCode = "DBError";
+                if(!conn) {
+                    connection.commit();
+                    connection.release();
+                }
+                return;
             }else errCode = this._db.getLastQueryFailureReason();
 
             connection.rollback();
@@ -448,6 +446,10 @@ class GoalManager implements WebAPI.Statistics.GoalAPI.IGoalManager {
 
 
         const milestonesData = await this.getMilestones(connection);
+
+        if(milestonesData.milestones.length===GoalManager.MAX_MILESTONE_COUNT) {
+            throw new StatsAPIError("MilestoneLimitReached");
+        }
 
         const nextOrderTag = (milestonesData.milestones[milestonesData.milestones.length-1]?.orderTag ?? -1) + 1;
         
