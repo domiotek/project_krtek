@@ -81,6 +81,7 @@ namespace WebAPI {
     }
 
     namespace Auth {
+
         type TAuthAPITypes = "UserAPI" | "RoleAPI" | "AccountTokenAPI" | "InviteAPI";
         type TErrorTypes<T extends "All" | TAuthAPITypes="All"> = 
             (T extends "All" | "SessionAPI"?SessionAPI.TErrorTypes:never) |
@@ -93,7 +94,7 @@ namespace WebAPI {
             type TErrorTypes = "InvalidSession"
             interface ISessionDetails {
                 sessionID: string
-                userID: string
+                userID: number
                 ipAddress: string
                 creationDate: import("luxon").DateTime
                 lastAccessDate: import("luxon").DateTime

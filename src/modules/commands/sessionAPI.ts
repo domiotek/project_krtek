@@ -30,7 +30,7 @@ export default function(){
 
             const values = [
                 session.sessionID, 
-                insertColor(user?"fg_white":"fg_yellow",user?user.email:session.userID,data.colorsMode),
+                insertColor(user?"fg_white":"fg_yellow",user?user.email:session.userID.toString(),data.colorsMode),
                 session.ipAddress,
                 session.creationDate.toFormat(`dd LLL yyyy HH:mm`),
                 session.lastAccessDate.toFormat("dd LLL yyyy HH:mm"),
