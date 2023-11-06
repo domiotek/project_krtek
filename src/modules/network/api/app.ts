@@ -1,16 +1,6 @@
-import { FastifyError, FastifyRequest, RouteOptions } from "fastify";
-import Output from "../../output.js";
+import { RouteOptions } from "fastify";
 import { API } from "../../../public/types/networkAPI.js";
-
-const errorHandler = async (err:FastifyError, req: FastifyRequest)=> {
-    Output.category("debug").print("notice",`[API][App] "${req.method}:${req.url}" request failed with "${err.statusCode}" code. Reason: "${err.message}".`,"webapi");
-
-    return {
-        status: "Failure",
-        errCode: "InternalError",
-        message: "Uncaughted Internal Server Error."
-    }
-}
+import { errorHandler } from "./common/error.js";
 
 const basicData: RouteOptions = {
     method: "GET",

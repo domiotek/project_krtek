@@ -1,18 +1,8 @@
-import { FastifyError, FastifyRequest, RouteOptions } from "fastify";
-import Output from "../../output.js";
+import { RouteOptions } from "fastify";
 import { API } from "../../../public/types/networkAPI.js";
+import { errorHandler } from "./common/error.js";
 import * as yup from "yup";
 import { DateTime } from "luxon";
-
-const errorHandler = async (err:FastifyError, req: FastifyRequest)=> {
-    Output.category("debug").print("notice",`[API][Stats] "${req.method}:${req.url}" request failed with "${err.statusCode}" code. Reason: "${err.message}".`,"webapi");
-
-    return {
-        status: "Failure",
-        errCode: "InternalError",
-        message: "Uncaughted Internal Server Error."
-    }
-}
 
 const getScheduleRequestSchema = yup.object().shape({
     fromMonth: yup.string()

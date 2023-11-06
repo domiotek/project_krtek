@@ -1237,7 +1237,8 @@ namespace WebAPI {
         (T extends "Schedule"?Schedule.TErrorTypes<S>:never) | 
         (T extends "Stats"?Statistics.TErrorTypes<S>:never);
 
-    interface APIError<T extends APITypes> {
+    interface APIError<T extends APITypes=APITypes> extends Error {
+        module: string
         errCode: APIErrors<T>
     }
 
