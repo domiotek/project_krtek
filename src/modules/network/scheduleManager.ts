@@ -38,11 +38,11 @@ export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
             if(response) {
                 switch(response.length) {
                     case 1:
-                        return new WorkDay(response[0]["workDayID"],this._db,when, response[0]["note"]);
                         if(!conn) {
                             connection.rollback();
                             connection.release();
                         }
+                        return new WorkDay(response[0]["workDayID"],this._db,when.toJSDate(), response[0]["note"], response[0]["noteUpdatedAt"], response[0]["noteUpdatedBy"]);
                     default:
                         this._db.reportMysqlError(new Error(`[DB][Schedule] Invalid state for workday on '${when.toISODate()}'. Detected more than one entry(${response.length}).`) as MysqlError);
                         errCode = "DBError";
@@ -54,7 +54,7 @@ export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
                                     connection.commit();
                                     connection.release();
                                 }
-                                return new WorkDay(insertResponse.insertId,this._db, when, null);
+                                return new WorkDay(insertResponse.insertId,this._db, when.toJSDate(), null, null, null);
                             }else errCode = "DBError";
                         }else errCode = this._db.getLastQueryFailureReason();
                     break;
@@ -69,7 +69,21 @@ export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
         throw new ScheduleAPIError("NoConnection");
     }
 
-    public async getUserShifts(userID: number, from?: WebAPI.Schedule.ScheduleManager.IDateRangeOptions | undefined, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Schedule.ScheduleManager.IUserShifts> {
+    public async getUserShifts(userID: number, from?: WebAPI.Schedule.ScheduleManager.IDateRangeOptions | undefined, conn?: WebAPI.Mysql.IPoolConnection) {
+
+        async function JSONShiftsParser(this: WebAPI.Schedule.ScheduleManager.IUserShifts) {
+            const JSONShifts = [];
+
+            for (const shift of this.shifts) {
+                JSONShifts.push(await shift.getJSON());
+            }
+
+            return {
+                shifts: JSONShifts,
+                userSlots: this.userSlots
+            }
+        }
+
         const connection = conn ?? await this._db.getConnection();
 
         if(connection) {
@@ -88,9 +102,9 @@ export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
                         case from.after!=undefined&&from.before!=undefined:
                             if(from.after?.isValid&&from.before?.isValid) {
 
-                                if(from.after > from.before && from.after!= from.before) {
+                                if(from.after < from.before && from.after!= from.before) {
                                     rangeErr = false;
-                                    rangeStr = `AND date BETWEEN '${from.before.toISODate()}' AND '${from.after.toISODate()}'`;
+                                    rangeStr = `AND date BETWEEN '${from.after.toISODate()}' AND '${from.before.toISODate()}'`;
                                 }
                             }
                         break;
@@ -106,18 +120,23 @@ export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
                 }else rangeErr = false;
 
                 if(!rangeErr) {
-                    const query = `SELECT workDayID, privateSlotID, date, note FROM shifts NATURAL JOIN shift_slots NATURAL JOIN work_days WHERE userID=? ${rangeStr} ORDER BY date ASC;`;
+                    const query = `SELECT workDayID, privateSlotID, date, note, noteUpdatedAt, noteUpdatedBy FROM shifts NATURAL JOIN shift_slots NATURAL JOIN work_days WHERE userID=? ${rangeStr} ORDER BY date ASC;`;
 
                     const response = await this._db.performQuery<"Select">(query, [userID], connection);
 
                     if(response) {
+
                         const result: WebAPI.Schedule.ScheduleManager.IUserShifts = {
                             shifts: [],
-                            userSlots: []
+                            userSlots: [],
+                            getJSON: JSONShiftsParser
                         }
 
+                        result.getJSON.bind(result);
+
                         for (const row of response) {
-                            result.shifts.push(new WorkDay(row["workDayID"],this._db,DateTime.fromJSDate(row["date"]),row["note"]));
+                            const workDay = new WorkDay(row["workDayID"],this._db,row["date"],row["note"], row["noteUpdatedAt"], row["noteUpdatedBy"]);
+                            result.shifts.push(workDay);
                             result.userSlots.push(row["privateSlotID"]);
                         }
 
@@ -185,15 +204,19 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
     private _workDayID: number;
     private _db: WebAPI.Mysql.IMysqlController;
     private _note: string | null;
+    private _noteUpdateTime: DateTime | null;
+    private _noteLastUpdaterUserID: number | null;
     private _date: DateTime;
 
     private static readonly MAX_SLOT_COUNT = 10;
 
-    constructor(workDayID: number, db: WebAPI.Mysql.IMysqlController,date: DateTime, note: string | null) {
+    constructor(workDayID: number, db: WebAPI.Mysql.IMysqlController,date: Date, note: string | null, noteUT: Date | null, noteUUID: number | null) {
         this._workDayID = workDayID;
         this._db = db;
         this._note = note;
-        this._date = date;
+        this._date = DateTime.fromJSDate(date);
+        this._noteLastUpdaterUserID = noteUUID;
+        this._noteUpdateTime = noteUT?DateTime.fromJSDate(noteUT):null;
     }
 
     public get ID() {
@@ -204,17 +227,53 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
         return this._note;
     }
 
+    public get noteUpdateTime() {
+        return this._noteUpdateTime;
+    }
+
+    public get noteLastUpdater() {
+        return global.app.webAuthManager.getUser(this._noteLastUpdaterUserID ?? "");
+    }
+
     public get date() {
         return this._date;
     }
 
-    public async setNote(newNote: string | null, conn?: WebAPI.Mysql.IPoolConnection): Promise<void> {
+    public async getJSON(): Promise<WebAPI.Schedule.WorkDayAPI.IJSONWorkDay> {
+        const slots = await this.getAllSlots();
+
+        const resultSlots: WebAPI.Schedule.WorkDayAPI.IJSONSlots = {}
+
+        for (const slotID in slots) {
+            const slot = slots[slotID] as NonNullable<typeof slots[0]>;
+
+            resultSlots[slotID] = {
+                status: slot.status,
+                plannedStartTime: slot.plannedStartTime.toString(),
+                plannedEndTime: slot.plannedEndTime?.toString() ?? null,
+                requiredRole: slot.requiredRole,
+                requiredRoleDisplayName: slot.requiredRoleDisplayName,
+                assignedShift: await slot.assignedShift?.getJSON() ?? null
+            }
+        }
+
+        return {
+            ID: this.ID,
+            date: this.date.toString(),
+            note: this.note,
+            noteUpdateTime: this._noteUpdateTime?.toISO() ?? null,
+            noteLastUpdater: (await this.noteLastUpdater)?.name ?? null,
+            slots: resultSlots
+        }
+    }
+
+    public async setNote(newNote: string | null, updater: number, conn?: WebAPI.Mysql.IPoolConnection): Promise<void> {
 
         if(newNote&&newNote.length > 255) {
             throw new ScheduleAPIError("NoteTooLong");
         }
 
-        const response = await this._db.performQuery<"Other">("UPDATE work_days SET note=? WHERE workDayID=?",[newNote, this._workDayID], conn);
+        const response = await this._db.performQuery<"Other">("UPDATE work_days SET note=?, noteUpdatedAt=CURRENT_TIMESTAMP, noteUpdatedBy=? WHERE workDayID=?",[newNote!=""?newNote:null, updater, this._workDayID], conn);
 
         if(!response || response.affectedRows!=1) {
             conn?.rollback();
@@ -223,38 +282,63 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
         }
         
         this._note = newNote;
+        this._noteLastUpdaterUserID = updater;
+        this._noteUpdateTime = DateTime.now();
 
+    }
+
+    private _processSlotResponse(response: NonNullable<WebAPI.Mysql.TGenericMysqlResult<"Select">>) {
+        const result: WebAPI.Schedule.WorkDayAPI.ISlots = {};
+
+        const statusCache: WebAPI.Schedule.WorkDayAPI.IShiftSlot["status"] = DateTime.now().startOf("day") < this._date.startOf("day")?"Assigned":"Pending";
+
+        for (const row of response) {
+            const parsedStartTime = row["startTime"]?DateTime.fromISO(row["startTime"]):null;
+            const parsedEndTime =  row["endTime"]?DateTime.fromISO(row["endTime"]):null;
+
+            const shift = row["shiftID"]!=null?new Shift(row["shiftID"],this._db,row["userID"],parsedStartTime,parsedEndTime, parseFloat(row["tip"]) ?? 0, parseFloat(row["deduction"]) ?? 0, row["userNote"]):null;
+
+            let status: WebAPI.Schedule.WorkDayAPI.IShiftSlot["status"];
+            if(shift) {
+                if(shift.startTime&&shift.endTime) status = "Finished";
+                else status = statusCache;
+            }else status = "Unassigned";
+
+            result[row["privateSlotID"]] = {
+                status,
+                requiredRole: row["roleName"],
+                requiredRoleDisplayName: row["displayName"],
+                plannedStartTime: DateTime.fromFormat(row["plannedStartTime"],"HH:mm:ss"),
+                plannedEndTime: row["plannedEndTime"]?DateTime.fromFormat(row["plannedEndTime"],"HH:mm:ss"):null,
+                assignedShift: shift
+            };
+        }
+        
+        return result;
     }
 
     public async getSlot(id: number, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Schedule.WorkDayAPI.IShiftSlot | null> {
         const response = await this._db.performQuery<"Select">("SELECT * FROM shift_slots NATURAL LEFT JOIN shifts INNER JOIN roles ON roleRequiredID=roleID WHERE workDayID=? AND privateSlotID=?;",[this._workDayID, id],conn);
 
         if(response) {
-            if(response.length==1) {
-                const data = response[0];
-                const parsedStartTime = data["startTime"]?DateTime.fromISO(data["startTime"]):null;
-                const parsedEndTime =  data["endTime"]?DateTime.fromISO(data["endTime"]):null;
+           const slots = this._processSlotResponse(response);
+           return slots[Object.keys(slots)[0] as any] ?? null;
+        }
 
-                const shift = data["shiftID"]!=null?new Shift(data["shiftID"],this._db,data["userID"],parsedStartTime,parsedEndTime, data["tip"] ?? 0, data["deduction"] ?? 0):null;
+        conn?.rollback();
+        conn?.release();
+        throw new ScheduleAPIError(this._db.getLastQueryFailureReason());
+    }
 
-                let status: WebAPI.Schedule.WorkDayAPI.IShiftSlot["status"];
+    public async getUserSlot(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection) {
 
-                if(shift) {
-                    if(shift.startTime&&shift.endTime) status = "Finished";
-                    else {
-                        if(DateTime.now().startOf("day") < this._date.startOf("day")) status = "Assigned";
-                        else status = "Pending";
-                    }
-                }else status = "Unassigned";
+        const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, conn);
 
-                return {
-                    status,
-                    requiredRole: data["roleName"],
-                    plannedStartTime: DateTime.fromFormat(data["plannedStartTime"],"HH:mm:ss"),
-                    plannedEndTime: data["plannedEndTime"]?DateTime.fromFormat(data["plannedEndTime"],"HH:mm:ss"):null,
-                    assignedShift: shift
-                }
-            }else return null;
+        const response = await this._db.performQuery<"Select">("SELECT * FROM shift_slots NATURAL LEFT JOIN shifts INNER JOIN roles ON roleRequiredID=roleID WHERE workDayID=? AND userID=?;",[this._workDayID, userID],conn);
+
+        if(response) {
+            const slots = this._processSlotResponse(response);
+            return (slots[Object.keys(slots)[0] as any] as WebAPI.Schedule.WorkDayAPI.IAssignedShiftSlot)  ?? null;
         }
         
         conn?.rollback();
@@ -284,32 +368,7 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
         const response = await this._db.performQuery<"Select">("SELECT * FROM shift_slots NATURAL LEFT JOIN shifts INNER JOIN roles ON roleRequiredID=roleID WHERE workDayID=?;",[this._workDayID], conn);
 
         if(response) {
-            const result: WebAPI.Schedule.WorkDayAPI.ISlots = {};
-
-            const statusCache: WebAPI.Schedule.WorkDayAPI.IShiftSlot["status"] = DateTime.now().startOf("day") < this._date.startOf("day")?"Assigned":"Pending";
-
-            for (const row of response) {
-                const parsedStartTime = row["startTime"]?DateTime.fromISO(row["startTime"]):null;
-                const parsedEndTime =  row["endTime"]?DateTime.fromISO(row["endTime"]):null;
-
-                const shift = row["shiftID"]!=null?new Shift(row["shiftID"],this._db,row["userID"],parsedStartTime,parsedEndTime, row["tip"] ?? 0, row["deduction"] ?? 0):null;
-
-                let status: WebAPI.Schedule.WorkDayAPI.IShiftSlot["status"];
-                if(shift) {
-                    if(shift.startTime&&shift.endTime) status = "Finished";
-                    else status = statusCache;
-                }else status = "Unassigned";
-
-                result[row["privateSlotID"]] = {
-                    status,
-                    requiredRole: row["roleName"],
-                    plannedStartTime: DateTime.fromFormat(row["plannedStartTime"],"HH:mm:ss"),
-                    plannedEndTime: row["plannedEndTime"]?DateTime.fromFormat(row["plannedEndTime"],"HH:mm:ss"):null,
-                    assignedShift: shift
-                };
-            }
-            
-            return result;
+            return this._processSlotResponse(response);
         }
         
         conn?.rollback();
@@ -317,7 +376,7 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
         throw new ScheduleAPIError(this._db.getLastQueryFailureReason());
     }
 
-    public async addSlot(requiredRole: string, startTime: DateTime, endTime?: DateTime | undefined, conn?: WebAPI.Mysql.IPoolConnection): Promise<number> {
+    public async addSlot(definer: number, requiredRole: string, startTime: DateTime, endTime?: DateTime | undefined, conn?: WebAPI.Mysql.IPoolConnection): Promise<number> {
 
         if(!startTime.isValid||(endTime?!endTime.isValid:false)) {
             conn?.rollback();
@@ -351,7 +410,7 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
             }
 
             if(nextID!==undefined) {
-                const response = await this._db.performQuery<"Other">("INSERT INTO shift_slots(workDayID, privateSlotID, plannedStartTime, plannedEndTime, roleRequiredID) VALUES(?,?,?,?,?)",[this._workDayID,nextID,startTime.toFormat("HH:mm:ss"),endTime?.toFormat("HH:mm:ss") ?? null,roleID],connection);
+                const response = await this._db.performQuery<"Other">("INSERT INTO shift_slots(workDayID, privateSlotID, plannedStartTime, plannedEndTime, roleRequiredID, definer) VALUES(?,?,?,?,?,?)",[this._workDayID,nextID,startTime.toFormat("HH:mm:ss"),endTime?.toFormat("HH:mm:ss") ?? null,roleID, definer],connection);
                 if(response) {
                     if(response.affectedRows==1) {
                         if(!conn) {
@@ -615,9 +674,10 @@ class Shift implements WebAPI.Schedule.IShift {
     private _db: WebAPI.Mysql.IMysqlController;
     private _tip: number;
     private _deduction: number;
+    private _note: string | null;
 
 
-    constructor(shiftID: number, db: WebAPI.Mysql.IMysqlController,userID: number, startTime: luxon.DateTime | null, endTime: luxon.DateTime | null, tip?: number, deduction?: number) {
+    constructor(shiftID: number, db: WebAPI.Mysql.IMysqlController,userID: number, startTime: luxon.DateTime | null, endTime: luxon.DateTime | null, tip?: number, deduction?: number, note?: string) {
         this._shiftID = shiftID;
         this._startTime = startTime;
         this._endTime = endTime;
@@ -625,16 +685,24 @@ class Shift implements WebAPI.Schedule.IShift {
         this._userID = userID;
         this._tip = tip ?? 0;
         this._deduction = deduction ?? 0;
+        this._note = note ?? null;
     }
 
-    toJSON() {
+    public toJSON() {
         const result = {
             shiftID: this._shiftID,
-            startTime: this._startTime,
-            endTime: this._endTime,
-            userID: this._userID
+            startTime: this._startTime?.toString() ?? null,
+            endTime: this._endTime?.toString() ?? null,
+            tip: this._tip,
+            deduction: this._deduction,
+            userID: this._userID,
+            note: this._note
         }
         return result;
+    }
+
+    public async getJSON() {
+        return Object.assign({userName: (await this.getUser()).name},this.toJSON());
     }
 
     public get ID(): number {
@@ -657,6 +725,14 @@ class Shift implements WebAPI.Schedule.IShift {
         return this._deduction;
     }
 
+    public get note(): string | null {
+        return this._note;
+    }
+
+    public get userID(): number {
+        return this._userID;
+    }
+
     public async getUser(conn?: WebAPI.Mysql.IPoolConnection) {
         const result = await (global.app.webAuthManager as InternalWebAuthManager).getUser(this._userID, conn);
 
@@ -667,7 +743,23 @@ class Shift implements WebAPI.Schedule.IShift {
         throw new ScheduleAPIError("NoUser");
     }
 
-    public async updateData(startTime: luxon.DateTime, endTime: luxon.DateTime, tip: number, deduction: number, conn?: WebAPI.Mysql.IPoolConnection) {
+    public async setNote(newNote: string | null, conn?: WebAPI.Mysql.IPoolConnection) {
+        if(newNote&&newNote.length > 255) {
+            throw new ScheduleAPIError("NoteTooLong");
+        }
+
+        const response = await this._db.performQuery<"Other">("UPDATE shifts SET userNote=? WHERE shiftID=?",[newNote!=""?newNote:null, this._shiftID], conn);
+
+        if(!response || response.affectedRows!=1) {
+            conn?.rollback();
+            conn?.release();
+            throw new ScheduleAPIError(response?"DBError":this._db.getLastQueryFailureReason());
+        }
+        
+        this._note = newNote;
+    }
+
+    public async updateData(startTime: luxon.DateTime, endTime: luxon.DateTime, tip: number, deduction: number, note?: string, conn?: WebAPI.Mysql.IPoolConnection) {
         let errCode: WebAPI.APIErrors<"Schedule"> = "InvalidDate";
 
         if(deduction < 0 || tip < 0) {
@@ -676,14 +768,15 @@ class Shift implements WebAPI.Schedule.IShift {
             throw new ScheduleAPIError("InvalidTipOrDeduction");
         }
         
-        if(startTime.isValid&&endTime.isValid&&endTime > startTime) {
-            const response = await this._db.performQuery("UPDATE shifts SET startTime=?, endTime=?, tip=?, deduction=? WHERE shiftID=?",[startTime.toFormat("HH:mm:ss"), endTime.toFormat("HH:mm:ss"), tip, deduction, this._shiftID], conn);
+        if(startTime.isValid&&endTime.isValid) {
+            const response = await this._db.performQuery("UPDATE shifts SET startTime=?, endTime=?, tip=?, deduction=?, userNote=? WHERE shiftID=?",[startTime.toFormat("HH:mm:ss"), endTime.toFormat("HH:mm:ss"), tip, deduction, note ?? null, this._shiftID], conn);
             if(response) {
                 if((response as WebAPI.Mysql.IMysqlQueryResult).affectedRows==1) {
                     this._startTime = startTime;
                     this._endTime = endTime;
                     this._tip = tip;
                     this._deduction = deduction;
+                    this._note = null;
                     return;
                 }else errCode = "DBError";
             }else errCode = this._db.getLastQueryFailureReason();

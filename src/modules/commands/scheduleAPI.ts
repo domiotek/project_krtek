@@ -310,7 +310,7 @@ export default function(){
         const endTime = data.parameters["endTime"] as DateTime | undefined;
 
         try {
-            await workDay.addSlot(role,startTime, endTime);
+            await workDay.addSlot(0,role,startTime, endTime);
         } catch (error: any) {
             if(!error.errCode) throw error;
             req.respond(getCommandErrorDisplayText("Couldn't add slot", error.errCode, data.colorsMode));
@@ -756,7 +756,7 @@ export default function(){
             }
             req.respond(insertColor("fg_cyan",`Importing '${rootProp}' work day. Found ${workDayInput.slots.length} slots.`, data.colorsMode), false);
 
-            await workDay.setNote(workDayInput.note);
+            await workDay.setNote(workDayInput.note, null);
             await workDay.deleteAllSlots();
 
             for (let i=0; i < workDayInput.slots.length; i++) {
@@ -773,7 +773,7 @@ export default function(){
 
                 let newSlotID;
                 try {
-                    newSlotID = await workDay.addSlot(slotInput.role,startTime, endTime ?? undefined);
+                    newSlotID = await workDay.addSlot(0,slotInput.role,startTime, endTime ?? undefined);
                 } catch (error: any) {
                     if(!error.errCode) throw error;
                     req.respond(insertColor("fg_yellow",`Skipping import of slot #${i}. ${describeAPIError(error.errCode)}`, data.colorsMode), false);

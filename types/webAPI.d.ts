@@ -670,6 +670,12 @@ namespace WebAPI {
             interface IUserShifts {
                 shifts: IWorkDay[]
                 userSlots: number[]
+                getJSON(): Promise<IJSONUserShifts>
+            }
+
+            interface IJSONUserShifts {
+                shifts: WorkDayAPI.IJSONWorkDay[],
+                userSlots: number[]
             }
         }
 
@@ -685,12 +691,39 @@ namespace WebAPI {
                 [privateID: number]: IShiftSlot | undefined
             }
 
+            interface IJSONSlots {
+                [privateID: number]: IJSONShiftSlot | undefined
+            }
+
             interface IShiftSlot {
                 status: "Unassigned" | "Assigned" | "Pending" | "Finished"
                 plannedStartTime: DateTime
                 plannedEndTime: DateTime | null
                 requiredRole: string
+                requiredRoleDisplayName: string
                 assignedShift: IShift | null
+            }
+
+            interface IAssignedShiftSlot extends IShiftSlot {
+                assignedShift: IShift
+            }
+
+            interface IJSONShiftSlot {
+                status: "Unassigned" | "Assigned" | "Pending" | "Finished"
+                plannedStartTime: string
+                plannedEndTime: string | null
+                requiredRole: string
+                requiredRoleDisplayName: string
+                assignedShift: ShiftAPI.IJSONShift | null
+            }
+
+            interface IJSONWorkDay {
+                ID: number
+                note: string | null
+                noteUpdateTime: string | null
+                noteLastUpdater: string | null
+                date: string
+                slots: IJSONSlots
             }
 
         }
@@ -699,6 +732,17 @@ namespace WebAPI {
             type TErrorTypes =  TGetUserErrors | TUpdateDataErrors;
             type TGetUserErrors = "NoUser"
             type TUpdateDataErrors = "InvalidDate" | "InvalidTipOrDeduction";
+
+            interface IJSONShift {
+                shiftID: number,
+                startTime: string | null,
+                endTime: string | null,
+                tip: number,
+                deduction: number,
+                userID: number,
+                userName: string
+                note: string | null
+            }
         }
 
         interface IScheduleManager {
@@ -753,16 +797,27 @@ namespace WebAPI {
         interface IWorkDay {
             readonly ID: number
             readonly note: string | null
+            readonly noteUpdateTime: DateTime | null
+            readonly noteLastUpdater: Promise<Auth.UserAPI.IUserDetails | null>
             readonly date: DateTime
+
+            /**
+             * Returns data representation of workDay in JSON compatible format.
+             * Using toJSON will throw an error.
+             * 
+             * @async Fetches slots data.
+             */
+            getJSON(): Promise<WorkDayAPI.IJSONWorkDay>
 
             /**
              * Sets new note for the workday.
              * @param newNote Maximum of 255 characters. Note can be cleared if null is given.
+             * @param updater User that updates or creates note.
              * 
              * @async
              * @throws Can throw NoConnection, DBError or NoteTooLong errors.
              */
-            setNote(newNote: string | null): Promise<void>;
+            setNote(newNote: string | null, updater: number | null): Promise<void>;
 
             /**
              * Returns details about the slot with given slot ID
@@ -773,6 +828,17 @@ namespace WebAPI {
              * @throws Can throw NoConnection and DBError errors.
              */
             getSlot(id: number): Promise<WorkDayAPI.IShiftSlot | null>
+
+
+            /**
+             * Returns details about the slot with specified user assigned
+             * @param user Either userID or email.
+             * 
+             * @async 
+             * @returns Slot details object or null if slot not found.
+             * @throws Can throw NoConnection and DBError errors.
+             */
+            getUserSlot(user: string | number): Promise<WorkDayAPI.IAssignedShiftSlot | null>
 
             /**
              * Returns IDs of all defined slots.
@@ -799,6 +865,7 @@ namespace WebAPI {
              * Adds new slot to the work day. 
              * Note that there is a limit of how much slots there can be.
              * See MAX_SLOT_COUNT static property to see the limit.
+             * @param definer User that creates the slot. Used to moderate user actions.
              * @param requiredRole Role that user has to have in order to be assigned to a slot.
              * @param startTime Planned start time for that slot.
              * @param endTime Planned end time for that slot. Optional.
@@ -808,7 +875,7 @@ namespace WebAPI {
              * @returns ID of the new slot.
              * @throws Can throw NoConnection, DBError, InvalidDate, InvalidRole and MaxSlotCountReached errors.
              */
-            addSlot(requiredRole: string, startTime: DateTime, endTime?: DateTime): Promise<number>
+            addSlot(definer: number, requiredRole: string, startTime: DateTime, endTime?: DateTime): Promise<number>
 
             /**
              * Edits existing slot with given data.
@@ -869,6 +936,24 @@ namespace WebAPI {
             readonly endTime: DateTime | null;
             readonly tip: number;
             readonly deduction: number;
+            readonly note: string | null;
+            readonly userID: number;
+
+            /**
+             * Returns shift details in JSON compatible format.
+             * Doesn't have userName, but is faster and synchronous.
+             */
+            toJSON(): Omit<ShiftAPI.IJSONShift,"userName">
+
+            /**
+             * Returns shift details in JSON compatible format.
+             * Has additional field userName, for which it makes
+             * db request.
+             * 
+             * @async Fetches userName
+             * 
+             */
+            getJSON(): Promise<ShiftAPI.IJSONShift>
 
             /**
              * Returns details of the user associated with the shift.
@@ -880,13 +965,24 @@ namespace WebAPI {
              */
             getUser(): Promise<Auth.UserAPI.IUserDetails>
 
+
+            /**
+             * Sets new note for the shift.
+             * @param newNote Maximum of 255 characters. Note can be cleared if null is given.
+             * 
+             * @async
+             * @throws Can throw NoConnection, DBError or NoteTooLong errors.
+             */
+            setNote(newNote: string | null): Promise<void>;
+
+
             /**
              * Updates details about user shift.
              * 
              * @async
              * @throws Can throw NoConnection, DBError or InvaliDate errors.
              */
-            updateData(startTime: DateTime, endTime: DateTime, tip: number, deduction: number): Promise<void>
+            updateData(startTime: DateTime, endTime: DateTime, tip: number, deduction: number, note?: string): Promise<void>
         }
     }
 
