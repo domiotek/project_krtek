@@ -1013,21 +1013,23 @@ namespace WebAPI {
             maxTip: number
             minTip: number
             avgTip: number
-            externalIncome: number
+            externalIncome: number | null
         }
 
         interface IHistoricUserData {
             wage: number | null
             externalIncome: number | null
+            goalAmount: number | null
         }
 
         interface IUnsureHistoricUserData {
             wage?: number | null
             externalIncome?: number | null
+            goalAmount?: number | null
         }
 
         namespace GoalAPI {
-            type TErrorTypes = "NotImplemented";
+            type TErrorTypes = "NotImplemented" | "MilestoneLimitReached";
 
             interface IMilestonesDetails {
                 milestones: IMilestone[]

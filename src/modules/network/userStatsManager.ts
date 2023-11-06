@@ -51,7 +51,8 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
 
                     return {
                         wage: response[0]["wage"],
-                        externalIncome: response[0]["externalIncome"]
+                        externalIncome: response[0]["externalIncome"],
+                        goalAmount: response[0]["goalAmount"]
                     }
                 }else return null;
             }else errCode = this._db.getLastQueryFailureReason();
