@@ -15,6 +15,8 @@ class WebAuthAPIError extends APIError<"Auth"> {
  * and that method throws an error, the passed connection should be considered as released.
  */
 export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
+    public static readonly SYSTEM_USER_ID: number = 0;
+
     private readonly db: WebAPI.Mysql.IMysqlController;
 
     private readonly MAX_SLOT_COUNT = 7;
@@ -49,7 +51,13 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         if(connection) {
             if(!conn) connection.beginTransaction();
             
-            const user = await this.getUser(email, connection);
+            const user = await this.getUser(email, true, connection);
+
+            if(user?.userID===WebAuthManager.SYSTEM_USER_ID) {
+                if(!conn) connection.release();
+                return null;
+            }
+            
             let errCode: WebAPI.APIErrors<"Auth"> | null = null;
 
             if(user&&(await compare(password, user.password))) {
@@ -209,13 +217,14 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
     //User API
 
-    public async resolveUserKey(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["resolveUserKey"]> {
+    public async resolveUserKey(userKey: string | number, hideSystemUser: boolean=true, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["resolveUserKey"]> {
         switch(typeof userKey) {
             case "string": 
-                const userData = await this.getUser(userKey,conn);
+                const userData = await this.getUser(userKey, hideSystemUser,conn);
                 if(userData) return userData.userID;
                 else return null;
-            case "number": return userKey;
+            case "number": 
+                return userKey!==WebAuthManager.SYSTEM_USER_ID||hideSystemUser==false?userKey:null;
             default: throw new TypeError("Invalid user key. Expected either number or a string.");
         }
     }
@@ -230,7 +239,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
             if(emailRegex.test(userData.email)) {
                 if(!conn) connection.beginTransaction();
-                const user = await this.userExists(userData.email,connection);
+                const user = await this.userExists(userData.email,true, connection);
 
                 if(user==false) {
                     const queryStr = `SELECT add_user(?,?,?,?);`;
@@ -263,27 +272,27 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError("NoConnection");
     }
 
-    public async userExists(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["userExists"]> {
+    public async userExists(userKey: string | number, hideSystemUser: boolean=true, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["userExists"]> {
 
         const {field, userKey: safeUserKey} = this._translateUserKey(userKey);
 
         const result = await this.db.performQuery<"Select">(`SELECT userID FROM users WHERE ${field}=?;`,[safeUserKey],conn);
 
         if(result) {
-            return result.length===1;
+            return result.length===1&&(result[0]["userID"]!==WebAuthManager.SYSTEM_USER_ID || hideSystemUser===false);
         }
 
         conn?.release();
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
 
-    public async getUser(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["getUser"]> { 
+    public async getUser(userKey: string | number, hideSystemUser: boolean=true, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["getUser"]> { 
         const {field, userKey: safeUserKey} = this._translateUserKey(userKey);
 
         const response = await this.db.performQuery<"Select">(`SELECT * FROM users NATURAL JOIN ranks WHERE ${field}=?;`,[safeUserKey],conn);
 
         if(response) {
-            if(response.length===1) {
+            if(response.length===1&&(response[0]["userID"]!==WebAuthManager.SYSTEM_USER_ID || hideSystemUser===false)) {
                 return {
                     userID: response[0]["userID"],
                     email: response[0]["email"],
@@ -306,7 +315,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
     public async setPassword(userKey: string | number, newPassword: string, conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["setPassword"]> {
 
-        const userID = await this.resolveUserKey(userKey, conn);
+        const userID = await this.resolveUserKey(userKey, true, conn);
 
         if(userID===null) return;
 
@@ -338,6 +347,10 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         if(response) {
 
             for (const row of response) {
+
+                if(row["userID"]===WebAuthManager.SYSTEM_USER_ID)
+                    continue;
+
                 result.push({
                     userID: row["userID"],
                     email: row["email"],
@@ -366,7 +379,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             if(!conn) connection.beginTransaction();
             let errCode: WebAPI.APIErrors<"Auth">;
 
-            const userID = await this.resolveUserKey(userKey, connection);
+            const userID = await this.resolveUserKey(userKey, true, connection);
 
             if(userID!=null) {
                 const rankDetails = await this.getRank(rankName, connection);
@@ -442,6 +455,8 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             const result = [];
 
             for (const row of response) {
+                if(row["userID"]===WebAuthManager.SYSTEM_USER_ID) continue;
+
                 result.push({
                     userID: row["userID"],
                     email: row["email"],
@@ -572,7 +587,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         if(connection) {
             if(!conn) connection.beginTransaction();
 
-            const user = await this.getUser(userKey, connection);
+            const user = await this.getUser(userKey, true, connection);
 
             let errCode: WebAPI.APIErrors<"Auth"> | null = null;
 
@@ -609,7 +624,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         if(connection) {
             if(!conn) connection.beginTransaction();
 
-            const user = await this.getUser(userKey, connection);
+            const user = await this.getUser(userKey, true, connection);
 
             let errCode: WebAPI.APIErrors<"Auth">;
 
@@ -643,9 +658,9 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             if(!conn) connection.beginTransaction();
             let errCode: WebAPI.APIErrors<"Auth">;
 
-            const user = await this.getUser(userKey, connection);
+            const user = await this.getUser(userKey, true, connection);
 
-            if(user) {
+            if(user&&user.userID!==WebAuthManager.SYSTEM_USER_ID) {
                 let roleDetails = await this.db.performQuery<"Select">("SELECT roleID FROM roles WHERE roleName=?",[roleName], connection);
 
                 if(roleDetails) {
@@ -684,7 +699,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         if(connection) {
             connection.beginTransaction();
 
-            const userID = await this.resolveUserKey(userKey, connection);
+            const userID = await this.resolveUserKey(userKey, true, connection);
 
             if(userID==null) {
                 connection.release();
@@ -719,7 +734,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         const connection = conn ?? await this.db.getConnection();
 
         if(connection) {
-            const userID = await this.resolveUserKey(userKey, connection);
+            const userID = await this.resolveUserKey(userKey, true, connection);
 
             if(userID==null) {
                 if(!conn) connection.release();
@@ -741,7 +756,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
     public async createToken(actionName: WebAPI.Auth.AccountsTokenAPI.TAccountActionName ,userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["createToken"]> {
 
-        const userID = await this.resolveUserKey(userKey, conn);
+        const userID = await this.resolveUserKey(userKey, true, conn);
 
         if(userID==null) {
             conn?.release();
@@ -807,9 +822,9 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     }
 
     public async getTokensCount(userKey: string | number, actionName: WebAPI.Auth.AccountsTokenAPI.TAccountActionName, conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["getTokensCount"]> {
-        const user = await this.getUser(userKey, conn);
+        const user = await this.getUser(userKey, true, conn);
 
-        if(user) {
+        if(user&&user.userID!==WebAuthManager.SYSTEM_USER_ID) {
             const response = await this.db.performQuery<"Select">(`SELECT COUNT(*) as count FROM account_actions NATURAL JOIN account_action_types WHERE userID=? AND accountActionName=? AND now() < expirationDate`,[user.userID,actionName],conn);
             
             if(response) return response[0]["count"];
@@ -899,7 +914,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         if(connection) {
             if(!conn) connection.beginTransaction();
 
-            const userExists = await this.userExists(email, connection);
+            const userExists = await this.userExists(email, true, connection);
 
             let errCode: WebAPI.APIErrors<"Auth">;
 

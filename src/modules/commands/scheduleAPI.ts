@@ -4,6 +4,7 @@ import {Command } from "../commands-handler.js";
 import { insertColor } from "../output.js";
 import { APIError, getPrintableDataTable, initArrayOfArrays } from "../util.js";
 import { describeAPIError, getCommandErrorDisplayText } from "./common/utils.js";
+import { WebAuthManager } from "../network/webAuthManager.js";
 
 export default function(){
 
@@ -310,7 +311,7 @@ export default function(){
         const endTime = data.parameters["endTime"] as DateTime | undefined;
 
         try {
-            await workDay.addSlot(0,role,startTime, endTime);
+            await workDay.addSlot(WebAuthManager.SYSTEM_USER_ID,role,startTime, endTime);
         } catch (error: any) {
             if(!error.errCode) throw error;
             req.respond(getCommandErrorDisplayText("Couldn't add slot", error.errCode, data.colorsMode));
@@ -756,7 +757,7 @@ export default function(){
             }
             req.respond(insertColor("fg_cyan",`Importing '${rootProp}' work day. Found ${workDayInput.slots.length} slots.`, data.colorsMode), false);
 
-            await workDay.setNote(workDayInput.note, null);
+            await workDay.setNote(workDayInput.note, WebAuthManager.SYSTEM_USER_ID);
             await workDay.deleteAllSlots();
 
             for (let i=0; i < workDayInput.slots.length; i++) {
@@ -773,7 +774,7 @@ export default function(){
 
                 let newSlotID;
                 try {
-                    newSlotID = await workDay.addSlot(0,slotInput.role,startTime, endTime ?? undefined);
+                    newSlotID = await workDay.addSlot(WebAuthManager.SYSTEM_USER_ID,slotInput.role,startTime, endTime ?? undefined);
                 } catch (error: any) {
                     if(!error.errCode) throw error;
                     req.respond(insertColor("fg_yellow",`Skipping import of slot #${i}. ${describeAPIError(error.errCode)}`, data.colorsMode), false);

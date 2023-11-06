@@ -89,7 +89,7 @@ export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
         if(connection) {
             if(!conn) connection.beginTransaction();
 
-            const userExists = await (global.app.webAuthManager as InternalWebAuthManager).userExists(userID, connection);
+            const userExists = await (global.app.webAuthManager as InternalWebAuthManager).userExists(userID, true, connection);
 
             let errCode: WebAPI.APIErrors<"Schedule"> | null = null;
 
@@ -232,7 +232,7 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
     }
 
     public get noteLastUpdater() {
-        return global.app.webAuthManager.getUser(this._noteLastUpdaterUserID ?? "");
+        return global.app.webAuthManager.getUser(this._noteLastUpdaterUserID ?? "", false);
     }
 
     public get date() {
@@ -332,7 +332,7 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
 
     public async getUserSlot(userKey: string | number, conn?: WebAPI.Mysql.IPoolConnection) {
 
-        const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, conn);
+        const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, true, conn);
 
         const response = await this._db.performQuery<"Select">("SELECT * FROM shift_slots NATURAL LEFT JOIN shifts INNER JOIN roles ON roleRequiredID=roleID WHERE workDayID=? AND userID=?;",[this._workDayID, userID],conn);
 
@@ -734,7 +734,7 @@ class Shift implements WebAPI.Schedule.IShift {
     }
 
     public async getUser(conn?: WebAPI.Mysql.IPoolConnection) {
-        const result = await (global.app.webAuthManager as InternalWebAuthManager).getUser(this._userID, conn);
+        const result = await (global.app.webAuthManager as InternalWebAuthManager).getUser(this._userID, true, conn);
 
         if(result) return result;
         

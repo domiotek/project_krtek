@@ -282,11 +282,14 @@ namespace WebAPI {
             /**
              * Resolves userKey into userID.
              * @param conn existing connection. Can be passed to avoid creating another connection just for that.
+             * @param hideSystemUser Whether to hide existence of the system user, by default true. Should be changed
+             * only, when dealing with data, where system user could be assigned as owner, creator or is involved in any other way.
+             * Shouldn't be used in methods that result in creation of objects designed specifically for real users.
              * @returns userID or null if user is not found.
              * 
              * @throws Can throw NoConnection and DBError errors.
              */
-            resolveUserKey(userKey: string | number): Promise<number | null>
+            resolveUserKey(userKey: string | number, hideSystemUser?: boolean=true): Promise<number | null>
 
             /**
              * Creates new user based on the provided data.
@@ -308,24 +311,30 @@ namespace WebAPI {
             /**
              * Checks whether user with given user key exists or not.
              * @param userKey Email address or UserID
+             * @param hideSystemUser Whether to hide existence of the system user, by default true. Should be changed
+             * only, when dealing with data, where system user could be assigned as owner, creator or is involved in any other way.
+             * Shouldn't be used in methods that result in creation of objects designed specifically for real users.
              * 
              * @async
              * @returns Boolean on successfull request with either True if exists or False if it doesn't.
              * 
              * @throws Can throw with NoConnection and DBError errors
              */
-            userExists(userKey: string | number): Promise<boolean>
+            userExists(userKey: string | number, hideSystemUser?: boolean=true): Promise<boolean>
 
             /**
              * Returns details about user that matches given query specifics.
              * @param userKey Either address email or userID.
+             * @param hideSystemUser Whether to hide existence of the system user, by default true. Should be changed
+             * only, when dealing with data, where system user could be assigned as owner, creator or is involved in any other way.
+             * Shouldn't be used in methods that result in creation of objects designed specifically for real users.
              * 
              * @async
              * @returns User details object or null if user not found.
              * 
              * @throws Can throw with NoConnection and DBError errors.
              */
-            getUser(userKey: string | number): Promise<UserAPI.IUserDetails | null>
+            getUser(userKey: string | number, hideSystemUser?: boolean=true): Promise<UserAPI.IUserDetails | null>
 
             /**
              * Sets new password for specified user
@@ -817,7 +826,7 @@ namespace WebAPI {
              * @async
              * @throws Can throw NoConnection, DBError or NoteTooLong errors.
              */
-            setNote(newNote: string | null, updater: number | null): Promise<void>;
+            setNote(newNote: string | null, updater: number): Promise<void>;
 
             /**
              * Returns details about the slot with given slot ID

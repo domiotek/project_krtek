@@ -32,7 +32,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
 
         if(connection) {
 
-            const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, connection);
+            const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, true, connection);
 
             if(userID===null) {
                 if(!conn) connection.release();
@@ -76,7 +76,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
         if(connection) {
             if(!conn) connection.beginTransaction();
 
-			const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, connection);
+			const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, true, connection);
 
 			if(userID===null) {
 				if(!conn) connection.release();
@@ -169,7 +169,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
 
         if(connection) {
 
-            const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, connection);
+            const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, true, connection);
 
             if(userID===null) {
                 if(!conn) connection.release();
@@ -221,7 +221,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
 
         if(connection) {
             if(!conn) connection.beginTransaction();
-            const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, connection);
+            const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, true, connection);
 
             if(userID===null) {
                 if(!conn) connection.release();
@@ -268,7 +268,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
 
         if(connection) {
             if(!conn) connection.beginTransaction();
-            const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, connection);
+            const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, true, connection);
 
             if(userID===null) {
                 if(!conn) connection.release();
@@ -307,7 +307,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
         const connection = conn ?? await this._db.getConnection();
 
         if(connection) {
-            const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, connection);
+            const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, true, connection);
 
             if(userID===null) {
                 if(!conn) connection.release();
