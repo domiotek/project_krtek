@@ -201,6 +201,54 @@ export namespace API {
 
                 type IEndpoint = TBuildAPIEndpoint<"GET", "/api/schedule/:withDay",IResponseData, "NotSignedIn" | "InvalidDate", IURLParams>
             }
+
+            namespace UpdateShift {
+                interface IRequestData {
+                    startTime: string,
+                    endTime: string,
+                    tip: number,
+                    deduction: number,
+                    note: string | undefined
+                    sharedNote: string | undefined
+                }
+
+                interface IURLParams {
+                    [p: string]: string
+                    when: string
+                }
+
+                interface IResponse extends IGenericPOSTResponse {
+                    errCode?:  TCommonResponses | "NotSignedIn" | "InvalidDate" | "InvalidTime" | "NoSlot";
+                }
+
+                type IEndpoint = TBuildAPIEndpoint<"PUT","/api/schedule/shift/:when", undefined, "NotSignedIn" | "InvalidDate" | "InvalidTime" | "NoSlot", IURLParams>
+            }
+
+
+            namespace UpdateShiftNotes {
+                interface IRequest {
+                    note: string | undefined
+                    sharedNote: string | undefined
+                }
+
+                interface IURLParams {
+                    [p: string]: string
+                    when: string
+                }
+
+                type IEndpoint = TBuildAPIEndpoint<"PUT","/api/schedule/shift/:when/notes", undefined, "NotSignedIn" | "NoSlot" | "InvalidDate", IURLParams>
+            }
+
+            namespace AddShift {
+                interface IRequest {
+                    when: string
+                    startTime: string
+                    endTime: string
+                    role: string
+                }
+
+                type IEndpoint = TBuildAPIEndpoint<"POST","/api/schedule/shift", undefined, "NotSignedIn" | "SlotExists" | "InvalidDate" | "NoPlanning">
+            }
         }
 
         namespace Statistics {
