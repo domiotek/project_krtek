@@ -1,0 +1,246 @@
+.GoalPanel h3 {
+    margin-bottom: 0;
+    animation-delay: var(--base-anim-delay);
+}
+
+.SubHeader {
+    margin-top: 0;
+    margin-left: 0.25rem;
+}
+
+.MilestoneCarouselWrapper {
+    position: relative;
+    overflow: hidden;
+    height: 3.75rem;
+}
+
+.MilestoneCarousel {
+    display: flex;
+    position: absolute;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    left: -65%!important;
+    z-index: 1;
+}
+
+.MilestoneCarouselWrapper::before {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: block;
+    content: "";
+    height: 100%;
+    width: 10%;
+    background: rgb(252,252,252);
+    background: linear-gradient(90deg, rgba(252,252,252,0.75) 0%, rgba(252,252,252,0.25) 100%);
+    z-index: 2;
+}
+
+.MilestoneCarouselWrapper::after {
+    position: absolute;
+    right: 0;
+    top: 0;
+    display: block;
+    content: "";
+    height: 100%;
+    width: 10%;
+    background: rgb(252,252,252);
+    background: linear-gradient(90deg, rgba(252,252,252,0.25) 0%, rgba(252,252,252,0.75) 100%);
+    z-index: 2;
+}
+
+.MilestoneCarousel li {
+    width: 75%;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0 0.25rem;
+}
+
+.MilestoneCarousel li i {
+    font-style: normal;
+    font-size: 0.85rem;
+}
+
+.MilestoneCarousel li span {
+    display: block;
+    height: 5px;
+    width: 100%;
+    background-color: #D9D9D9;
+}
+
+.MilestoneCarousel li span > span {
+    background-color: var(--primary-color);
+    width: var(--progress, 0);
+}
+
+.MilestoneCarouselWrapper.First .MilestoneCarousel{
+    left: 5%;
+}
+
+.MilestoneCarouselWrapper.First::before, .MilestoneCarouselWrapper.Last::after {
+    content: unset;
+}
+
+.MilestoneCarouselWrapper.Last .MilestoneCarousel {
+    left: -110%;
+}
+
+.MilestoneCarouselWrapper.OnlyOne .MilestoneCarousel li:not(:nth-child(2)),
+.MilestoneCarouselWrapper.First .MilestoneCarousel li:nth-child(1),
+.MilestoneCarouselWrapper.Last .MilestoneCarousel li:nth-child(3) {
+    opacity: 0;
+}
+
+
+.GoalSummary .Graph {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 1.25rem;
+}
+
+.GoalSummary .Graph svg {
+    margin-right: 0.25rem;
+}
+
+.GoalSummary >h5 {
+    text-align: right;
+    margin: 0;
+}
+
+.NoDataContainer, .HistoricGoalContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 1.5rem;
+}
+
+.NoDataContainer img {
+    width: 60px;
+}
+
+.HistoricGoalContainer img {
+    width: 100px;
+}
+
+.HistoricGoalContainer.Saved img {
+    width: 150px;
+}
+
+.NoDataContainer h5, .HistoricGoalContainer h5 {
+    margin: 0.75rem 0 0;
+}
+
+.HistoricGoalContainer h5 {
+    font-size: 0.85rem;
+}
+
+.NoDataContainer p, .HistoricGoalContainer p {
+    font-size: small;
+    text-align: center;
+}
+
+.HistoricGoalContainer p span{
+    color: var(--primary-color);
+}
+
+.GoalCompleteContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.GoalCompleteContainer img {
+    width: 150px;
+}
+
+.GoalCompleteContainer h5 {
+    align-self: flex-start;
+    margin: 0 0 1.5rem;
+}
+
+.GoalCompleteContainer p {
+    margin: 0;
+    text-align: center;
+    font-size: smaller;
+}
+
+.DummyPanel > h3 {
+    width: 6rem;
+    height: 1.75rem;
+}
+
+.DummyContent {
+    display: flex;
+    flex-direction: column;
+}
+
+.DummyContent span {
+    display: block;
+    width: 10rem;
+    height: 0.85rem;
+    margin: 0.2rem 0 0 0.5rem;
+    animation-delay: calc(var(--base-anim-delay) + 0.05s);
+}
+
+.DummyContent p {
+    display: block;
+    width: calc(100% - 0.5rem);
+    height: 3.5rem;
+    margin-left: 0.5rem;
+    animation-delay: calc(var(--base-anim-delay) + 0.05s);
+}
+
+.DummyContent h4 {
+    display: block;
+    width: 80%;
+    align-self: flex-end;
+    height: 2rem;
+    margin: 0;
+    animation-delay: calc(var(--base-anim-delay) + 0.1s);
+}
+
+@media screen and (min-width: 769px) {
+    .MilestoneCarouselWrapper {
+        height: 5.75rem;
+    }
+
+    .MilestoneCarouselWrapper::before {
+        height: 20%;
+        width: 100%;
+        background: linear-gradient(180deg, rgba(252,252,252,0.75) 0%, rgba(252,252,252,0.25) 100%);
+    }
+
+    .MilestoneCarouselWrapper::after {
+        height: 20%;
+        width: 100%;
+        top: unset;
+        right: unset;
+        bottom: 0;
+        background: linear-gradient(180deg, rgba(252,252,252,0.25) 0%, rgba(252,252,252,0.75) 100%);
+    }
+
+    .MilestoneCarousel {
+        flex-direction: column;
+        left: 5%!important;
+        top: -40px;
+    }
+
+    .MilestoneCarouselWrapper.First .MilestoneCarousel {
+        top: -60px;
+    }
+
+    .MilestoneCarouselWrapper.Last .MilestoneCarousel {
+        top: -30px;
+    }
+
+    .MilestoneCarousel li {
+        padding: 0.25rem 0;
+        width: 90%;
+    }
+    
+}
