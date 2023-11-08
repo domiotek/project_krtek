@@ -1,0 +1,283 @@
+.ShiftsWrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.AddShiftButton {
+    align-self: flex-end;
+    border-radius: 1rem;
+    font-size: 0.85rem;
+}
+
+.ShiftPanel {
+    width: 100%;
+    max-height: 9rem;
+    padding: 0.5rem;
+    margin: 3.5rem 0;
+    background-color: #f7f9ffb0;
+    transition: max-height 0.5s;
+    overflow: hidden;
+}
+
+.ShiftPanel.Active {
+    max-height: 75rem;
+}
+
+.Header {
+    display: flex;
+    position: relative;
+    justify-content: space-between;
+    flex-direction: column;
+    height: 8rem;
+}
+
+.LeftPanel h2 {
+    margin: 0;
+}
+
+.LeftPanel h5 {
+    color: #474747;
+    margin: 0 0 0 0.5rem;
+}
+
+.InlineBullet {
+    display: inline-block;
+    width: 0.35rem;
+    height: 0.35rem;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    transform: translateY(-1px);
+    margin: 0 0.15rem;
+}
+
+.RightPanel {
+    display: flex;
+    align-items: center;
+    align-self: flex-end;
+}
+
+.Header > img {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 1rem;
+    margin-left: 1rem;
+    transition: transform 0.4s;
+    transform: rotate(-90deg);
+}
+
+.ShiftPanel.ShiftPanel.Active .Header > img {
+    transform: rotate(90deg);
+}
+
+.UnfinishedShiftView, .FinishedShiftView {
+    text-align: right;
+}
+
+.UnfinishedShiftView h4, .FinishedShiftView h4{
+    margin: 0;
+}
+
+.UnfinishedShiftView h6 {
+    margin: 0;
+    color: #474747;
+}
+
+.FinishedShiftView h2 {
+    margin: 0;
+    color: var(--primary-color);
+}
+
+.ShiftDetails {
+    display: flex;
+    position: relative;
+    opacity: 0;
+    border-top: solid 1px var(--bg-dark);
+    transition: opacity 0.4s;
+    margin-top: 0.5rem;
+    padding: 0 0rem 3rem;
+    flex-wrap: wrap;
+}
+
+.ShiftPanel.ShiftPanel.Active .ShiftDetails {
+    opacity: 1;
+}
+
+.Section {
+    padding: 0 0.5rem;
+    flex-shrink: 0;
+    width: 100%;
+}
+
+.Section >h4 {
+    color: #474747;
+    margin-bottom: 0.5rem;
+    font-size: larger;
+}
+
+.SectionList {
+    list-style-type: none;
+    padding: 0;
+    margin: 0 0 0 0.5rem;
+}
+
+.SectionList li {
+    margin: 0.5rem 0;
+}
+
+.SectionList h5 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.SectionList h6 {
+    margin: 0;
+    font-size: small;
+    font-weight: normal;
+}
+
+.EarningsSection > h5 {
+    margin: 0;
+    text-align: right;
+    font-size: 1.2rem;
+}
+
+.EarningsSummaryList {
+    text-align: right;
+}
+
+.PropValue {
+    font-weight: normal;
+}
+
+.NoteHolder h6 {
+    margin-top: 0.5rem;
+}
+
+.ShiftEditButton {
+    position: absolute;
+    padding: 0.5rem;
+    height: 2.5rem;
+    width: 2.5rem;
+    border-radius: 1.5rem;
+    bottom: 0.15rem;
+    right: 0.15rem;
+}
+
+.ShiftEditButton > img {
+    width: 1rem;
+    height: 1rem;
+}
+
+.NoShiftsMessageContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2.5rem;
+}
+
+.NoShiftsMessageContainer img {
+    width: 45%;
+    max-width: 150px;
+}
+
+.NoShiftsMessageContainer h4 {
+    margin: 1.7rem 0 0;
+}
+
+.DummyShiftPanel .LeftPanel h2 {
+    width: 12rem;
+    height: 2.4rem;
+}
+
+.DummyShiftPanel .LeftPanel h5 {
+    width: 7rem;
+    margin-top: 0.5rem;
+    height: 1.2rem;
+}
+
+.DummyShiftPanel .RightPanel h4 {
+    width: 10rem;
+    height: 1.3rem;
+    animation-delay: 0.2s;
+}
+
+.DummyShiftPanel .FinishedShiftView {
+    display: flex;
+    flex-direction: column;
+}
+
+.DummyShiftPanel .RightPanel h2 {
+    width: 5rem;
+    margin-top: 0.5rem;
+    align-self: flex-end;
+    height: 2rem;
+    animation-delay: 0.4s;
+}
+
+@media screen and (min-width: 426px) {
+    .ShiftPanel {
+        max-height: 5rem;
+    }
+
+    .ShiftPanel.Active {
+        max-height: 45rem;
+    }
+
+    .Header {
+        height: 4rem;
+        flex-direction: row;
+    }
+    
+    .Header > img {
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%) rotate(-90deg);
+    }
+
+    .ShiftPanel.ShiftPanel.Active .Header > img {
+        transform: translateY(-50%) rotate(90deg);
+    }
+
+    .RightPanel {
+        align-self: unset;
+        margin-right: 2rem;
+    }
+
+    .Section {
+        width: unset;
+        min-width: 11rem;
+        padding: 0 1.5rem;
+    }
+}
+
+@media screen and (min-width: 769px) {
+    .ShiftsWrapper {
+        padding: 0 2rem;
+    }
+}
+
+@media screen and (min-width: 1000px) {
+    .ShiftsWrapper {
+        padding: 0 4rem;
+    }
+    
+}
+
+@media screen and (min-width: 1200px) {
+    .ShiftsWrapper {
+        padding: 0 2rem;
+    }
+}
+
+@media screen and (min-width: 1441px) {
+    .ShiftsWrapper {
+        padding: 0 5rem;
+    }
+}
+
+@media screen and (min-width: 1981px) {
+    .ShiftsWrapper {
+        padding: 0 1rem;
+    }
+}

@@ -1,0 +1,10 @@
+.FreshStartImage {
+    max-width: 175px!important;
+}
+
+
+@media screen and (min-width: 1700px) {
+    .FreshStartImage {
+        max-width: 215px!important;
+    }
+}

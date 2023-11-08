@@ -1,0 +1,9 @@
+.NoDataImage {
+    max-width: 200px!important;
+}
+
+@media screen and (min-width: 1700px) {
+    .NoDataImage {
+        max-width: 270px!important;
+    }
+}

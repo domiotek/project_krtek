@@ -1,0 +1,38 @@
+.ViewWrapper {
+    margin-top: 2.5rem;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 540px;
+}
+
+.ViewWrapper img {
+    width: 100%;
+    max-width: 300px;
+    margin: auto;
+}
+
+.ViewWrapper h3 {
+    margin: 0;
+    margin-top: 1.5rem;
+}
+
+.ViewWrapper h5 {
+    margin: 0;
+    color: #535353;
+}
+
+.ViewWrapper p {
+    font-size: smaller;
+}
+
+@media screen and (min-width: 769px) {
+    .ViewWrapper {
+        padding: 1.5rem 2.5rem;
+    }
+
+    .ViewWrapper h3 {
+        margin-top: 3.5rem;
+    }
+}

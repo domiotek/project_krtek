@@ -1,0 +1,71 @@
+.MonthSwitcher {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.MonthSwitcher span {
+    padding: 0.3rem;
+    border-radius: 0.6rem;
+    color: var(--primary-color);
+    font-size: larger;
+}
+
+.DateRangePlaceholder {
+    height: 2rem;
+    width: 7rem;
+}
+
+.MonthSwitcher button {
+    background: none;
+    padding: 0;
+    height: 1.2rem;
+    width: 1.2rem;
+    margin: 0 0.75rem;
+}
+
+.MonthSwitcher img {
+    width: 100%;
+    height: 100%;
+    filter: grayscale(1) brightness(0);
+}
+
+.MonthSwitcher button:nth-child(3) {
+    transform: rotate(180deg);
+}
+
+.TabsWrapper {
+    width: 100%;
+    margin-top: 2rem;
+    padding-top: 5.5rem;
+    position: relative;
+}
+
+.TabsWrapper::before {
+    display: block;
+    position: absolute;
+    content: "";
+    width: 80%;
+    height: 1px;
+    left: 10%;
+    top: 0;
+    background-color: var(--bg-dark);
+}
+
+
+@media screen and (min-width: 386px) {
+    .TabsWrapper {
+        padding-top: 3.5rem;
+    }
+    
+}
+
+@media screen and (min-width: 769px) {
+    .TabsWrapper {
+        padding-top: 1.5rem;
+    }
+    .TabsWrapper::before {
+        content: unset;
+    }
+}

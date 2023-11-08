@@ -1,0 +1,106 @@
+.DummyEarningsSummary h4 {
+    height: 1.4rem;
+    width: 7rem;
+}
+
+.DummyEarningsSummary li {
+    align-items: flex-end;
+}
+
+.DummyEarningsSummary i {
+    text-align: right;
+    height: 1.2rem;
+    width: 4rem;
+    margin-bottom: 0.25rem;
+    animation-delay: 0.3s;
+}
+
+.DummyEarningsSummary span {
+    height: 1rem;
+    width: 2rem;
+    animation-delay: 0.35s;
+}
+
+.DummyEarningsSummary h3 {
+    height: 2.5rem;
+    width: 9rem;
+    padding-top: 0.5rem;
+}
+
+.DummyEarningsSummary h3 span {
+    width: 100%;
+    height: 100%;
+    display: block;
+    animation-delay: 0.25s;
+}
+
+.DummyWageTipRatioGraph {
+    animation-delay: 0.1s;
+}
+
+.DummyStatisticsPanel li {
+    width: 12rem;
+    height: 1.5rem;
+    margin: 0.5rem;
+}
+
+.DummyStatisticsPanel li {
+    animation-delay: 0.15s;
+}
+
+.DummyStatisticsPanel li:nth-child(1) {
+    width: 7rem;
+}
+
+@media screen and (min-width: 386px) {
+    .DummyEarningsSummary i {
+        animation-delay: 0.2s;
+    }
+    
+    .DummyEarningsSummary span {
+        animation-delay: 0.25s;
+    }
+    
+    .DummyEarningsSummary h3 span {
+        animation-delay: 0s;
+    }
+    
+    .DummyWageTipRatioGraph {
+        animation-delay: 0.3s;
+    }
+    
+    .DummyStatisticsPanel li {
+        animation-delay: 0.15s;
+    }
+
+    .DummyStatisticsPanel {
+        --goal-panel-animation-delay: 0.1s;
+    }
+}
+
+@media screen and (min-width: 769px) {
+    .DummyEarningsSummary i {
+        animation-delay: 0.25s;
+    }
+    
+    .DummyEarningsSummary span {
+        animation-delay: 0.3s;
+    }
+    
+    .DummyEarningsSummary h3 span {
+        animation-delay: 0.15s;
+    }
+    
+    .DummyWageTipRatioGraph {
+        animation-delay: 0.5s;
+    }
+    
+    .DummyStatisticsPanel li {
+        animation-delay: 0.85s;
+    }
+
+    .DummyStatisticsPanel {
+        --goal-panel-animation-delay: 0.75s;
+    }
+    
+}

@@ -1,0 +1,43 @@
+.Dashboard {
+    display: flex;
+    width: 95%;
+    justify-content: center;
+}
+
+
+@media screen and (min-width: 386px) {
+    .Dashboard {
+        width: 100%;
+    }
+}
+
+@media screen and (min-width: 769px) {
+    .Dashboard {
+        box-shadow: 1px 1px 10px 0 #dfdfdf;
+        margin-top: 1.5rem;
+        border-radius: 0.5rem;
+        max-width: 700px;
+    }
+}
+
+@media screen and (min-width: 1441px) {
+    .Dashboard {
+        padding: 0.5rem 0rem 1.5rem
+    }
+}
+
+@media screen and (min-width: 1700px) {
+    .Dashboard {
+        width: 65%;
+        max-width: unset;
+        padding: 0.5rem 4rem 1.5rem;
+    }
+    
+}
+
+@media screen and (min-width: 1981px) {
+    .Dashboard {
+        width: 90%;
+    }
+    
+}
