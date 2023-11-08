@@ -50,6 +50,15 @@ export default async function initializeFeatures(instance: FastifyInstance | nul
     instance?.setNotFoundHandler(async (req,res)=>{
         const url=req.url.toLowerCase();
 
+        if(url.startsWith("/api")) {
+            res.status(404);
+            res.send({
+                status: "Failure",
+                errCode: "InvalidEndpoint",
+                message: "Requested API url and/or method isn't supported by the server."
+            });
+        }
+
         if(url.endsWith(".png")||url.endsWith(".svg")) {
             res.code(404);
             return;

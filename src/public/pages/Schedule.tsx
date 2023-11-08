@@ -8,6 +8,7 @@ import ScheduleView from "../components/ScheduleView/ScheduleView";
 import { API } from "../types/networkAPI";
 
 import arrowImg from "../assets/ui/left-arrow-angle.png";
+import { callAPI } from "../modules/utils";
 
 function parseDateTime(isoStr: string | undefined) {
     return DateTime.fromISO(isoStr ?? "");
@@ -22,27 +23,6 @@ export default function Schedule(){
     const [rangePoint, setRangePoint] = useState<DateTime>(initialRangePoint.isValid&&initialRangePoint < hardLimit?initialRangePoint:DateTime.now());
     const [rangeSwitcherStates, setRangeSwitcherStates] = useState<boolean[]>([false,false]);
 
-    function fetchSchedule(abortSignal?: AbortSignal) {
-        return new Promise<boolean>(async res=>{
-            const response = await fetch(`/api/app/schedule?withDay=${encodeURIComponent(rangePoint.toISO())}`, {signal: abortSignal});
-
-            if(response.ok) {
-                const result = await response.json() as API.App.Schedule.GetSchedule.TResponse;
-
-                if(result.status=="Success")
-                    setSchedule(result.data);
-                else {
-                    const elem = document.querySelector(`.${classes.ErrorMessageBox}`);
-                    if(elem) elem.classList.add(classes.Shown);
-
-                    res(false);
-                }
-            }
-
-            res(true);
-        });
-    }
-
     async function seekSchedule(direction: -1 | 1 , targetButton?: HTMLButtonElement) {
         if(targetButton?.hasAttribute("disabled")) return;
 
@@ -52,17 +32,17 @@ export default function Schedule(){
     }
 
     useEffect(()=>{
-        const aborter = new AbortController();
+        const newBtnStates = rangePoint.startOf("day") > DateTime.now().startOf("day")?[true, false]:[true, true];
 
-        new Promise<void>(async res=>{
-            const result = await fetchSchedule(aborter.signal);
-            if(rangePoint.startOf("day") > DateTime.now().startOf("day")) 
-                setRangeSwitcherStates([true,false]);
-            else if(result) setRangeSwitcherStates([true, true]);
-            res();
+        return callAPI<API.App.Schedule.GetSchedule.IEndpoint>("GET","/api/schedule/:withDay", {withDay: rangePoint.toISODate()}, data=>{
+            setSchedule(data);
+            setRangeSwitcherStates(newBtnStates);
+        }, ()=>{
+            const elem = document.querySelector(`.${classes.ErrorMessageBox}`);
+            if(elem) elem.classList.add(classes.Shown);
+
+            setRangeSwitcherStates(newBtnStates);
         });
-
-        return ()=>aborter.abort();
     }, [rangePoint]);
 
     return (

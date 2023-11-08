@@ -14,6 +14,24 @@ export namespace WebApp {
 
 export namespace API {
 
+    interface IBaseAPIEndpoint {
+        method: "GET" | "POST" | "PUT" | "DELETE"
+        url: string
+        returnData: any
+        errCodes: TCommonResponses | string
+        returnPacket: API._.ISuccessGetResponse<this["returnData"]> | API._.IFailureGetResponse<this["errCodes"]>
+        urlParams: {[param: string]: string} | null
+    }
+
+    type TBuildAPIEndpoint<M extends "GET" | "POST" | "PUT" | "DELETE", U extends string, R, E extends string = TCommonResponses, P extends {[p: string]: string} | null = null> = {
+        method: M
+        url: U
+        returnData: R
+        errCodes: TCommonResponses | E
+        returnPacket: API._.ISuccessGetResponse<R> | API._.IFailureGetResponse<TCommonResponses | E>
+        urlParams: P
+    }
+
     namespace _ {
         interface ISuccessGetResponse<T> {
             status: "Success",
@@ -122,7 +140,7 @@ export namespace API {
                 rankName: string
             }
 
-            type TResponse = API._.ISuccessGetResponse<IResponseData> | API._.IFailureGetResponse<TCommonResponses | "NotSignedIn">
+            type IEndpoint = TBuildAPIEndpoint<"GET", "/api/user/basic-data", IResponseData, "NotSignedIn">
         }
 
         namespace NavMenu {
@@ -134,13 +152,14 @@ export namespace API {
                 imageAlt: string
             }
 
-            type TResponse = API._.ISuccessGetResponse<IResponseData[]> | API._.IFailureGetResponse<TCommonResponses | "NotSignedIn">
+            type IEndpoint = TBuildAPIEndpoint<"GET", "/api/user/nav-menu",IResponseData[], "NotSignedIn">
         }
 
         namespace Schedule {
             namespace GetSchedule {
 
-                interface IRequest {
+                interface IURLParams {
+                    [p: string]: string
                     withDay: string
                 }
 
@@ -160,14 +179,11 @@ export namespace API {
                     }>
                 }
 
-                type TResponse = API._.ISuccessGetResponse<IResponseData> | API._.IFailureGetResponse<TCommonResponses | "NotSignedIn" | "InvalidDate">
+                type IEndpoint = TBuildAPIEndpoint<"GET", "/api/schedule/:withDay",IResponseData, "NotSignedIn" | "InvalidDate", IURLParams>
             }
         }
 
         namespace Statistics {
-            namespace GetStatistics {
-                interface IRequest {
-                    fromMonth?: string
                 }
 
                 interface IGoalDetails {
@@ -193,6 +209,10 @@ export namespace API {
                         minTip: number
                         avgTip: number
                         externalIncome: number
+            namespace GetStatistics {
+                interface IURLParams {
+                    [p: string]: string
+                    ofMonth: string
                 }
 
                 interface IResponseData {
@@ -200,7 +220,7 @@ export namespace API {
                     goal: IGoalDetails
                 }
 
-                type TResponse = API._.ISuccessGetResponse<IResponseData> | API._.IFailureGetResponse<TCommonResponses | "NotSignedIn" | "InvalidDate">
+                type IEndpoint = TBuildAPIEndpoint<"GET","/api/app/statistics/:ofMonth",IResponseData, "NotSignedIn" | "InvalidDate", IURLParams>
             }
         }
     }

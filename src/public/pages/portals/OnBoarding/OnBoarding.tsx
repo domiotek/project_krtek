@@ -64,6 +64,7 @@ export default function OnBoardingPortal() {
                     <CustomForm 
                         doReset={false}
                         url={""}
+                        urlParams={null}
                         method="POST"
                         onSuccess={()=>setPhase(2)}
                         onFailure={async ()=>{return "This can't fail"}}

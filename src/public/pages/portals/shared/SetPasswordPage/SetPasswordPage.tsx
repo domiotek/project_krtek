@@ -28,6 +28,7 @@ export default function SetPasswordPage(props: IProps) {
                 <CustomForm
                     doReset={false}
                     url={props.url ?? ""}
+                    urlParams={null}
                     method="POST"
                     onSuccess={()=>{
                         props.onSuccess(password)

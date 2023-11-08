@@ -6,6 +6,7 @@ import classes from "./Logout.css";
 import RoadSignsImg from "../assets/ilustrations/RoadSigns.svg";
 import { useNavigate } from "react-router-dom";
 import { API } from "../types/networkAPI";
+import { callAPI } from "../modules/utils";
 
 export default function Logout() {
     const [name, setName] = useState("");
@@ -31,25 +32,12 @@ export default function Logout() {
     }
 
     useEffect(()=>{
-        const abort = new AbortController();
-
-        new Promise<void>(async res=>{
-            const response = await fetch("/api/user/basic-user-data",{
-                signal: abort.signal
-            });
-
-            if(response.ok) {
-                const result = await response.json() as API.App.BasicData.TResponse;
-
-                if(result.status=="Success") {
-                    setName(result.data.name);
-                    setSurname(result.data.surname);
-                }else navigate("/login");
-            }
-            res();
+        return callAPI<API.App.BasicData.IEndpoint>("GET","/api/user/basic-data", null, data=>{
+            setName(data.name);
+            setSurname(data.surname);
+        }, ()=>{
+            navigate("/login");
         });
-
-        return ()=>abort.abort();
     },[]);
 
     return (

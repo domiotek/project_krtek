@@ -1,7 +1,7 @@
 import React, { FormEventHandler, useEffect, useState } from "react";
 
 import classes from "./CustomForm.css"
-import { parseFormData } from "../../../modules/utils";
+import { callAPI, parseFormData } from "../../../modules/utils";
 import { API } from "../../../types/networkAPI"
 
 export namespace CustomFormTypes {
@@ -10,13 +10,14 @@ export namespace CustomFormTypes {
         [name: string]: string
     }
 
-    export interface IProps {
-        url: string
-        method: "POST" | "GET"
+    export interface IProps<T extends API.IBaseAPIEndpoint> {
+        url: T["url"]
+        urlParams: T["urlParams"]
+        method: T["method"]
         elements?: JSX.Element[]
         children?: JSX.Element[]
-        onFailure: (Response: any)=>Promise<string>
-        onSuccess: (response: any)=>void
+        onFailure?: (code: number, err: T["errCodes"], errorType: "Server" | "Client")=>Promise<string | undefined>
+        onSuccess: (data: T["returnData"])=>void
         onBeforeSubmit?: (setErrorMessage: (text: string)=>void)=>void
         submitCaption: string
         doReset: boolean
@@ -25,7 +26,7 @@ export namespace CustomFormTypes {
     }
 }
 
-export default function CustomForm(props: CustomFormTypes.IProps) {
+export default function CustomForm<T extends API.IBaseAPIEndpoint>(props: CustomFormTypes.IProps<T>) {
     if(!props.children&&!props.elements)
     throw new Error("No Form elements were given.");
 
@@ -56,37 +57,37 @@ export default function CustomForm(props: CustomFormTypes.IProps) {
                 return;
             }
         }
-            
+ 
         if(props.url!="") {
             try {
-                const abort = new AbortController();
-    
-                setTimeout(()=>abort.abort(),2500);
-    
-                const response = await fetch(props.url, {
-                    method: props.method,
-                    body: new URLSearchParams(parseFormData(form,props.ignoreList, props.staticFields)),
-                    signal: abort.signal
-                });
-    
-                if(response.ok) {
-                    const result: API.IGenericPOSTResponse = await response.json();
-                    
-                    if(result.status=="Success") props.onSuccess(result);
-                    else {
-                        const message = await props.onFailure(result);
+                const aborter = callAPI(props.method, props.url, props.urlParams, 
+                    data=>{
+                        props.onSuccess(data);
+                    }, async (code, err, type)=>{
+                        let message;
+                        
+                        if(props.onFailure) 
+                            message = await props.onFailure(code, err, type);
+                        
+                        if(message===undefined)
+                            message = type=="Server"?
+                                "Server is having troubles right now. Try again in a bit."
+                               :
+                                "Something isn't right. Try reloading.";
+
                         setErrorMessage(message);
                         setSubmitDisabled(false);
-                    }
-                }
+                    }, new URLSearchParams(parseFormData(form,props.ignoreList, props.staticFields))
+                );
+                setTimeout(aborter,2500);
             } catch (error) {
-                setErrorMessage("Couldn't perform that request right now. Try again later.");
+                setErrorMessage("This form is broken. Try reloading.");
                 console.error(error);
                 setSubmitDisabled(false);
             }
         }else {
-            setSubmitDisabled(false)
-            props.onSuccess({status: "Success", message: "Locally handled request"});
+            setSubmitDisabled(false);
+            props.onSuccess({});
         }
 
         return false;

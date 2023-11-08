@@ -1,4 +1,5 @@
 import { CustomFormTypes } from "../components/Forms/CustomForm/CustomForm";
+import { API } from "../types/networkAPI";
 
 export function manageClassState(targetClassName: string, action: "active" | "inactive" | "toggle", shownStateClassName: string) {
 	let target = document.querySelector(`.${targetClassName}`) as HTMLDivElement | null;
@@ -34,4 +35,34 @@ export function parseFormData(form: HTMLFormElement, ignoreList?: string[], stat
 	}
 
 	return formData;
+}
+
+export function renderCurrency(amount: number) {
+    return amount.toFixed(2).replace(".00", "")
+}
+
+export function callAPI<T extends API.IBaseAPIEndpoint>(method: T["method"], endpointURL: T["url"],values: T["urlParams"], onSuccess: (data: T["returnData"])=>void, onError?: (statusCode: number, errCode: T["errCodes"], errorType: "Server" | "Client")=>void, body?: URLSearchParams) {
+	const aborter = new AbortController();
+
+	new Promise<void>(async res=>{
+		if(values) {
+			for (const paramName in values) {
+				const value = values[paramName];
+				endpointURL = endpointURL.replace(":"+paramName,value);
+			}
+		}
+
+		const response = await fetch(endpointURL,{signal: aborter.signal, method, body});
+		const result = await response.json() as T["returnPacket"];
+
+		if(response.ok&&result.status=="Success") {
+			onSuccess(result.data);
+		}else {
+			if(onError) onError(response.status, (result as any).errCode, response.status >=400&&response.status <500?"Client":"Server");
+		}
+
+		res();
+	});
+
+	return ()=>aborter.abort();
 }

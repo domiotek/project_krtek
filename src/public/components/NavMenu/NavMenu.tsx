@@ -7,6 +7,7 @@ import styles from "./NavMenu.css";
 
 import AccountPanel from "../AccountPanel/AccountPanel";
 import { WebApp, API } from "../../types/networkAPI";
+import { callAPI } from "../../modules/utils";
 
 
 interface IProps {
@@ -37,22 +38,9 @@ export default function NavMenu(props: IProps) {
 
 
     useEffect(()=>{
-        const aborter = new AbortController();
-
-        new Promise<void>(async res=>{
-            const response = await fetch("/api/app/nav-menu-entries", {signal: aborter.signal});
-
-            if(response.ok) {
-                const result = await response.json() as API.App.NavMenu.TResponse;
-
-                if(result.status=="Success")
-                    setElements(result.data);
-            }
-
-            res();
+        return callAPI<API.App.NavMenu.IEndpoint>("GET","/api/user/nav-menu", null,data=>{
+            setElements(data);
         });
-
-        return ()=>aborter.abort();
     }, []);
 
     return (

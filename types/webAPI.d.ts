@@ -1242,4 +1242,11 @@ namespace WebAPI {
         errCode: APIErrors<T>
     }
 
+    type TBaseRouteOptions = import("fastify").RouteOptions;
+    interface IRouteOptions<T> extends TBaseRouteOptions {
+        method: T["method"]
+        url: T["url"]
+        handler: (req: import("fastify").FastifyRequest, res: import("fastify").FastifyReply)=>Promise<T["returnType"]>
+    }
+
 }

@@ -4,19 +4,21 @@ import { errorHandler } from "./common/error.js";
 import * as yup from "yup";
 import { DateTime } from "luxon";
 
-const getScheduleRequestSchema = yup.object().shape({
-    fromMonth: yup.string()
+const getStatisticsURLParamsSchema = yup.object().shape({
+    ofMonth: yup.string().required()
 });
 
 
-const getStatistics: RouteOptions = {
+const getStatistics: WebAPI.IRouteOptions<API.App.Statistics.GetStatistics.IEndpoint> = {
     method: "GET",
-    url: "/api/app/statistics",
+    url: "/api/app/statistics/:ofMonth",
     handler: async (req, res)=>{
         res.header("cache-control","private, no-cache");
+        res.status(401);
+
         const sessionID = req.cookies.session;
 
-        let result: API.App.Statistics.GetStatistics.TResponse = {
+        let result: API.App.Statistics.GetStatistics.IEndpoint["returnPacket"] = {
             status: "Failure",
             errCode: "NotSignedIn"
         }
@@ -25,10 +27,11 @@ const getStatistics: RouteOptions = {
             const session = await global.app.webAuthManager.getSessionDetails(sessionID);
 
             if(session) {
-                let params: API.App.Statistics.GetStatistics.IRequest;
+                res.status(400);
+                let params: API.App.Statistics.GetStatistics.IURLParams;
 
                 try {
-                    params = await getScheduleRequestSchema.validate(req.query)
+                    params = await getStatisticsURLParamsSchema.validate(req.params)
                 } catch (error) {
                     result.status = "Failure";
                     result.errCode = "BadRequest";

@@ -1,4 +1,3 @@
-import { RouteOptions } from "fastify";
 import { API } from "../../../public/types/networkAPI.js";
 import { errorHandler } from "./common/error.js";
 import * as yup from "yup";
@@ -8,15 +7,15 @@ const getScheduleRequestSchema = yup.object().shape({
     withDay: yup.string().required()
 });
 
-
-const getSchedule: RouteOptions = {
+const getSchedule: WebAPI.IRouteOptions<API.App.Schedule.GetSchedule.IEndpoint> = {
     method: "GET",
-    url: "/api/app/schedule",
+    url: "/api/schedule/:withDay",
     handler: async (req, res)=>{
         res.header("cache-control","private, no-cache");
+        res.status(401);
         const sessionID = req.cookies.session;
 
-        let result: API.App.Schedule.GetSchedule.TResponse = {
+        let result: API.App.Schedule.GetSchedule.IEndpoint["returnPacket"] = {
             status: "Failure",
             errCode: "NotSignedIn"
         }
@@ -25,10 +24,11 @@ const getSchedule: RouteOptions = {
             const session = await global.app.webAuthManager.getSessionDetails(sessionID);
 
             if(session) {
-                let params: API.App.Schedule.GetSchedule.IRequest;
+                let params: API.App.Schedule.GetSchedule.IURLParams;
+                res.status(400);
 
                 try {
-                    params = await getScheduleRequestSchema.validate(req.query)
+                    params = await getScheduleRequestSchema.validate(req.params);
                 } catch (error) {
                     result.status = "Failure";
                     result.errCode = "BadRequest";
@@ -39,6 +39,7 @@ const getSchedule: RouteOptions = {
                 const workDays = await global.app.scheduleManager.getWeek(DateTime.fromISO(params.withDay));
 
                 if(workDays) {
+                    res.status(200);
                     result = {
                         status: "Success",
                         data: {

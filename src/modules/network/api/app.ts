@@ -1,15 +1,16 @@
-import { RouteOptions } from "fastify";
 import { API } from "../../../public/types/networkAPI.js";
 import { errorHandler } from "./common/error.js";
 
-const basicData: RouteOptions = {
+const basicData: WebAPI.IRouteOptions<API.App.BasicData.IEndpoint> = {
     method: "GET",
-    url: "/api/app/basic-user-data",
+    url: "/api/user/basic-data",
     handler: async (req, res)=>{
         res.header("cache-control","private, no-cache");
+        res.status(401);
+
         const sessionID = req.cookies.session;
 
-        let result: API.App.BasicData.TResponse = {
+        let result: API.App.BasicData.IEndpoint["returnPacket"] = {
             status: "Failure",
             errCode: "NotSignedIn"
         }
@@ -31,6 +32,8 @@ const basicData: RouteOptions = {
                             rankName: user.rankName
                         }
                     }
+
+                    res.status(200);
                 }
             }
         }
@@ -40,14 +43,15 @@ const basicData: RouteOptions = {
     errorHandler
 }
 
-const navMenu: RouteOptions = {
+const navMenu: WebAPI.IRouteOptions<API.App.NavMenu.IEndpoint> = {
     method: "GET",
-    url: "/api/app/nav-menu-entries",
+    url: "/api/user/nav-menu",
     handler: async (req, res)=>{
         res.header("cache-control","private, no-cache");
+        res.status(401);
         const sessionID = req.cookies.session;
 
-        let result: API.App.NavMenu.TResponse = {
+        let result: API.App.NavMenu.IEndpoint["returnPacket"] = {
             status: "Failure",
             errCode: "NotSignedIn"
         }

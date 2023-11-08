@@ -17,12 +17,13 @@ export default function LoginForm() {
             <CustomForm 
                 doReset={false}
                 url="/auth/signin"
+                urlParams={null}
                 method="POST"
                 onSuccess={()=>navigate("/Home")}
-                onFailure={async (result: API.Auth.SignIn.IResponse)=>{
+                onFailure={async (code, err)=>{
                     setPassword("");
 
-                    switch(result.errCode) {
+                    switch(err) {
                         case "InvalidCredentials": return "Invalid email or password.";
                         default: return "Server is experiencing temporary problems. Try again later.";
                     }

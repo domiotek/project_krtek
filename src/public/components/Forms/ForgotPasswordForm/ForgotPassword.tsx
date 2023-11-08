@@ -20,10 +20,11 @@ export default function ForgotPassword(props: IProps) {
             <CustomForm 
                 doReset={props.isActive}
                 url="/auth/recover"
+                urlParams={null}
                 method="POST"
                 onSuccess={res=>props.onSuccess()}
-                onFailure={ async (response: API.Auth.RecoverPassword.IResponse)=>{
-                    switch(response.errCode) {
+                onFailure={ async (code, err)=>{
+                    switch(err) {
                         case "DBError":
                         case "MailerError":
                         case "NoConnection":

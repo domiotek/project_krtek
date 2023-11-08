@@ -13,7 +13,7 @@ import userImg from "./assets/ui/user.png"
 import NavMenu from './components/NavMenu/NavMenu';
 import FooterContent from './components/FooterContent/FooterContent';
 import AccountPanelPopup from './components/AccountPanelPopup/AccountPanelPopup';
-import { manageClassState } from './modules/utils';
+import { callAPI, manageClassState } from './modules/utils';
 import Modal from './components/Modal/Modal';
 import useScrollBlocker from './hooks/useScrollBlocker/useScrollBlocker';
 
@@ -36,27 +36,13 @@ export default function App() {
 	}, [useLocation()]);
 
     useEffect(()=>{
-        const aborter = new AbortController();
-
-        new Promise<void>(async res=>{
-            const response = await fetch("/api/app/basic-user-data",{signal: aborter.signal});
-
-            if(response.ok) {
-                const result = await response.json() as API.App.BasicData.TResponse;
-
-                if(result.status=="Success") {
-                    setUserData({
-                        accountName: result.data.name,
-                        accountRole: result.data.rankName,
-                        accountImage: userImg
-                    });
-                }
-            }
-
-            res();
-        });
-
-        return ()=>aborter.abort();
+        return callAPI<API.App.BasicData.IEndpoint>("GET","/api/user/basic-data", null, (data=>{
+            setUserData({
+                accountName: data.name,
+                accountRole: data.rankName,
+                accountImage: userImg
+            });
+        }));
     },[]);
 
 	useEffect(() => {
