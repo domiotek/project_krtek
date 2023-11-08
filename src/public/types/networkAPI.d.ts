@@ -155,6 +155,26 @@ export namespace API {
             type IEndpoint = TBuildAPIEndpoint<"GET", "/api/user/nav-menu",IResponseData[], "NotSignedIn">
         }
 
+        namespace GetRoles {
+            interface IRoleDetails {
+                ID: number
+                name: string
+                displayName: string
+            }
+
+            type IEndpoint = TBuildAPIEndpoint<"GET", "/api/app/roles", IRoleDetails[]>
+        }
+
+        namespace GetUserRoles {
+            interface IRoleDetails {
+                ID: number
+                name: string
+                displayName: string
+            }
+
+            type IEndpoint = TBuildAPIEndpoint<"GET", "/api/user/roles", IRoleDetails[], "NotSignedIn">
+        }
+
         namespace Schedule {
             namespace GetSchedule {
 

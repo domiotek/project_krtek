@@ -76,6 +76,60 @@ const navMenu: WebAPI.IRouteOptions<API.App.NavMenu.IEndpoint> = {
                     status: "Success",
                     data: entries
                 }
+
+                res.status(200);
+            }
+        }
+
+        return result;
+    },
+    errorHandler
+}
+
+const getRoles: WebAPI.IRouteOptions<API.App.GetRoles.IEndpoint> = {
+    method: "GET",
+    url: "/api/app/roles",
+    handler: async (req, res)=>{
+        let result: API.App.GetRoles.IEndpoint["returnPacket"] = {
+            status: "Success",
+            data: await global.app.webAuthManager.getDefinedRoles()
+        }
+
+        return result;
+    },
+    errorHandler
+}
+
+const userRoles: WebAPI.IRouteOptions<API.App.GetUserRoles.IEndpoint> = {
+    method: "GET",
+    url: "/api/user/roles",
+    handler: async (req, res)=>{
+        res.header("cache-control","private, no-cache");
+        res.status(401);
+
+        const sessionID = req.cookies.session;
+
+        let result: API.App.GetUserRoles.IEndpoint["returnPacket"] = {
+            status: "Failure",
+            errCode: "NotSignedIn"
+        }
+
+        if(sessionID) {
+            const auth = global.app.webAuthManager;
+
+            let session = await auth.getSessionDetails(sessionID);
+
+            if(session) {
+
+                const roles = await global.app.webAuthManager.getUserRoles(session.userID);
+                if(roles) {
+                    res.status(200);
+
+                    result = {
+                        status: "Success",
+                        data: roles
+                    }
+                }
             }
         }
 
@@ -86,5 +140,7 @@ const navMenu: WebAPI.IRouteOptions<API.App.NavMenu.IEndpoint> = {
 
 export default [
     basicData,
-    navMenu
+    navMenu,
+    getRoles,
+    userRoles
 ];
