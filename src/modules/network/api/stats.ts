@@ -39,15 +39,30 @@ const getStatistics: WebAPI.IRouteOptions<API.App.Statistics.GetStatistics.IEndp
                     return result;
                 }
 
-                const stats = await global.app.userStatsManager.getStatsOf(session.userID, params.fromMonth?DateTime.fromISO(params.fromMonth):DateTime.now());
-                const goal = await global.app.userStatsManager.getGoalOf(session.userID);
+                const date = DateTime.fromISO(params.ofMonth).startOf("month");
 
-                if(stats&&goal) {
+                const stats = await global.app.userStatsManager.getStatsOf(session.userID, date);
+                const shifts = await global.app.scheduleManager.getUserShifts(session.userID,{before: date.plus({months: 1}).minus({days: 1}), after: date});
+                let goal = null;
+                let historicGoalAmount = undefined;
+
+                if(date.equals(DateTime.now().startOf("month"))) {
+                    goal = await global.app.userStatsManager.getGoalOf(session.userID);
+                }else {
+                    const props = await global.app.userStatsManager.getHistoricUserData(session.userID,date);
+                    historicGoalAmount = props?.goalAmount ?? null;
+                }
+
+                if(stats&&shifts) {
+                    res.status(200);
+
                     result = {
                         status: "Success",
                         data: {
-                            stats: stats,
-                            goal: await goal.getMilestones()
+                            stats: Object.assign(stats,{totalEarnings: stats.totalWage?stats.totalWage + stats.totalTip + (stats.externalIncome ?? 0) - stats.totalDeduction:0}),
+                            goal: await goal?.getMilestones() ?? null,
+                            shifts: await shifts.getJSON(),
+                            historicGoal: historicGoalAmount
                         }
                     }
                 }

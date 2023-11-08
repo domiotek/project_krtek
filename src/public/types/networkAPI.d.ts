@@ -252,31 +252,74 @@ export namespace API {
         }
 
         namespace Statistics {
+            interface IGoalDetails {
+                milestones: IMilestone[]
+                totalAmount: number
+            }
+
+            interface IMilestone {
+                ID: string
+                title: string
+                amount: number
+                orderTag: number
+            }
+
+            interface IUserStats {
+                totalHours: number
+                shiftCount: number
+                wagePerHour: number | null
+                totalWage: number | null
+                totalTip: number
+                totalDeduction: number
+                maxTip: number
+                minTip: number
+                avgTip: number
+                externalIncome: number | null
+                totalEarnings: number
+            }
+            
+            type ISafeUserStats = { [K in keyof IUserStats]: NonNullable<IUserStats[K]> };
+            
+            namespace UserShifts {
+                interface IWorkDay {
+                    ID: number
+                    note: string | null
+                    noteUpdateTime: string | null
+                    noteLastUpdater: string | null
+                    date: string
+                    slots: ISlots
                 }
 
-                interface IGoalDetails {
-                    milestones: IMilestone[]
-                    totalAmount: number
+                interface ISlots {
+                    [privateID: number]: IShiftSlot | undefined
                 }
 
-                interface IMilestone {
-                    ID: string
-                    title: string
-                    amount: number
-                    orderTag: number
+                interface IShiftSlot {
+                    status: "Unassigned" | "Assigned" | "Pending" | "Finished"
+                    plannedStartTime: string
+                    plannedEndTime: string | null
+                    requiredRole: string
+                    requiredRoleDisplayName: string
+                    assignedShift: IShift | null
                 }
 
-                interface IUserStats {
-                    totalHours: number
-                        shiftCount: number
-                        wagePerHour: number | null
-                        totalWage: number | null
-                        totalTip: number
-                        totalDeduction: number
-                        maxTip: number
-                        minTip: number
-                        avgTip: number
-                        externalIncome: number
+                interface IShift {
+                    shiftID: number,
+                    startTime: string | null,
+                    endTime: string | null,
+                    tip: number | null,
+                    deduction: number | null,
+                    userID: number,
+                    userName: string
+                    note: string | null
+                }
+            }
+
+            interface IUserShifts {
+                shifts: UserShifts.IWorkDay[],
+                userSlots: number[]
+            }
+
             namespace GetStatistics {
                 interface IURLParams {
                     [p: string]: string
@@ -285,7 +328,9 @@ export namespace API {
 
                 interface IResponseData {
                     stats: IUserStats,
-                    goal: IGoalDetails
+                    goal: IGoalDetails | null
+                    shifts: IUserShifts
+                    historicGoal?: number | null
                 }
 
                 type IEndpoint = TBuildAPIEndpoint<"GET","/api/app/statistics/:ofMonth",IResponseData, "NotSignedIn" | "InvalidDate", IURLParams>
