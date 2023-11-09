@@ -285,8 +285,11 @@ const addShift: WebAPI.IRouteOptions<API.App.Schedule.AddShift.IEndpoint> = {
                 const workDay = await global.app.scheduleManager.getWorkDay(DateTime.fromISO(params.when));
 
                 if(workDay) {
+                    const then = workDay.date.startOf("day");
+                    const now = DateTime.now().startOf("day");
 
-                    if(workDay.date.startOf("day") <= DateTime.now().startOf("day")) {
+                    if(then >= now.minus({days: 3}) && then <= now) {
+
                         const userSlot = await workDay.getUserSlot(session.userID);
 
                         if(!userSlot) {
@@ -301,7 +304,7 @@ const addShift: WebAPI.IRouteOptions<API.App.Schedule.AddShift.IEndpoint> = {
                             }
 
                         }else result.errCode = "SlotExists";
-                    }else result.errCode = "NoPlanning";
+                    }else result.errCode = "NotAllowed";
                 }else result.errCode = "InvalidDate";
             }
         }

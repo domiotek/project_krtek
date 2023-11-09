@@ -247,7 +247,7 @@ export namespace API {
                     role: string
                 }
 
-                type IEndpoint = TBuildAPIEndpoint<"POST","/api/schedule/shift", undefined, "NotSignedIn" | "SlotExists" | "InvalidDate" | "NoPlanning">
+                type IEndpoint = TBuildAPIEndpoint<"POST","/api/schedule/shift", undefined, "NotSignedIn" | "SlotExists" | "InvalidDate" | "NotAllowed">
             }
         }
 
