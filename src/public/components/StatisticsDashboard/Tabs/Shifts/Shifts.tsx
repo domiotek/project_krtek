@@ -265,26 +265,25 @@ export default function ShiftsTab(props: IProps) {
         <div className={classes.ShiftsWrapper}>
             {
                 props.shiftsData?
-                    (props.shiftsData.userSlots.length>0?
-                        [
-                            <button 
-                                className={classes.AddShiftButton}
-                                key="AddShiftBtn" 
-                                type="button"
-                                onClick={()=>props.setModalContent(
-                                    <AddShiftModal 
-                                        exit={()=>props.setModalContent(null)} 
-                                        successCallback={()=>{props.setModalContent(null); props.reloadStats()}} 
-                                    />
-                                )}
-                            >
-                                    Add shift
-                            </button>,
+                    [
+                        <button 
+                            className={classes.AddShiftButton}
+                            key="AddShiftBtn" 
+                            type="button"
+                            onClick={()=>props.setModalContent(
+                                <AddShiftModal 
+                                    exit={()=>props.setModalContent(null)} 
+                                    successCallback={()=>{props.setModalContent(null); props.reloadStats()}} 
+                                />
+                            )}
+                        >
+                            Add shift
+                        </button>,
+                        props.shiftsData.userSlots.length>0?
                             renderShifts(props.shiftsData)
-                        ]
-                    :
-                        <NoShiftsMessage />
-                    )
+                        :
+                            <NoShiftsMessage />
+                    ]
                 :
                     <LoadingShiftsView />
             }
