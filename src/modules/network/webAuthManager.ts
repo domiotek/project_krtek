@@ -81,7 +81,10 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                 }else errCode = this.db.getLastQueryFailureReason();
             }
 
-            if(!conn || errCode) connection.release();
+            if(!conn || errCode) {
+                connection.rollback();
+                connection.release();
+            }
             if(errCode) throw new WebAuthAPIError(errCode);
             return null;
         }
@@ -95,6 +98,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         if(result) {
             return result.length===1;
         }else {
+            conn?.rollback();
             conn?.release();
             throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
         }
@@ -132,7 +136,10 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                 }else errCode = this.db.getLastQueryFailureReason();
             }
             
-            if(!conn || errCode) connection.release();
+            if(!conn || errCode) {
+                connection.rollback();
+                connection.release();
+            }
 
             if(errCode) throw new WebAuthAPIError(errCode);
             return false;
@@ -159,6 +166,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             }else return null;
         }
         
+        conn?.rollback();
         conn?.release();
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
@@ -172,6 +180,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             }else return false;
         }
         
+        conn?.rollback();
         conn?.release();
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
@@ -200,7 +209,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             return result;
         }else errCode = this.db.getLastQueryFailureReason();
 
-
+        conn?.rollback();
         conn?.release();
         throw new WebAuthAPIError(errCode);
     }
@@ -209,6 +218,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         const response = await this.db.performQuery(`DELETE FROM auth_sessions WHERE now() > expirationDate;`,[],conn);    
 
         if(response==null) {
+            conn?.rollback();
             conn?.release();
             throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
         }
@@ -225,7 +235,10 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                 else return null;
             case "number": 
                 return userKey!==WebAuthManager.SYSTEM_USER_ID||hideSystemUser==false?userKey:null;
-            default: throw new TypeError("Invalid user key. Expected either number or a string.");
+            default: 
+                conn?.rollback();
+                conn?.release();
+                throw new TypeError("Invalid user key. Expected either number or a string.");
         }
     }
 
@@ -247,24 +260,20 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                     const response = await this.db.performQuery<"Other">(queryStr, [userData.email.toLowerCase(), userData.name, userData.surname, userData.gender], connection);
 
                     if(response) {
-
-                            try {
-                                await this.setPassword(userData.email,userData.password,connection);
-                                if(!conn) {
-                                    connection.commit();
-                                    connection.release();
-                                }
-                                return;
-                            } catch (error: any) {
-                                if(!error.errCode) throw error;
-                                throw new WebAuthAPIError("InvalidPassword");
                         if(response.affectedRows===1){
+                            await this.setPassword(userData.email,userData.password,connection);
+                            if(!conn) {
+                                connection.commit();
+                                connection.release();
                             }
+
+                            return;
                         }else errCode = "DBError";
                     }else errCode = this.db.getLastQueryFailureReason();
                 }else errCode = "UserExists";
             }else errCode = "InvalidEmail";
             
+            connection.rollback();
             connection.release();
             throw new WebAuthAPIError(errCode);
         }
@@ -282,6 +291,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             return result.length===1&&(result[0]["userID"]!==WebAuthManager.SYSTEM_USER_ID || hideSystemUser===false);
         }
 
+        conn?.rollback();
         conn?.release();
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
@@ -309,6 +319,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             }else return null;
         }
         
+        conn?.rollback();
         conn?.release();
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
@@ -320,6 +331,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         if(userID===null) return;
 
         if(!/(?=.*\d)(?=.*[a-z])(?=.*[A-Z])((?=.*\W)|(?=.*_))^[^ ]+$/.test(newPassword)) {
+            conn?.rollback();
             conn?.release();
             throw new WebAuthAPIError("InvalidPassword");
         }
@@ -329,6 +341,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         const result = await this.db.performQuery<"Other">(`UPDATE users SET password=?, lastPasswordChangeDate=NOW() WHERE userID=?`,[hashedPassword, userID],conn);
 
         if(!result||result.changedRows!==1) {
+            conn?.rollback();
             conn?.release();
             throw new WebAuthAPIError(result?"NoUser":this.db.getLastQueryFailureReason());
         }
@@ -368,6 +381,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             return result;
         }
         
+        conn?.rollback();
         conn?.release();
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
@@ -385,7 +399,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                 const rankDetails = await this.getRank(rankName, connection);
 
                 if(rankDetails) {
-                    const response = await this.db.performQuery<"Other">("UPDATE users SET rankID=? WHERE userID=?",[rankDetails.ID, userID]);
+                    const response = await this.db.performQuery<"Other">("UPDATE users SET rankID=? WHERE userID=?",[rankDetails.ID, userID], connection);
 
                     if(response) {
                         if(response.affectedRows===1) {
@@ -400,6 +414,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                 }else errCode = "InvalidRank";
             }else errCode = "NoUser";
 
+            connection.rollback();
             connection.release();
             throw new WebAuthAPIError(errCode);
         }
@@ -422,6 +437,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         }else errCode = this.db.getLastQueryFailureReason();
 
         if(errCode) {
+            conn?.rollback();
             conn?.release();
             throw new WebAuthAPIError(errCode);
         }
@@ -444,6 +460,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             return result;
         }
         
+        conn?.rollback();
         conn?.release();
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
@@ -475,6 +492,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             return result;
         }
         
+        conn?.rollback();
         conn?.release();
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
@@ -490,6 +508,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             }else return null;
         }
         
+        conn?.rollback();
         conn?.release();
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
@@ -503,6 +522,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             }else return null;
         }
         
+        conn?.rollback();
         conn?.release();
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
@@ -525,6 +545,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         }else errCode = this.db.getLastQueryFailureReason();
 
         if(errCode) {
+            conn?.rollback();
             conn?.release();
             throw new WebAuthAPIError(errCode);
         }
@@ -573,7 +594,11 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                 }
             }else errCode = this.db.getLastQueryFailureReason();
 
-            if(!conn || errCode) connection.release();
+            if(!conn || errCode) {
+                connection.rollback();
+                connection.release();
+            }
+
             if(errCode) throw new WebAuthAPIError(errCode);
             return null;
         }
@@ -605,12 +630,18 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                         });
                     }
 
-                    if(!conn) connection.release();
+                    if(!conn) {
+                        connection.rollback();
+                        connection.release();
+                    }
                     return result;
                 }else errCode = this.db.getLastQueryFailureReason();
             }
 
-            if(!conn || errCode) connection.release();
+            if(!conn || errCode) {
+                connection.rollback();
+                connection.release();
+            }
             if(errCode) throw new WebAuthAPIError(errCode);
             return null;
         }
@@ -637,14 +668,20 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                         const response = await this.db.performQuery<"Select">("SELECT * from role_assignments WHERE roleID=? AND userID=?",[roleDetails[0]["roleID"],user.userID], connection);
 
                         if(response) {
-                            if(!conn) connection.release();
+                            if(!conn) {
+                                connection.rollback();
+                                connection.release();
+                            }
                             return response.length===1;
                         }else errCode = this.db.getLastQueryFailureReason();
                     }else errCode = "InvalidRole";
                 }else errCode = this.db.getLastQueryFailureReason();
             }else errCode = "NoUser";
 
-            if(!conn || errCode) connection.release();
+            if(!conn || errCode){
+                connection.rollback();
+                connection.release();
+            } 
             if(errCode) throw new WebAuthAPIError(errCode);
         }
 
@@ -670,7 +707,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
 
                         if(assignmentCheck) {
                             if(assignmentCheck.length===0) {
-                                const response = await this.db.performQuery<"Other">("INSERT INTO role_assignments(roleID, userID) VALUES(?,?)",[roleDetails[0]["roleID"],user.userID]);
+                                const response = await this.db.performQuery<"Other">("INSERT INTO role_assignments(roleID, userID) VALUES(?,?)",[roleDetails[0]["roleID"],user.userID], connection);
                                 if(response) {
                                     if(response.affectedRows==1) {
                                         if(!conn) {
@@ -686,7 +723,10 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                 }else errCode = this.db.getLastQueryFailureReason();
             }else errCode = "NoUser";
 
-            if(!conn || errCode) connection.release();
+            if(!conn || errCode) {
+                connection.rollback();
+                connection.release();
+            }
             if(errCode) throw new WebAuthAPIError(errCode);
         }
 
@@ -697,11 +737,12 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         const connection = conn ?? await this.db.getConnection();
 
         if(connection) {
-            connection.beginTransaction();
+            if(!conn) connection.beginTransaction();
 
             const userID = await this.resolveUserKey(userKey, true, connection);
 
             if(userID==null) {
+                connection.rollback();
                 connection.release();
                 throw new WebAuthAPIError("NoUser");
             }
@@ -709,7 +750,8 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             const roleID = await this.getRoleID(roleName, connection);
 
             if(roleID===null) {
-                if(!conn) connection.release();
+                connection.rollback();
+                connection.release();
                 throw new WebAuthAPIError("InvalidRole");
             }
 
@@ -718,11 +760,15 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             let errCode: WebAPI.APIErrors<"Auth">
             if(response) {
                 if(response.affectedRows===1) {
-                    if(!conn) connection.release();
+                    if(!conn) {
+                        connection.commit();
+                        connection.release();
+                    }
                     return;
                 }else errCode = "NotAssigned";
             }else errCode = this.db.getLastQueryFailureReason();
 
+            connection.rollback();
             connection.release();
             throw new WebAuthAPIError(errCode);
         }
@@ -737,16 +783,24 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             const userID = await this.resolveUserKey(userKey, true, connection);
 
             if(userID==null) {
-                if(!conn) connection.release();
+                if(!conn) {
+                    connection.rollback();
+                    connection.release();
+                }
                 return false;
             }
 
             const response = await this.db.performQuery<"Other">("DELETE FROM role_assignments WHERE userID=?;",[userID], connection);
-            if(!response || !conn) connection.release();
 
-            if(response) return true;
-
-            throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
+            if(response) {
+                connection.commit();
+                connection.release();
+                return true;
+            }else {
+                connection.rollback();
+                connection.release();
+                throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
+            }
         }
 
         throw new WebAuthAPIError("NoConnection");
@@ -759,6 +813,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         const userID = await this.resolveUserKey(userKey, true, conn);
 
         if(userID==null) {
+            conn?.rollback();
             conn?.release();
             throw new WebAuthAPIError("NoUser");
         }
@@ -794,6 +849,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             }else if(response) errCode = "InvalidAction";
             else errCode = this.db.getLastQueryFailureReason();
 
+            connection.rollback();
             connection.release();
             throw new WebAuthAPIError(errCode);
         }
@@ -817,6 +873,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             }else return null;
         }
         
+        conn?.rollback();
         conn?.release();
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
@@ -829,6 +886,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             
             if(response) return response[0]["count"];
             
+            conn?.rollback();
             conn?.release();
             throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
         }else return null;
@@ -842,6 +900,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             else return false;
         }
         
+        conn?.rollback();
         conn?.release();
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
@@ -869,6 +928,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             return result;
         }
 
+        conn?.rollback();
         conn?.release();
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
@@ -877,6 +937,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         const response = await this.db.performQuery(`DELETE FROM account_actions WHERE now() > expirationDate;`,[],conn);    
 
         if(response===null) {
+            conn?.rollback();
             conn?.release();
             throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
         } 
@@ -896,6 +957,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             return result;
         }
         
+        conn?.rollback();
         conn?.release();
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
@@ -906,6 +968,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         const emailRegex = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
 
         if(!emailRegex.test(email)) {
+            conn?.rollback();
             conn?.release();
             throw new WebAuthAPIError("InvalidEmail");
         }
@@ -941,6 +1004,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                 }else errCode = "InviteExists";
             }else errCode = "UserExists";
 
+            connection.rollback();
             connection.release();
             throw new WebAuthAPIError(errCode);
         }
@@ -965,6 +1029,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             }else return null;
         }
         
+        conn?.rollback();
         conn?.release();
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
@@ -977,6 +1042,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             else return false;
         }
         
+        conn?.rollback();
         conn?.release();
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
@@ -1000,6 +1066,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             return result;
         }
         
+        conn?.rollback();
         conn?.release();
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
@@ -1008,6 +1075,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         const response = await this.db.performQuery(`DELETE FROM invites WHERE now() > expirationDate;`,[],conn);    
 
         if(response==null) {
+            conn?.rollback();
             conn?.release();
             throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
         }
