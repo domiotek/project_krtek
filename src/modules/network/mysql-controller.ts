@@ -21,7 +21,7 @@ export class MysqlController implements WebAPI.Mysql.IMysqlController {
     constructor(connectionDetails: IEnvironmentConfig["mysql"]) {
         this.pool = mysql.createPool({
             connectionLimit: connectionDetails.connectionLimit,
-            localAddress: connectionDetails.address,
+            host: connectionDetails.address,
             port: connectionDetails.port,
             user: connectionDetails.user,
             password: connectionDetails.password,
