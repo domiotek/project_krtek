@@ -242,12 +242,11 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                 const user = await this.userExists(userData.email,true, connection);
 
                 if(user==false) {
-                    const queryStr = `SELECT add_user(?,?,?,?);`;
+                    const queryStr = `CALL add_user(?,?,?,?);`;
 
-                    const response = await this.db.performQuery<"Select">(queryStr, [userData.email.toLowerCase(), userData.name, userData.surname, userData.gender], connection);
+                    const response = await this.db.performQuery<"Other">(queryStr, [userData.email.toLowerCase(), userData.name, userData.surname, userData.gender], connection);
 
                     if(response) {
-                        if(response.length===1){
 
                             try {
                                 await this.setPassword(userData.email,userData.password,connection);
@@ -259,6 +258,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                             } catch (error: any) {
                                 if(!error.errCode) throw error;
                                 throw new WebAuthAPIError("InvalidPassword");
+                        if(response.affectedRows===1){
                             }
                         }else errCode = "DBError";
                     }else errCode = this.db.getLastQueryFailureReason();
