@@ -35,7 +35,8 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
             const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, true, connection);
 
             if(userID===null) {
-                if(!conn) connection.release();
+                connection.rollback();
+                connection.release();
                 throw new StatsAPIError("NoUser");
             }
 
@@ -45,10 +46,10 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
             const response = await this._db.performQuery<"Select">(queryStr,[userID, date.startOf("month").toISODate()],connection);
 
             if(response) {
-                if(response.length===1) {
-                    if(!conn) 
-                        connection.release();
+                if(!conn) 
+                    connection.release();
 
+                if(response.length===1) {
                     return {
                         wage: response[0]["wage"],
                         externalIncome: response[0]["externalIncome"],
@@ -57,6 +58,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
                 }else return null;
             }else errCode = this._db.getLastQueryFailureReason();
 
+            connection.rollback();
             connection.release();
             throw new StatsAPIError(errCode);
         }
@@ -210,6 +212,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
                 return null;
             }else errCode = this._db.getLastQueryFailureReason();
 
+            connection.rollback();
             connection.release();
             throw new StatsAPIError(errCode);
         }
@@ -225,7 +228,10 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
             const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, true, connection);
 
             if(userID===null) {
-                if(!conn) connection.release();
+                if(!conn) {
+                    connection.rollback();
+                    connection.release();
+                }
                 throw new StatsAPIError("NoUser");
             }
 
@@ -257,6 +263,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
                 }else errCode = "DBError";
             }else errCode = this._db.getLastQueryFailureReason();
 
+            connection.rollback();
             connection.release();
             throw new StatsAPIError(errCode);
         }
@@ -272,7 +279,10 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
             const userID = await (global.app.webAuthManager as InternalWebAuthManager).resolveUserKey(userKey, true, connection);
 
             if(userID===null) {
-                if(!conn) connection.release();
+                if(!conn) {
+                    connection.rollback();
+                    connection.release();
+                }
                 throw new StatsAPIError("NoUser");
             }
 
@@ -301,8 +311,9 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
     public async getStatsOf(userKey: string | number, date: luxon.DateTime, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Statistics.IUserStatsManager["getStatsOf"]> {
 
         if(!date.isValid) {
-           conn?.release();
-           throw new StatsAPIError("InvalidDate");
+            conn?.rollback();
+            conn?.release();
+            throw new StatsAPIError("InvalidDate");
         }
 
         const connection = conn ?? await this._db.getConnection();
@@ -334,7 +345,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
 
             if(statsData == null) {
                 let queryStr = `SELECT SUM(duration) as totalHours, COUNT(*) as shiftCount, SUM(tip) as totalTip, SUM(deduction) as totalDeduction, MAX(tip) as maxTip, Min(tip) as minTip, AVG(tip) as avgTip FROM shifts NATURAL JOIN shift_slots NATURAL JOIN work_days WHERE userID=? AND MONTH(date) = ? AND YEAR(date) = ?;`;
-                const response = await this._db.performQuery<"Select">(queryStr,[userID, date.month, date.year],conn);
+                const response = await this._db.performQuery<"Select">(queryStr,[userID, date.month, date.year],connection);
     
                 if(response&&response.length===1) {
                     statsData = {
@@ -350,6 +361,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
                         externalIncome
                     }
                 }else {
+                    connection.rollback();
                     connection.release();
                     throw new StatsAPIError(this._db.getLastQueryFailureReason());
                 }
@@ -421,6 +433,7 @@ class GoalManager implements WebAPI.Statistics.GoalAPI.IGoalManager {
             return result;
         }
 
+        conn?.rollback();
         conn?.release();
         throw new StatsAPIError(this._db.getLastQueryFailureReason());
     }
@@ -449,6 +462,7 @@ class GoalManager implements WebAPI.Statistics.GoalAPI.IGoalManager {
         const milestonesData = await this.getMilestones(connection);
 
         if(milestonesData.milestones.length===GoalManager.MAX_MILESTONE_COUNT) {
+            connection.release();
             throw new StatsAPIError("MilestoneLimitReached");
         }
 
