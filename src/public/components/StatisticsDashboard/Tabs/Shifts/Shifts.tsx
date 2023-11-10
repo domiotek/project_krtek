@@ -243,7 +243,7 @@ export default function ShiftsTab(props: IProps) {
                         props.shiftsData.userSlots.length>0?
                             renderShifts(props.shiftsData)
                         :
-                            <NoShiftsMessage />
+                            <NoShiftsMessage key="NoShiftsContainer" />
                     ]
                 :
                     <LoadingShiftsView />
