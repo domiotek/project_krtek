@@ -42,7 +42,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
 
             let errCode: WebAPI.APIErrors<"Stats">;
 
-            let queryStr = `SELECT * FROM user_prop WHERE userID=? AND date <= ? ORDER BY date DESC;`;
+            let queryStr = `SELECT * FROM user_prop WHERE userID=? AND date <= ? ORDER BY date DESC LIMIT 1;`;
             const response = await this._db.performQuery<"Select">(queryStr,[userID, date.startOf("month").toISODate()],connection);
 
             if(response) {
