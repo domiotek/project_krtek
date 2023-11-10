@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 import { CustomFormTypes } from "../components/Forms/CustomForm/CustomForm";
 import { API } from "../types/networkAPI";
 
@@ -39,6 +40,10 @@ export function parseFormData(form: HTMLFormElement, ignoreList?: string[], stat
 
 export function renderCurrency(amount: number) {
     return amount.toFixed(2).replace(".00", "")
+}
+
+export function renderDate(dateTime: DateTime | undefined, fallback: string) {
+	return dateTime?.isValid?dateTime.toFormat("dd/LL/yyyy"):fallback;
 }
 
 export function callAPI<T extends API.IBaseAPIEndpoint>(method: T["method"], endpointURL: T["url"],values: T["urlParams"], onSuccess: (data: T["returnData"])=>void, onError?: (statusCode: number, errCode: T["errCodes"], errorType: "Server" | "Client")=>void, body?: URLSearchParams) {

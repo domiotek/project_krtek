@@ -1,0 +1,169 @@
+.NerdStatsWrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.Section {
+    margin: 0.75rem 0;
+}
+
+.Section > h3 {
+    margin: 0;
+}
+
+.PropList {
+    position: relative;
+    list-style-type: none;
+    padding-left: 0.75rem;
+}
+
+.PropList::before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transition: background 0.4s;
+    background: radial-gradient(transparent, transparent);
+}
+
+.PropList.Placeholder::before {
+    z-index: 1;
+    background: radial-gradient(#fcfcfc, #fcfcfc4d);
+}
+
+.PropList.Placeholder::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    font-size: 0.75rem;
+    z-index: 2;
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.PropList h4 {
+    margin: 0;
+}
+
+.PropList h6 {
+    margin: 0;
+    font-size: x-small;
+    color: #404040;
+    font-weight: normal;
+}
+
+.PropList li {
+    margin: 0.95rem 0;
+    transition: opacity 0.4s;
+    opacity: 1;
+}
+
+.PropList.Placeholder li {
+    opacity: 0.3;
+}
+
+.Bullet {
+    display: inline-block;
+    width: 0.25rem;
+    height: 0.25rem;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    transform: translateY(-1px);
+    margin: 0 0.3rem;
+}
+
+.FuturePlans {
+    display: flex;
+    flex-direction: column;
+    margin-top: 1.5rem;
+    max-width: 650px;
+}
+
+.FuturePlans img {
+    width: 70%;
+    align-self: center;
+    max-width: 200px;
+}
+
+.FuturePlans h4 {
+    color: var(--primary-color);
+}
+
+.FuturePlans p {
+    font-size: small;
+    padding: 0 0.5rem;
+    margin-top: 0;
+}
+
+
+@media screen and (min-width: 386px) {
+    .NerdStatsWrapper {
+        padding: 0 1rem;
+    }
+}
+
+@media screen and (min-width: 426px) {
+    .NerdStatsWrapper {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .Section {
+        margin: 0.75rem 1.5rem;
+    }
+}
+
+@media screen and (min-width: 600px) {
+    .NerdStatsWrapper {
+        padding: 0 2.5rem;
+    }
+
+    .Section {
+        margin: 0.75rem 2rem;
+    }
+}
+
+@media screen and (min-width: 769px) {
+    .FuturePlans img {
+        max-width: 245px;
+        align-self: flex-end;
+    }
+
+    .FuturePlans h4 {
+        font-size: large;
+    }
+}
+
+@media screen and (min-width: 900px) {
+    .NerdStatsWrapper {
+        padding: 0 4rem;
+    }
+
+    .Section {
+        margin: 0.75rem 2.5rem;
+    }
+}
+
+@media screen and (min-width: 1000px) {
+    .FuturePlansWrapper {
+        width: 100%;
+    }
+}
+
+@media screen and (min-width: 1700px) {
+    .NerdStatsWrapper {
+        padding: 0 8rem;
+    }
+}
+
+@media screen and (min-width: 1981px) {
+    .NerdStatsWrapper {
+        padding: 0;
+    }
+}
