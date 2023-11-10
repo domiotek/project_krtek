@@ -12,8 +12,45 @@ import ShiftsTab from "../components/StatisticsDashboard/Tabs/Shifts/Shifts";
 import { useOutletContext } from "react-router-dom";
 import { callAPI } from "../modules/utils";
 
+function calculateShiftData(slot: API.App.Statistics.UserShifts.IAssignedShiftSlot, wage: number) {
+
+    let startTimeStr = slot.plannedStartTime;
+    let endTimeStr = slot.plannedEndTime;
+
+    if(slot.assignedShift.startTime&&slot.assignedShift.endTime) {
+        startTimeStr = slot.assignedShift.startTime;
+        endTimeStr = slot.assignedShift.endTime;
+    }
+
+    const startTime = DateTime.fromISO(startTimeStr);
+    const endTime = endTimeStr?DateTime.fromISO(endTimeStr):null;
+
+    const earningsData: API.App.Statistics.ICalculatedShiftData = {
+        duration: 0,
+        wageEarnings: 0,
+        tip: 0,
+        deduction: 0,
+        totalEarnings: 0,
+        realWageRate: 0,
+        startTime,
+        endTime
+    }
+
+    if(endTime) {
+        earningsData.duration = endTime.diff(startTime,["hours"]).hours;
+        earningsData.duration = earningsData.duration < 0?24 + earningsData.duration:earningsData.duration;
+        earningsData.wageEarnings = earningsData.duration * wage;
+        earningsData.tip = slot.assignedShift.tip ?? 0;
+        earningsData.deduction = slot.assignedShift.deduction ?? 0;
+        earningsData.totalEarnings = earningsData.wageEarnings + earningsData.tip - earningsData.deduction;
+        earningsData.realWageRate = earningsData.totalEarnings / earningsData.duration;
+    }
+
+    return earningsData;
+}
+
 export default function Statistics() {
-    const [statistics, setStatistics] = useState<API.App.Statistics.GetStatistics.IResponseData | null>(null);
+    const [statistics, setStatistics] = useState<API.App.Statistics.GetStatistics.IParsedStats | null>(null);
 
     const initialRangePoint = DateTime.fromISO(new URLSearchParams(window.location.search).get("fromMonth") ?? "");
     const hardLimit = DateTime.now().startOf("month");
@@ -40,7 +77,18 @@ export default function Statistics() {
         const newBtnStates = rangePoint.startOf("month").equals(DateTime.now().startOf("month"))?[true, false]:[true, true];
 
         return callAPI<API.App.Statistics.GetStatistics.IEndpoint>("GET","/api/app/statistics/:ofMonth",{ofMonth: encodeURIComponent(rangePoint.toISODate())},data=>{
-            setStatistics(data);
+            const calcStats = [];
+
+            for(let i=0; i < data.shifts.shifts.length; i++) {
+                const slot = data.shifts.shifts[i].slots[data.shifts.userSlots[i]];
+                if(slot) {
+                    calcStats.push(calculateShiftData(slot, data.stats.wagePerHour ?? 0));
+                }
+            }
+
+            const mergedShifts = Object.assign({calcStats},data.shifts);
+            setStatistics(Object.assign(data, {shifts: mergedShifts}));
+
             setRangeSwitcherStates(newBtnStates);
         }, ()=>{
             const elem = document.querySelector(`.${classes.ErrorMessageBox}`);

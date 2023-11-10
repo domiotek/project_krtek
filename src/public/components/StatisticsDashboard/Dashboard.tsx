@@ -11,7 +11,7 @@ import FreshStartStatsView from "./Views/FreshStartView/FreshStartView";
 
 
 interface IStatsDashboardData {
-    stats: API.App.Statistics.IUserStats
+    stats: API.App.Statistics.IBasicUserStats
     goal: API.App.Statistics.IGoalDetails | null
     historicGoal?: number | null
 }

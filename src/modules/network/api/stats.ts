@@ -61,7 +61,7 @@ const getStatistics: WebAPI.IRouteOptions<API.App.Statistics.GetStatistics.IEndp
                         data: {
                             stats: Object.assign(stats,{totalEarnings: stats.totalWage?stats.totalWage + stats.totalTip + (stats.externalIncome ?? 0) - stats.totalDeduction:0}),
                             goal: await goal?.getMilestones() ?? null,
-                            shifts: await shifts.getJSON(),
+                            shifts: await shifts.getJSON() as API.App.Statistics.IUserShifts,
                             historicGoal: historicGoalAmount
                         }
                     }

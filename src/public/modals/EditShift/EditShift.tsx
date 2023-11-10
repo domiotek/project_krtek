@@ -13,7 +13,7 @@ import { renderCurrency } from "../../modules/utils";
 interface IProps {
     successCallback: ()=>void
     exit: ()=>void
-    shiftData: API.App.Statistics.UserShifts.IWorkDay
+    shiftData: API.App.Statistics.UserShifts.IWorkDay<"OnlyAssigned">
     userSlot: API.App.Statistics.UserShifts.IShiftSlot
 }
 

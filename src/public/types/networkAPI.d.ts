@@ -264,7 +264,7 @@ export namespace API {
                 orderTag: number
             }
 
-            interface IUserStats {
+            interface IBasicUserStats {
                 totalHours: number
                 shiftCount: number
                 finishedShiftCount: number
@@ -276,20 +276,20 @@ export namespace API {
                 totalEarnings: number
             }
             
-            type ISafeUserStats = { [K in keyof IUserStats]: NonNullable<IUserStats[K]> };
+            type ISafeUserStats = { [K in keyof IBasicUserStats]: NonNullable<IBasicUserStats[K]> };
             
             namespace UserShifts {
-                interface IWorkDay {
+                interface IWorkDay<T extends "OnlyAssigned" | "All"> {
                     ID: number
                     note: string | null
                     noteUpdateTime: string | null
                     noteLastUpdater: string | null
                     date: string
-                    slots: ISlots
+                    slots: ISlots<T extends "OnlyAssigned"?IAssignedShiftSlot:IShiftSlot>
                 }
 
-                interface ISlots {
-                    [privateID: number]: IShiftSlot | undefined
+                type ISlots<T extends IShiftSlot | IAssignedShiftSlot> =  {
+                    [privateID: number]: T | undefined
                 }
 
                 interface IShiftSlot {
@@ -299,6 +299,10 @@ export namespace API {
                     requiredRole: string
                     requiredRoleDisplayName: string
                     assignedShift: IShift | null
+                }
+
+                interface IAssignedShiftSlot extends IShiftSlot {
+                    assignedShift: IShift
                 }
 
                 interface IShift {
@@ -311,11 +315,28 @@ export namespace API {
                     userName: string
                     note: string | null
                 }
+
+               
             }
 
             interface IUserShifts {
-                shifts: UserShifts.IWorkDay[],
+                shifts: UserShifts.IWorkDay<"OnlyAssigned">[],
                 userSlots: number[]
+            }
+
+            interface ICalculatedShiftData {
+                duration: number
+                wageEarnings: number
+                tip: number
+                deduction: number
+                totalEarnings: number
+                realWageRate: number
+                startTime: DateTime
+                endTime: DateTime | null
+            }
+
+            interface IParsedUserShifts extends IUserShifts {
+                calcStats: ICalculatedShiftData[]
             }
 
             namespace GetStatistics {
@@ -325,10 +346,14 @@ export namespace API {
                 }
 
                 interface IResponseData {
-                    stats: IUserStats,
+                    stats: IBasicUserStats,
                     goal: IGoalDetails | null
                     shifts: IUserShifts
                     historicGoal?: number | null
+                }
+
+                interface IParsedStats extends IResponseData {
+                    shifts: IParsedUserShifts
                 }
 
                 type IEndpoint = TBuildAPIEndpoint<"GET","/api/app/statistics/:ofMonth",IResponseData, "NotSignedIn" | "InvalidDate", IURLParams>
