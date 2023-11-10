@@ -12,11 +12,7 @@ function respondWithStats(req:CommandsHandling.CommandsRequest,stats: WebAPI.Sta
     req.respond(`Total wage: ${insertColor("fg_cyan",stats.totalWage!=null?stats.totalWage.toString()+" zł":"Unavailable", colorsMode)}`, false);
     req.respond(`Total tip: ${insertColor("fg_cyan",stats.totalTip.toString()+" zł", colorsMode)}`, false);
     req.respond(`Total deduction: ${insertColor("fg_cyan",stats.totalDeduction.toString()+" zł", colorsMode)}`, false);
-    req.respond(`Total earnings: ${insertColor("fg_cyan",stats.wagePerHour!=null?(stats.wagePerHour*(stats.totalWage as number) + stats.totalTip - stats.totalDeduction).toString()+" zł":"Unavailable", colorsMode)}`, false);
-    req.respond("\nTip", false);
-    req.respond(`- maximum: ${insertColor("fg_cyan",stats.maxTip.toString()+" zł", colorsMode)}`, false);
-    req.respond(`- minimum: ${insertColor("fg_cyan",stats.minTip.toString()+" zł", colorsMode)}`, false);
-    req.respond(`- average: ${insertColor("fg_cyan",stats.avgTip.toString()+" zł", colorsMode)}`);
+    req.respond(`Total earnings: ${insertColor("fg_cyan",stats.wagePerHour!=null?(stats.wagePerHour*(stats.totalWage as number) + stats.totalTip - stats.totalDeduction).toString()+" zł":"Unavailable", colorsMode)}`);
 }
 
 export default function(){

@@ -195,13 +195,11 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
                         return {
                             totalHours: response[0]["totalHours"],
                             shiftCount: response[0]["shiftCount"],
+                            finishedShiftCount: response[0]["finishedShiftCount"],
                             wagePerHour: response[0]["wagePerHour"],
                             totalWage: response[0]["totalWage"],
                             totalTip: response[0]["totalTip"],
                             totalDeduction: response[0]["totalDeduction"],
-                            maxTip: response[0]["maxTip"],
-                            minTip: response[0]["minTip"],
-                            avgTip: response[0]["avgTip"],
                             externalIncome: response[0]["externalIncome"]
                         }
                     }else await this.dropCacheState(userID,connection);
@@ -237,20 +235,19 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
 
             let errCode: WebAPI.APIErrors<"Stats">;
 
-            let queryStr = `INSERT INTO user_stats_cache(userID, totalHours, shiftCount, wagePerHour, totalWage, totalTip, totalDeduction, maxTip, minTip, avgTip, externalIncome) VALUES(?,?,?,?,?,?,?,?,?,?,?)`;
+            let queryStr = `INSERT INTO user_stats_cache(userID, totalHours, shiftCount, finishedShiftCount, wagePerHour, totalWage, totalTip, totalDeduction, externalIncome) VALUES(?,?,?,?,?,?,?,?,?)`;
             const values = [
                 userID,
                 stats.totalHours,
                 stats.shiftCount,
+                stats.finishedShiftCount,
                 stats.wagePerHour,
                 stats.totalWage,
                 stats.totalTip,
                 stats.totalDeduction,
-                stats.maxTip,
-                stats.minTip,
-                stats.avgTip,
                 stats.externalIncome ?? 0
-            ]
+            ];
+
             const response = await this._db.performQuery<"Other">(queryStr,values,connection);
 
             if(response) {
@@ -344,20 +341,18 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
             let recalculatedStats = false;
 
             if(statsData == null) {
-                let queryStr = `SELECT SUM(duration) as totalHours, COUNT(*) as shiftCount, SUM(tip) as totalTip, SUM(deduction) as totalDeduction, MAX(tip) as maxTip, Min(tip) as minTip, AVG(tip) as avgTip FROM shifts NATURAL JOIN shift_slots NATURAL JOIN work_days WHERE userID=? AND MONTH(date) = ? AND YEAR(date) = ?;`;
+                let queryStr = `SELECT SUM(duration) as totalHours, COUNT(*) as shiftCount, COUNT(endTime) as finishedShiftCount, SUM(tip) as totalTip, SUM(deduction) as totalDeduction FROM shifts NATURAL JOIN shift_slots NATURAL JOIN work_days WHERE userID=? AND MONTH(date) = ? AND YEAR(date) = ?;`;
                 const response = await this._db.performQuery<"Select">(queryStr,[userID, date.month, date.year],connection);
-    
+
                 if(response&&response.length===1) {
                     statsData = {
                         totalHours: response[0]["totalHours"] ?? 0,
                         shiftCount: response[0]["shiftCount"],
+                        finishedShiftCount: response[0]["finishedShiftCount"],
                         wagePerHour: wagePerHour,
                         totalWage: wagePerHour==null?null:wagePerHour * response[0]["totalHours"],
                         totalTip: response[0]["totalTip"] ?? 0,
                         totalDeduction: response[0]["totalDeduction"] ?? 0,
-                        maxTip: response[0]["maxTip"] ?? 0,
-                        minTip: response[0]["minTip"] ?? 0,
-                        avgTip: response[0]["avgTip"] ?? 0,
                         externalIncome
                     }
                 }else {

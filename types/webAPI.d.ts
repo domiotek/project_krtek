@@ -1006,13 +1006,11 @@ namespace WebAPI {
         interface IMonthUserStats {
             totalHours: number
             shiftCount: number
+            finishedShiftCount: number
             wagePerHour: number | null
             totalWage: number | null
             totalTip: number
             totalDeduction: number
-            maxTip: number
-            minTip: number
-            avgTip: number
             externalIncome: number | null
         }
 
