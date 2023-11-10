@@ -29,14 +29,14 @@ export default function StatsDashboard(props: IProps) {
         <div className={classes.Dashboard}>
             {
                 props.data!==null?
-                    isWageSet?
-                        props.data.stats.shiftCount>0?
-                            <DefaultStatsView stats={props.data.stats as API.App.Statistics.ISafeUserStats} goal={props.data.goal} historicGoal={props.data.historicGoal ?? null}/>
-                        :
-                        <FreshStartStatsView/>
+                    isWageSet&&props.data.stats.shiftCount>0?
+                        <DefaultStatsView stats={props.data.stats as API.App.Statistics.ISafeUserStats} goal={props.data.goal} historicGoal={props.data.historicGoal ?? null}/>
                     :
                         props.month==DateTime.now().startOf("month")?
-                            <NoWageView />
+                            props.data.stats.shiftCount>0?
+                                <NoWageView />
+                            :
+                                <FreshStartStatsView/>
                         :
                             <NoArchiveStatsDataView shiftCount={props.data.stats.shiftCount}/>
                 :
