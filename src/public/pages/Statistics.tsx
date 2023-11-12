@@ -121,10 +121,10 @@ export default function Statistics() {
                     ]
                 }>
                     <ShiftsTab shiftsData={statistics?.shifts ?? null} wage={statistics?.stats.wagePerHour ?? null} setModalContent={setModalContent} reloadStats={reloadStatistics} />
+                    <NerdStatsTab data={statistics?{shifts: statistics.shifts, totalEarnings: statistics.stats.totalEarnings, totalHours: statistics.stats.totalHours}:null} finishedShiftsCount={statistics?.stats.finishedShiftCount ?? 0}/>
                     <div>
                         Settings
                     </div>
-                    <NerdStatsTab data={statistics?{shifts: statistics.shifts, totalEarnings: statistics.stats.totalEarnings, totalHours: statistics.stats.totalHours}:null} finishedShiftsCount={statistics?.stats.finishedShiftCount ?? 0}/>
                 </TabsSwitcher>
             </div>
         </section>

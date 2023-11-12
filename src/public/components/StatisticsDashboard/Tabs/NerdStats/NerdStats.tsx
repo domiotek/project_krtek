@@ -30,8 +30,8 @@ interface IStatsData {
 export default function NerdStats(props: IProps) {
     const [stats, setStats] = useState<IStatsData | null>(null);
 
-    const placeholderClassState = !props.data||props.finishedShiftsCount<2?classes.Placeholder:"";
-    const placeholderText = props.finishedShiftsCount<2?"Work some more":"Working on it..."
+    const placeholderClassState = !props.data||props.finishedShiftsCount<3?classes.Placeholder:"";
+    const placeholderText = props.data?"Work some more":"Working on it..."
 
     useEffect(()=>{
         const stats: IStatsData = {
