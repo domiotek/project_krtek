@@ -882,7 +882,7 @@ namespace WebAPI {
              * @async
              * 
              * @returns ID of the new slot.
-             * @throws Can throw NoConnection, DBError, InvalidDate, InvalidRole and MaxSlotCountReached errors.
+             * @throws Can throw NoConnection, DBError, InvalidTime, InvalidRole and MaxSlotCountReached errors.
              */
             addSlot(definer: number, requiredRole: string, startTime: DateTime, endTime?: DateTime): Promise<number>
 
@@ -894,7 +894,7 @@ namespace WebAPI {
              * @param endTime Planned end time for that slot. Optional.
              * 
              * @async
-             * @throws Can throw NoConnection, DBError, InvalidDate, InvalidSlot or InvalidRole errors.
+             * @throws Can throw NoConnection, DBError, InvalidTime, InvalidSlot or InvalidRole errors.
              */
             editSlot(slotID: number, requiredRole: string, startTime: DateTime, endTime?: DateTime): Promise<void>
 

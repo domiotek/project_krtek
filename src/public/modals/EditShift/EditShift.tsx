@@ -62,6 +62,10 @@ export default function EditShiftModal(props: IProps) {
                         if(err=="InvalidDuration") {
                             return "Shift duration can't be 0h.";
                         }
+                        
+                        if(err=="InvalidTime") {
+                            return "Only quarters of an hour are allowed.";
+                        }
 
                         return undefined;
                     }}
@@ -89,7 +93,15 @@ export default function EditShiftModal(props: IProps) {
                         hidden={limitExperience}
                     />
                     <p className={limitExperience?commonModalClasses.Hide:""}>
-                        {endTime.isValid&&startTime.isValid?`Shift duration: ${render2FloatingPoint(duration)}h`:""}
+                        {
+                            endTime.isValid&&startTime.isValid?
+                                [0,25,50,75].includes(duration%1*100)?
+                                    `Shift duration: ${render2FloatingPoint(duration)}h`
+                                :
+                                    "Only quarters of an hour are allowed."
+                            :
+                                ""
+                        }
                     </p>
                     <CurrencyInputBox 
                         key="tip" 

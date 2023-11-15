@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
 import { MysqlError } from "mysql";
-import { APIError } from "../util.js";
+import { APIError, isValidTime } from "../util.js";
 
 class ScheduleAPIError extends APIError<"Schedule"> {
     constructor(errCode: WebAPI.APIErrors<"Schedule">) {
@@ -378,10 +378,10 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
 
     public async addSlot(definer: number, requiredRole: string, startTime: DateTime, endTime?: DateTime | undefined, conn?: WebAPI.Mysql.IPoolConnection): Promise<number> {
 
-        if(!startTime.isValid||(endTime?!endTime.isValid:false)) {
+        if(!isValidTime(startTime)||(endTime?!isValidTime(endTime):false)) {
             conn?.rollback();
             conn?.release();
-            throw new ScheduleAPIError("InvalidDate");
+            throw new ScheduleAPIError("InvalidTime");
         }
 
         const roleID = await (global.app.webAuthManager as InternalWebAuthManager).getRoleID(requiredRole, conn);
@@ -435,10 +435,10 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
 
     public async editSlot(slotID: number, requiredRole: string, startTime: DateTime, endTime?: DateTime | undefined, conn?: WebAPI.Mysql.IPoolConnection) {
 
-        if(!startTime.isValid&&(endTime?!endTime.isValid:false)) {
+        if(!isValidTime(startTime)||(endTime?!isValidTime(endTime):false)) {
             conn?.rollback();
             conn?.release();
-            throw new ScheduleAPIError("InvalidDate");
+            throw new ScheduleAPIError("InvalidTime");
         }
 
         const roleID = await (global.app.webAuthManager as InternalWebAuthManager).getRoleID(requiredRole, conn);
@@ -768,7 +768,7 @@ class Shift implements WebAPI.Schedule.IShift {
             throw new ScheduleAPIError("InvalidCurrency");
         }
         
-        if(startTime.isValid&&endTime.isValid) {
+        if(isValidTime(startTime)&&isValidTime(endTime)) {
             if(!startTime.startOf("minute").equals(endTime.startOf("minute"))) {
                 const response = await this._db.performQuery("UPDATE shifts SET startTime=?, endTime=?, tip=?, deduction=?, userNote=? WHERE shiftID=?",[startTime.toFormat("HH:mm:ss"), endTime.toFormat("HH:mm:ss"), tip, deduction, note ?? null, this._shiftID], conn);
                 if(response) {

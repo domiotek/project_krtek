@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -326,4 +327,14 @@ export function describeAPIError(errorCode: WebAPI.APIErrors<WebAPI.APITypes> ) 
     } 
 
     return message;
+}
+
+/**
+ * Checks whether given DateTime object isValid and
+ * if the time that it hols has only quarters as minutes.
+ * @param time 
+ * @returns Boolean
+ */
+export function isValidTime(time: DateTime) {
+    return time.isValid&&[0,15,30,45].includes(time.minute);
 }

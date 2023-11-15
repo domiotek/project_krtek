@@ -65,6 +65,8 @@ export default function AddShiftModal(props: IProps) {
                     method="POST" 
                     onFailure={async (code, err)=>{
                         if(err=="NotAllowed") return "You can only add shifts to the last 3 days.";
+                        if(err=="InvalidTime") return "Only quarters of an hour are allowed.";
+
                     }}
                     onSuccess={()=>{
                         if(DateTime.now().startOf("month").equals(date.startOf("month")))
