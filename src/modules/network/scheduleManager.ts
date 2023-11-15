@@ -273,18 +273,21 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
             throw new ScheduleAPIError("NoteTooLong");
         }
 
-        const response = await this._db.performQuery<"Other">("UPDATE work_days SET note=?, noteUpdatedAt=CURRENT_TIMESTAMP, noteUpdatedBy=? WHERE workDayID=?",[newNote!=""?newNote:null, updater, this._workDayID], conn);
+        if(newNote=="") newNote = null;
 
-        if(!response || response.affectedRows!=1) {
-            conn?.rollback();
-            conn?.release();
-            throw new ScheduleAPIError(response?"DBError":this._db.getLastQueryFailureReason());
+        if(newNote!=this._note) {
+            const response = await this._db.performQuery<"Other">("UPDATE work_days SET note=?, noteUpdatedAt=CURRENT_TIMESTAMP, noteUpdatedBy=? WHERE workDayID=?",[newNote!=""?newNote:null, updater, this._workDayID], conn);
+
+            if(!response || response.affectedRows!=1) {
+                conn?.rollback();
+                conn?.release();
+                throw new ScheduleAPIError(response?"DBError":this._db.getLastQueryFailureReason());
+            }
+            
+            this._note = newNote;
+            this._noteLastUpdaterUserID = updater;
+            this._noteUpdateTime = DateTime.now();
         }
-        
-        this._note = newNote;
-        this._noteLastUpdaterUserID = updater;
-        this._noteUpdateTime = DateTime.now();
-
     }
 
     private _processSlotResponse(response: NonNullable<WebAPI.Mysql.TGenericMysqlResult<"Select">>) {
@@ -748,15 +751,19 @@ class Shift implements WebAPI.Schedule.IShift {
             throw new ScheduleAPIError("NoteTooLong");
         }
 
-        const response = await this._db.performQuery<"Other">("UPDATE shifts SET userNote=? WHERE shiftID=?",[newNote!=""?newNote:null, this._shiftID], conn);
+        if(newNote=="") newNote=null;
 
-        if(!response || response.affectedRows!=1) {
-            conn?.rollback();
-            conn?.release();
-            throw new ScheduleAPIError(response?"DBError":this._db.getLastQueryFailureReason());
+        if(newNote!=this._note) {
+            const response = await this._db.performQuery<"Other">("UPDATE shifts SET userNote=? WHERE shiftID=?",[newNote!=""?newNote:null, this._shiftID], conn);
+
+            if(!response || response.affectedRows!=1) {
+                conn?.rollback();
+                conn?.release();
+                throw new ScheduleAPIError(response?"DBError":this._db.getLastQueryFailureReason());
+            }
+            
+            this._note = newNote;
         }
-        
-        this._note = newNote;
     }
 
     public async updateData(startTime: luxon.DateTime, endTime: luxon.DateTime, tip: number, deduction: number, note?: string, conn?: WebAPI.Mysql.IPoolConnection) {
@@ -767,10 +774,12 @@ class Shift implements WebAPI.Schedule.IShift {
             conn?.release();
             throw new ScheduleAPIError("InvalidCurrency");
         }
+
+        const newNote: string | null = note==""?null:note ?? null;
         
         if(isValidTime(startTime)&&isValidTime(endTime)) {
             if(!startTime.startOf("minute").equals(endTime.startOf("minute"))) {
-                const response = await this._db.performQuery("UPDATE shifts SET startTime=?, endTime=?, tip=?, deduction=?, userNote=? WHERE shiftID=?",[startTime.toFormat("HH:mm:ss"), endTime.toFormat("HH:mm:ss"), tip, deduction, note ?? null, this._shiftID], conn);
+                const response = await this._db.performQuery("UPDATE shifts SET startTime=?, endTime=?, tip=?, deduction=?, userNote=? WHERE shiftID=?",[startTime.toFormat("HH:mm:ss"), endTime.toFormat("HH:mm:ss"), tip, deduction, newNote, this._shiftID], conn);
                 if(response) {
                     if((response as WebAPI.Mysql.IMysqlQueryResult).affectedRows==1) {
                         this._startTime = startTime;
