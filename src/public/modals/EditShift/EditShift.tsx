@@ -89,7 +89,7 @@ export default function EditShiftModal(props: IProps) {
                         hidden={limitExperience}
                     />
                     <p className={limitExperience?commonModalClasses.Hide:""}>
-                        {endTime.isValid&&startTime.isValid?`Shift duration: ${duration}h`:""}
+                        {endTime.isValid&&startTime.isValid?`Shift duration: ${render2FloatingPoint(duration)}h`:""}
                     </p>
                     <CurrencyInputBox 
                         key="tip" 
