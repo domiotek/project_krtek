@@ -38,7 +38,16 @@ export function parseFormData(form: HTMLFormElement, ignoreList?: string[], stat
 	return formData;
 }
 
-export function renderCurrency(amount: number) {
+/**
+ * Returns string with the number representation as follows.
+ * * if integer, then just the integer
+ * * if decimal point position is 1, then appends 0
+ * * if decimal point position is more than or equal to 2, then all digits to the right are cut.
+ * 
+ * Ideal for currency.
+ * @param amount 
+ */
+export function render2FloatingPoint(amount: number) {
     return amount.toFixed(2).replace(".00", "")
 }
 

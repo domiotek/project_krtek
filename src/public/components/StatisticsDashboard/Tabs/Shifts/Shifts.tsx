@@ -7,7 +7,7 @@ import { DateTime } from "luxon";
 
 import ArrowImg from "../../../../assets/ui/left-arrow-angle.png";
 import EditImg from "../../../../assets/ui/pen.png";
-import { renderCurrency } from "../../../../modules/utils";
+import { render2FloatingPoint } from "../../../../modules/utils";
 import EditShiftModal from "../../../../modals/EditShift/EditShift";
 import AddShiftModal from "../../../../modals/AddShift/AddShift";
 
@@ -82,19 +82,19 @@ export default function ShiftsTab(props: IProps) {
                 <h4>Earnings</h4>
                 <ul className={`${classes.SectionList} ${classes.EarningsSummaryList}`}>
                     <li>
-                        <h5>{props.wage?`+ ${renderCurrency(details.wageEarnings)}zł`:"No data"}</h5>
+                        <h5>{props.wage?`+ ${render2FloatingPoint(details.wageEarnings)}zł`:"No data"}</h5>
                         <h6>Wage</h6>
                     </li>
                     <li>
-                        <h5>+ {renderCurrency(details.tip)}zł</h5>
+                        <h5>+ {render2FloatingPoint(details.tip)}zł</h5>
                         <h6>Tip</h6>
                     </li>
                     <li>
-                        <h5>- {renderCurrency(details.deduction)}zł</h5>
+                        <h5>- {render2FloatingPoint(details.deduction)}zł</h5>
                         <h6>Deduction</h6>
                     </li>
                 </ul>
-                <h5>Total: {renderCurrency(details.totalEarnings)}zł</h5>
+                <h5>Total: {render2FloatingPoint(details.totalEarnings)}zł</h5>
             </div>
         );
     }
@@ -164,7 +164,7 @@ export default function ShiftsTab(props: IProps) {
                                 :
                                     <div className={classes.FinishedShiftView}>
                                             <h4>{calcStats.startTime.toFormat("HH:mm")} - {calcStats.endTime?.toFormat("HH:mm") ?? "?"} ({calcStats.duration}h)</h4>
-                                            <h2>{props.wage?`+ ${renderCurrency(calcStats.totalEarnings)}zł`:"Finished"}</h2>
+                                            <h2>{props.wage?`+ ${render2FloatingPoint(calcStats.totalEarnings)}zł`:"Finished"}</h2>
                                     </div>
                             }
                         </div>
@@ -184,7 +184,7 @@ export default function ShiftsTab(props: IProps) {
                                 {
                                     ownerSlot.status=="Finished"?
                                         <li>
-                                            <h5>Actual wage rate: <span className={classes.PropValue}>{props.wage?`${renderCurrency(calcStats.realWageRate)}zł/h`:"No data"}</span></h5>
+                                            <h5>Actual wage rate: <span className={classes.PropValue}>{props.wage?`${render2FloatingPoint(calcStats.realWageRate)}zł/h`:"No data"}</span></h5>
                                         </li>
                                     :""
                                 }

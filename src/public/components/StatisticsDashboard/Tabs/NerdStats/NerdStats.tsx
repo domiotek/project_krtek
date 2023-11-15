@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 
 import classes from "./NerdStats.css"
-import { renderCurrency, renderDate } from "../../../../modules/utils";
+import { render2FloatingPoint, renderDate } from "../../../../modules/utils";
 import { API } from "../../../../types/networkAPI";
 import { DateTime } from "luxon";
 
@@ -86,15 +86,15 @@ export default function NerdStats(props: IProps) {
                 <h3>Tip</h3>
                 <ul className={`${classes.PropList} ${placeholderClassState}`} data-text={placeholderText}>
                     <li>
-                        <h4>{renderCurrency(stats?.maxTip ?? 320)}zł</h4>
+                        <h4>{render2FloatingPoint(stats?.maxTip ?? 320)}zł</h4>
                         <h6>Maximum <span className={classes.Bullet}></span> {renderDate(stats?.maxTipDate, "nice, but not true")}</h6>
                     </li>
                     <li>
-                        <h4>{renderCurrency(stats?.minTip ?? 4)}zł</h4>
+                        <h4>{render2FloatingPoint(stats?.minTip ?? 4)}zł</h4>
                         <h6>Minimum <span className={classes.Bullet}></span> {renderDate(stats?.minTipDate, "yikes")}</h6>
                     </li>
                     <li>
-                        <h4>{renderCurrency(stats?.avgTip ?? 124)}zł</h4>
+                        <h4>{render2FloatingPoint(stats?.avgTip ?? 124)}zł</h4>
                         <h6>Average</h6>
                     </li>
                 </ul>
@@ -103,11 +103,11 @@ export default function NerdStats(props: IProps) {
                 <h3>Wage</h3>
                 <ul className={`${classes.PropList} ${placeholderClassState}`} data-text={placeholderText}>
                     <li>
-                        <h4>{renderCurrency(stats?.actMontlyWage ?? 25)}zł/h</h4>
+                        <h4>{render2FloatingPoint(stats?.actMontlyWage ?? 25)}zł/h</h4>
                         <h6>Actual monthly wage</h6>
                     </li>
                     <li>
-                        <h4>{renderCurrency(stats?.avgDailyWage ?? 23)}zł/h</h4>
+                        <h4>{render2FloatingPoint(stats?.avgDailyWage ?? 23)}zł/h</h4>
                         <h6>Average daily wage</h6>
                     </li>
                 </ul>

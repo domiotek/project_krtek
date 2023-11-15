@@ -3,7 +3,7 @@ import { API } from "../../../../types/networkAPI";
 
 import classes from "./DefaultView.css";
 import GoalPanel from "../../../GoalPanel/GoalPanel";
-import { renderCurrency } from "../../../../modules/utils";
+import { render2FloatingPoint } from "../../../../modules/utils";
 
 interface IProps {
     stats: API.App.Statistics.ISafeUserStats
@@ -21,27 +21,27 @@ export default function DefaultStatsView(props: IProps) {
                     <h4>Your earnings</h4>
                     <ul>
                         <li>
-                            + {renderCurrency(props.stats.totalWage)}zł
+                            + {render2FloatingPoint(props.stats.totalWage)}zł
                             <span>Wage</span>
                         </li>
                         <li>
-                            + {renderCurrency(props.stats.totalTip)}zł
+                            + {render2FloatingPoint(props.stats.totalTip)}zł
                             <span>Tip</span>
                         </li>
                         {
                             props.stats.externalIncome?
                                 <li>
-                                    + {renderCurrency(props.stats.externalIncome)}zł
+                                    + {render2FloatingPoint(props.stats.externalIncome)}zł
                                     <span>Additional income</span>
                                 </li>
                             :""
                         }
                         <li>
-                            - {renderCurrency(props.stats.totalDeduction)}zł
+                            - {render2FloatingPoint(props.stats.totalDeduction)}zł
                             <span>Deduction</span>
                         </li>
                     </ul>
-                    <h3>Total: {renderCurrency(props.stats.totalEarnings)}zł</h3>
+                    <h3>Total: {render2FloatingPoint(props.stats.totalEarnings)}zł</h3>
                 </div>
                 <div className={classes.WageTipRatioPanel} style={{"--ratio-value": tipWageRatio, "--ratio-percent": `${tipWageRatio}%`} as CSSProperties}>
                     <span className={`${tipWageRatio>0?classes.GraphIndicator:""}`}></span>

@@ -8,7 +8,7 @@ import InputBox, { CurrencyInputBox, TextAreaInputBox } from "../../components/I
 import CustomForm from "../../components/Forms/CustomForm/CustomForm";
 import { API } from "../../types/networkAPI";
 import { DateTime } from "luxon";
-import { renderCurrency } from "../../modules/utils";
+import { render2FloatingPoint } from "../../modules/utils";
 
 interface IProps {
     successCallback: ()=>void
@@ -18,7 +18,7 @@ interface IProps {
 }
 
 function handleCurrencyInput(value: string) {
-    return parseFloat(renderCurrency(parseFloat(value!=""?value:"0")));
+    return parseFloat(render2FloatingPoint(parseFloat(value!=""?value:"0")));
 }
 
 export default function EditShiftModal(props: IProps) {

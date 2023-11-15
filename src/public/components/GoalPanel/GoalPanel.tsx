@@ -4,7 +4,7 @@ import ProgressRing from "../ProgressRing/ProgressRing";
 
 import classes from "./GoalPanel.css";
 import commonClasses from "../common.css";
-import { renderCurrency } from "../../modules/utils";
+import { render2FloatingPoint } from "../../modules/utils";
 
 interface IProps {
     data: API.App.Statistics.IGoalDetails | null
@@ -22,7 +22,7 @@ function GoalCompletedContent(savings: number) {
         <div className={classes.GoalCompleteContainer}>
             <h5>All milestones fulfilled</h5>
             <img src="/ilustrations/Savings.svg" alt="Money box"></img>
-            <h4>You have {renderCurrency(savings)}zł of savings</h4>
+            <h4>You have {render2FloatingPoint(savings)}zł of savings</h4>
             <p>Congratulations. From now on, you earn just for yourself and your needs.</p>
         </div>
     );
@@ -55,11 +55,11 @@ function GoalHistoricDataContent(props: IHistoricPanelProps) {
             <p>
                 {hasSaved?
                     ["You managed to accumulate ",
-                    <span>{renderCurrency(diff)}zł</span>,
+                    <span>{render2FloatingPoint(diff)}zł</span>,
                     " of savings that month."]
                 :
                     ["There was still ",
-                    <span>{renderCurrency(diff*-1)}zł</span>,
+                    <span>{render2FloatingPoint(diff*-1)}zł</span>,
                     " to earn in order to meet your goal."]
                 }
             </p>
@@ -91,7 +91,7 @@ function GoalMainContent(props: ISureProps) {
             return (
                 <li key={overwriteKey ?? data.ID} style={{"--progress": `${percentage}%`} as CSSProperties}>
                     {data.title ?? "[?]"}
-                    <i>{renderCurrency(progressAmount)} of {renderCurrency(data.amount)}zł ({percentage}%)</i>
+                    <i>{render2FloatingPoint(progressAmount)} of {render2FloatingPoint(data.amount)}zł ({percentage}%)</i>
                     <span>
                         <span></span>
                     </span>
@@ -143,9 +143,9 @@ function GoalMainContent(props: ISureProps) {
                 <div className={classes.GoalSummary}>
                     <div className={classes.Graph}>
                         <ProgressRing radius={10} stroke={2} progress={props.earnings / props.data.totalAmount *100}/>
-                        {renderCurrency(props.earnings)} of {renderCurrency(props.data.totalAmount)}zł
+                        {render2FloatingPoint(props.earnings)} of {render2FloatingPoint(props.data.totalAmount)}zł
                     </div>
-                    <h5>{renderCurrency((props.data.totalAmount - props.earnings))}zł more to complete the goal</h5>
+                    <h5>{render2FloatingPoint((props.data.totalAmount - props.earnings))}zł more to complete the goal</h5>
                 </div>
             </div>
         );
