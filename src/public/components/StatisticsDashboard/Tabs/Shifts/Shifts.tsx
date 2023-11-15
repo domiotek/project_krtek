@@ -134,7 +134,7 @@ export default function ShiftsTab(props: IProps) {
                     coWorkerPanels.push(renderCoWorkerPanel(name, slot.requiredRoleDisplayName, startTime, endTime));
                 }
 
-                coWorkersStr = coWorkersStr.substring(0,coWorkersStr.length-1);
+                coWorkersStr = coWorkersStr.substring(0,coWorkersStr.length-2);
 
                 if(coWorkersUnassignedCount!=0) {
                     coWorkersStr +=` ${coWorkersUnassignedCount!=coWorkersCount?"and ":""}${coWorkersUnassignedCount} unassigned`;
