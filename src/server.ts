@@ -1,4 +1,5 @@
 import initializeEnvironment from "./environment.js";
+import * as Time from "./modules/time.js";
 import {waitFor, __dirname, computeVersion} from "./modules/util.js";;
 import { FramAPI } from "./modules/network/FramAPI/fram-api.js";
 import * as Addr from "./modules/network/addr.js";
@@ -224,6 +225,9 @@ class App implements IApp {
 				console.log(err.message);
 				process.exit();
 			});
+			
+			Time.init(env.timezone);
+
 			fs.passConfigs(env.fs.config);
 			
 			global.logs = new LogsCollections(await fs.useProvider("local") as IfsProvider);
