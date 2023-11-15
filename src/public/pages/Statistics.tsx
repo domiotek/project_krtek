@@ -44,7 +44,7 @@ function calculateShiftData(slot: API.App.Statistics.UserShifts.IAssignedShiftSl
         earningsData.tip = slot.assignedShift.tip ?? 0;
         earningsData.deduction = slot.assignedShift.deduction ?? 0;
         earningsData.totalEarnings = earningsData.wageEarnings + earningsData.tip - earningsData.deduction;
-        earningsData.realWageRate = earningsData.totalEarnings / earningsData.duration;
+        earningsData.realWageRate = earningsData.duration!=0?earningsData.totalEarnings / earningsData.duration:0;
     }
 
     return earningsData;
