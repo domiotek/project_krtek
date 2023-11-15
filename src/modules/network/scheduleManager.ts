@@ -760,26 +760,28 @@ class Shift implements WebAPI.Schedule.IShift {
     }
 
     public async updateData(startTime: luxon.DateTime, endTime: luxon.DateTime, tip: number, deduction: number, note?: string, conn?: WebAPI.Mysql.IPoolConnection) {
-        let errCode: WebAPI.APIErrors<"Schedule"> = "InvalidDate";
+        let errCode: WebAPI.APIErrors<"Schedule"> = "InvalidTime";
 
         if(deduction < 0 || tip < 0) {
             conn?.rollback();
             conn?.release();
-            throw new ScheduleAPIError("InvalidTipOrDeduction");
+            throw new ScheduleAPIError("InvalidCurrency");
         }
         
         if(startTime.isValid&&endTime.isValid) {
-            const response = await this._db.performQuery("UPDATE shifts SET startTime=?, endTime=?, tip=?, deduction=?, userNote=? WHERE shiftID=?",[startTime.toFormat("HH:mm:ss"), endTime.toFormat("HH:mm:ss"), tip, deduction, note ?? null, this._shiftID], conn);
-            if(response) {
-                if((response as WebAPI.Mysql.IMysqlQueryResult).affectedRows==1) {
-                    this._startTime = startTime;
-                    this._endTime = endTime;
-                    this._tip = tip;
-                    this._deduction = deduction;
-                    this._note = null;
-                    return;
-                }else errCode = "DBError";
-            }else errCode = this._db.getLastQueryFailureReason();
+            if(!startTime.startOf("minute").equals(endTime.startOf("minute"))) {
+                const response = await this._db.performQuery("UPDATE shifts SET startTime=?, endTime=?, tip=?, deduction=?, userNote=? WHERE shiftID=?",[startTime.toFormat("HH:mm:ss"), endTime.toFormat("HH:mm:ss"), tip, deduction, note ?? null, this._shiftID], conn);
+                if(response) {
+                    if((response as WebAPI.Mysql.IMysqlQueryResult).affectedRows==1) {
+                        this._startTime = startTime;
+                        this._endTime = endTime;
+                        this._tip = tip;
+                        this._deduction = deduction;
+                        this._note = null;
+                        return;
+                    }else errCode = "DBError";
+                }else errCode = this._db.getLastQueryFailureReason();
+            }else errCode = "InvalidDuration";
         }
 
         conn?.rollback();

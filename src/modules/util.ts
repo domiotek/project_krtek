@@ -311,13 +311,15 @@ export function describeAPIError(errorCode: WebAPI.APIErrors<WebAPI.APITypes> ) 
         case "InvalidAction": message = "Given action doesn't exist. Check available action names with account-actions list-types."; break;
         case "TooMuchTokens": message = "This user has reached maximum amount of action tokens of that count."; break;
         case "InvalidDate": message = "Given date input is invalid."; break;
+        case "InvalidTime": message = "Given time input is invalid."; break;
         case "InvalidRange": message = "Given date range is invalid. Make sure dates are formed correctly and that the 'before' date is later than 'after' date.";break;
         case "InvalidSlot": message = "Shift slot with given ID doesn't exist."; break;
         case "MaxSlotCountReached": message = "You have reached maximum amount of slots per workDay."; break;
         case "NoteTooLong": message = "That note is too long. The limit is 255 characters."; break;
         case "UserWithoutRole": message = "Specified user doesn't have role required by the shift slot."; break;
         case "UserAlreadyAssigned": message = "Specified user is already assigned to the other shift slot on the requested work day."; break;
-        case "InvalidTipOrDeduction": message = "Given tip and or deduction amount is invalid. Make sure to provide positive number."; break;
+        case "InvalidCurrency": message = "Given currency value is below zero."; break;
+        case "InvalidDuration": message = "Both start and end times are the same. Such duration isn't allowed."; break;
         case "MilestoneLimitReached": message = "You have reached maximum amount of goal milestones."; break;
         case "NotImplemented": message = "You shouldn't see this. This functionality isn't ready yet."; break;
         default: message = "No additional information.";

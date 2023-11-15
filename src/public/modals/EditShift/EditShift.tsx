@@ -58,6 +58,13 @@ export default function EditShiftModal(props: IProps) {
                     submitCaption="Save"
                     staticFields={{"when": props.shiftData.date}}
                     ignoreList={limitExperience?["startTime","endTime", "tip", "deduction"]:[]}
+                    onFailure={async (code, err)=>{
+                        if(err=="InvalidDuration") {
+                            return "Shift duration can't be 0h.";
+                        }
+
+                        return undefined;
+                    }}
                 >  
                     <InputBox 
                         key="startTime" 

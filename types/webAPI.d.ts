@@ -740,7 +740,7 @@ namespace WebAPI {
         namespace ShiftAPI {
             type TErrorTypes =  TGetUserErrors | TUpdateDataErrors;
             type TGetUserErrors = "NoUser"
-            type TUpdateDataErrors = "InvalidDate" | "InvalidTipOrDeduction";
+            type TUpdateDataErrors = "InvalidTime" | "InvalidCurrency" | "InvalidDuration";
 
             interface IJSONShift {
                 shiftID: number,
@@ -989,7 +989,7 @@ namespace WebAPI {
              * Updates details about user shift.
              * 
              * @async
-             * @throws Can throw NoConnection, DBError or InvaliDate errors.
+             * @throws Can throw NoConnection, DBError, InvalidTime, InvalidCurrency or InvalidDuration errors.
              */
             updateData(startTime: DateTime, endTime: DateTime, tip: number, deduction: number, note?: string): Promise<void>
         }

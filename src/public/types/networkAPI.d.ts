@@ -222,7 +222,7 @@ export namespace API {
                     errCode?:  TCommonResponses | "NotSignedIn" | "InvalidDate" | "InvalidTime" | "NoSlot";
                 }
 
-                type IEndpoint = TBuildAPIEndpoint<"PUT","/api/schedule/shift/:when", undefined, "NotSignedIn" | "InvalidDate" | "InvalidTime" | "NoSlot", IURLParams>
+                type IEndpoint = TBuildAPIEndpoint<"PUT","/api/schedule/shift/:when", undefined, "NotSignedIn" | "InvalidDate" | "InvalidTime" | "NoSlot" | "InvalidCurrency" | "InvalidDuration", IURLParams>
             }
 
 
