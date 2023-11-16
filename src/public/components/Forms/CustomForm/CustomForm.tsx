@@ -15,10 +15,10 @@ export namespace CustomFormTypes {
         urlParams: T["urlParams"]
         method: T["method"]
         elements?: JSX.Element[]
-        children?: JSX.Element[]
+        children?: JSX.Element | JSX.Element[]
         onFailure?: (code: number, err: T["errCodes"], errorType: "Server" | "Client")=>Promise<string | undefined>
         onSuccess: (data: T["returnData"])=>void
-        onBeforeSubmit?: (setErrorMessage: (text: string)=>void)=>void
+        onBeforeSubmit?: (setErrorMessage: (text: string)=>void, setDynamicFields: (data: IFieldDefs)=>void)=>void
         submitCaption: string
         doReset: boolean
         ignoreList?: string[]
@@ -44,13 +44,22 @@ export default function CustomForm<T extends API.IBaseAPIEndpoint>(props: Custom
 
         setSubmitDisabled(true);
 
+        let dynamicFields: CustomFormTypes.IFieldDefs | undefined;
+
         if(props.onBeforeSubmit) {
             let blockSubmit = false;
-            props.onBeforeSubmit((message: string)=>{
+
+            function setErrorMessage(message: string) {
                 if(blockSubmit) return;
                 blockSubmit = true;
                 setErrorMessage(message);
-            });
+            }
+
+            function setDynamicFields(fields: CustomFormTypes.IFieldDefs) {
+                dynamicFields = fields;
+            }
+
+            props.onBeforeSubmit(setErrorMessage,setDynamicFields);
 
             if(blockSubmit) {
                 setSubmitDisabled(false);
@@ -62,6 +71,7 @@ export default function CustomForm<T extends API.IBaseAPIEndpoint>(props: Custom
             try {
                 const aborter = callAPI(props.method, props.url, props.urlParams, 
                     data=>{
+                        setSubmitDisabled(false);
                         props.onSuccess(data);
                     }, async (code, err, type)=>{
                         let message;
@@ -77,7 +87,7 @@ export default function CustomForm<T extends API.IBaseAPIEndpoint>(props: Custom
 
                         setErrorMessage(message);
                         setSubmitDisabled(false);
-                    }, new URLSearchParams(parseFormData(form,props.ignoreList, props.staticFields))
+                    }, new URLSearchParams(parseFormData(form,props.ignoreList, props.staticFields, dynamicFields))
                 );
                 setTimeout(aborter,2500);
             } catch (error) {

@@ -21,8 +21,16 @@ export function manageClassState(targetClassName: string, action: "active" | "in
 }
 
 
-export function parseFormData(form: HTMLFormElement, ignoreList?: string[], staticFields?: CustomFormTypes.IFieldDefs) {
+export function parseFormData(form: HTMLFormElement, ignoreList?: string[], staticFields?: CustomFormTypes.IFieldDefs, dynamicFields?: CustomFormTypes.IFieldDefs) {
 	const formData: {[key: string]: string} = {};
+
+	function handleFields(list?: CustomFormTypes.IFieldDefs) {
+		for (const name in list) {
+			if(!ignoreList?.includes(name))
+				formData[name] = list[name];
+		}
+
+	}
 
 	for (const element of form.elements) {
 		const name = element.getAttribute("name");
@@ -30,10 +38,8 @@ export function parseFormData(form: HTMLFormElement, ignoreList?: string[], stat
 			formData[name] = (element as HTMLInputElement).value;
 	}
 
-	for (const name in staticFields) {
-		if(!ignoreList?.includes(name))
-			formData[name] = staticFields[name];
-	}
+	handleFields(staticFields);
+	handleFields(dynamicFields);
 
 	return formData;
 }
