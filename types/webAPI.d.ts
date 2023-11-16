@@ -1035,7 +1035,7 @@ namespace WebAPI {
             }
 
             interface IMilestone {
-                ID: string
+                ID: number
                 title: string
                 amount: number
                 orderTag: number
