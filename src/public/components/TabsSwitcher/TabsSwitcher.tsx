@@ -10,6 +10,9 @@ interface IProps {
         displayName: string
     }>
     activeIndex?: number
+    blockSwitch?: boolean
+    onSwitch?: (ID: string)=>void
+    onSwitchAttempt?: (ID:string, blocked: boolean)=>void
 }
 
 export default function TabsSwitcher(props: IProps) {
@@ -25,7 +28,12 @@ export default function TabsSwitcher(props: IProps) {
         const result: Array<JSX.Element> = [];
 
         function clickHandler(this: number) {
-            setTabIndex(this);
+            if(!props.blockSwitch) {
+                if(props.onSwitchAttempt) props.onSwitchAttempt(props.tabs[this].ID, false);
+                setTabIndex(this);
+                if(props.onSwitch) props.onSwitch(props.tabs[this].ID);
+            }else if(props.onSwitchAttempt) props.onSwitchAttempt(props.tabs[this].ID, true);
+                
         }
 
         for (let i=0; i < props.tabs.length; i++) {
