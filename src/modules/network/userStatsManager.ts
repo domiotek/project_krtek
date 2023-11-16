@@ -90,8 +90,9 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
 
 			let checkResponse = await this._db.performQuery<"Select">("SELECT userID FROM user_prop WHERE userID=? AND date=?",[userID, date.toISODate()],connection);
 
-			if(checkResponse&&checkResponse.length==1) {
-				isTargetMonthSet = true;
+			if(checkResponse) {
+                if(checkResponse.length==1)
+				    isTargetMonthSet = true;
 			}else {
 				if(!conn) connection.release();
 				throw new StatsAPIError(this._db.getLastQueryFailureReason());
@@ -114,12 +115,12 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
 
 				for (const field of Object.keys(historicDataTemplate)) {
 					if(data[field as TTemplateKeys]!==undefined) {
-						fieldList += field+"=? ";
+						fieldList += field+"=?, ";
 						values.push(data[field as TTemplateKeys] as any);
 					}
 				}
 
-				fieldList = fieldList.substring(0,fieldList.length - 1);
+				fieldList = fieldList.substring(0,fieldList.length - 2);
 
 				values.push(userID, date.toISODate());
 
