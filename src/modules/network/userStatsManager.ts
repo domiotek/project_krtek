@@ -446,7 +446,7 @@ class GoalManager implements WebAPI.Statistics.GoalAPI.IGoalManager {
         throw new StatsAPIError(this._db.getLastQueryFailureReason());
     }
     
-    public async addMilestone(title: string, amount: number): ReturnType<WebAPI.Statistics.GoalAPI.IGoalManager["addMilestone"]> {
+    public async addMilestone(title: string, amount: number, orderTag: number): ReturnType<WebAPI.Statistics.GoalAPI.IGoalManager["addMilestone"]> {
 
         const connection = await this._db.getConnection();
 
@@ -461,11 +461,9 @@ class GoalManager implements WebAPI.Statistics.GoalAPI.IGoalManager {
             connection.release();
             throw new StatsAPIError("MilestoneLimitReached");
         }
-
-        const nextOrderTag = (milestonesData.milestones[milestonesData.milestones.length-1]?.orderTag ?? -1) + 1;
         
         const query = "INSERT INTO goal_milestones(userID, orderTag, title, targetAmount) VALUES(?,?,?,?);";
-        const response = await this._db.performQuery<"Other">(query,[this._userID, nextOrderTag, title, amount], connection);
+        const response = await this._db.performQuery<"Other">(query,[this._userID, orderTag, title, amount], connection);
         connection.release();
 
         if(response&&response.affectedRows==1) {
@@ -496,9 +494,9 @@ class GoalManager implements WebAPI.Statistics.GoalAPI.IGoalManager {
             throw new StatsAPIError(this._db.getLastQueryFailureReason());
     }
     
-    public async setMilestone(ID: number, title: string, amount: number): ReturnType<WebAPI.Statistics.GoalAPI.IGoalManager["setMilestone"]> {
-        const query = "UPDATE goal_milestones SET title=?, amount=? WHERE milestoneID=? AND userID=?;";
-        const response = await this._db.performQuery<"Other">(query,[title, amount, ID, this._userID]);
+    public async setMilestone(ID: number, title: string, amount: number, orderTag: number): ReturnType<WebAPI.Statistics.GoalAPI.IGoalManager["setMilestone"]> {
+        const query = "UPDATE goal_milestones SET title=?, targetAmount=?, orderTag=? WHERE milestoneID=? AND userID=?;";
+        const response = await this._db.performQuery<"Other">(query,[title, amount, orderTag, ID, this._userID]);
 
         if(response) {
             if(response.affectedRows==1) return true;
@@ -506,10 +504,6 @@ class GoalManager implements WebAPI.Statistics.GoalAPI.IGoalManager {
         }
 
         throw new StatsAPIError(this._db.getLastQueryFailureReason());
-    }
-    
-    public async updateMilestoneOrder(newOrder: WebAPI.Statistics.GoalAPI.IMilestoneOrder): ReturnType<WebAPI.Statistics.GoalAPI.IGoalManager["updateMilestoneOrder"]> {
-        throw new StatsAPIError("NotImplemented");
     }
     
 }

@@ -1027,7 +1027,7 @@ namespace WebAPI {
         }
 
         namespace GoalAPI {
-            type TErrorTypes = "NotImplemented" | "MilestoneLimitReached";
+            type TErrorTypes = "MilestoneLimitReached";
 
             interface IMilestonesDetails {
                 milestones: IMilestone[]
@@ -1072,12 +1072,13 @@ namespace WebAPI {
                  * Adds new milestone at the end of the list.
                  * @param title Milestone's title. Max 30 characters.
                  * @param amount Target amount for the milestone. Decimal.
+                 * @param orderTag Number representing position in the list of milestones.
                  * 
                  * @returns ID of newly added milestone.
                  * 
                  * @throws Can throw NoConnection and DBError errors.
                  */
-                addMilestone(title: string, amount: number): Promise<number>
+                addMilestone(title: string, amount: number, orderTag: number): Promise<number>
 
                 /**
                  * Removes milestone with given ID.
@@ -1103,20 +1104,13 @@ namespace WebAPI {
                  * @param ID milestoneID. Must belong to the current user.
                  * @param title New milestone title.
                  * @param amount New milestone target amount.
+                 * @param orderTag Number representing position in the list of milestones.
                  * 
                  * @returns True on successful edist, false otherwise.
                  * 
                  * @throws Can throw NoConnection and DBError errors.
                  */
-                setMilestone(ID: number, title: string, amount: number): Promise<boolean>
-
-                /**
-                 * [Not implemented] Will allow for changing the order of milestones.
-                 * @param newOrder Milestone order [May change]
-                 * 
-                 * @throws NotImplemented error.
-                 */
-                updateMilestoneOrder(newOrder: IMilestoneOrder): Promise<void>
+                setMilestone(ID: number, title: string, amount: number, orderTag: number): Promise<boolean>
             }
         }
 

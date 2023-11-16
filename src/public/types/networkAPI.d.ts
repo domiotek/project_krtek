@@ -262,7 +262,6 @@ export namespace API {
                 ID: string
                 title: string
                 amount: number
-                orderTag: number
             }
 
             interface IBasicUserStats {

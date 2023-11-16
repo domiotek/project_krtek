@@ -85,7 +85,7 @@ function GoalMainContent(props: ISureProps) {
     }else {
 
         function renderMilestone(data: API.App.Statistics.IMilestone | null, progressAmount: number, overwriteKey?: number) {
-            data = data ?? {ID: (overwriteKey ?? -1).toString(), title: "[?]", amount: 0, orderTag: -1};
+            data = data ?? {ID: (overwriteKey ?? -1), title: "[?]", amount: 0};
 
             const percentage = Math.round(progressAmount/data.amount * 100);
             return (
