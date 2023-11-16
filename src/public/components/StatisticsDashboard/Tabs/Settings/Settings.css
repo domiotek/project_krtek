@@ -1,0 +1,178 @@
+.SettingsTabContainer {
+    padding: 0 0.5rem;
+}
+
+.UnsavedChangesMessage {
+    display: none;
+    padding: 0.5rem;
+    border: solid 1px orange;
+    background: #ffebc6;
+    font-size: 0.9rem;
+    text-align: center;
+    border-radius: 0.5rem;
+}
+
+.UnsavedChangesMessage.Shown {
+    display: block;
+}
+
+.GeneralInputsWrapper > div {
+    margin: 1.25rem 0;
+}
+
+.GoalSettingsContainer {
+    display: flex;
+    flex-direction: column;
+}
+
+.AddMilestoneBtn {
+    align-self: flex-end;
+    border-radius: 6rem;
+    font-size: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.MilestoneList {
+    list-style: none;
+    padding: 0 .25rem;
+}
+
+.MilestonePanel {
+    margin-bottom: 0.5rem;
+    display: flex;
+    height: 7rem;
+    justify-content: space-between;
+    background: var(--bg-light);
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+}
+
+.MilestonePanel >span {
+    text-wrap: balance;
+    max-width: 80%;
+    word-break: break-all;
+}
+
+.RightPanel {
+    display: flex;
+    height: 100%;
+    align-items: flex-end;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.ButtonsContainer {
+    display: flex;
+}
+
+.MilestonePanel button, .MilestonePanel .DummyButton {
+    font-size: 0.75rem;
+    padding: 0.0rem;
+    margin: 0 0.25rem;
+    border-radius: 50%;
+    height: 32px;
+    width: 32px;
+}
+
+.ButtonsContainer button:nth-child(2) {
+    background: #eb5050;
+}
+
+.MilestonePanel button img {
+    width: 45%;
+}
+
+.NoMilestonesPanel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.NoMilestonesPanel img {
+    width: 110px;;
+}
+
+.DummySettingsTabContainer {
+    margin-top: 3.5rem;
+}
+
+.DummyInput span{
+    display: block;
+    width: 6rem;
+    height: 1.4rem;
+}
+
+.DummyInput div {
+    height: 34px;
+    margin-top: 0.25rem;
+    border-radius: 0.4rem;
+}
+
+.DummyMilestonePanel > span {
+    height: 1.4rem;
+    width: 7rem;
+}
+
+.DummyMilestonePanel .RightPanel >span {
+    height: 1.3rem;
+    width: 3.5rem;
+    animation-delay: 0.5s;
+}
+
+.DummyMilestonePanel .DummyButton {
+    animation-delay: 0.4s;
+}
+
+.DummyMilestonePanel .DummyButton:nth-of-type(2) {
+    animation-delay: 0.7s;
+}
+
+.DummyAddMilestoneBtn {
+    padding: 0.75rem 0.9rem;
+    width: 6.84rem;
+    height: 2.52rem;
+    animation-delay: 0.3s;
+}
+
+@media screen and (min-width: 386px) {
+    .GeneralInputsWrapper > div > div {
+        margin-left: 1.5rem;
+        width: calc(100% - 1.5rem);
+    }
+
+    .FormContent > div {
+        margin: 0 1.25rem;
+    }
+}
+
+@media screen and (min-width: 600px) {
+    .SettingsTabContainer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 5rem;
+    }
+
+    .DummySettingsTabContainer .FormContent {
+        width: 650px;
+    }
+
+    .SettingsTabContainer > form {
+        width: 80%;
+        max-width: 650px;
+    }
+
+    .GeneralInputsWrapper {
+        max-width: 300px;
+    }
+}
+
+@media screen and (min-width: 1700px) {
+    .SettingsTabContainer > form {
+        max-width: 750px;
+    }
+
+    .DummySettingsTabContainer .FormContent {
+        width: 750px;
+    }
+}
