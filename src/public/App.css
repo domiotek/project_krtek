@@ -144,7 +144,10 @@
 		left: 0;
 		position: static;
     margin-top: 0;
-    height: 100%;
+    position: sticky;
+    top: 80px;
+    height: -moz-fit-content;
+    height: fit-content;
 	}
 
 	.AccountButton {
