@@ -27,7 +27,7 @@ interface IStatsData {
     avgDailyWage: number
 }
 
-export default function NerdStats(props: IProps) {
+export default function NerdStatsTab(props: IProps) {
     const [stats, setStats] = useState<IStatsData | null>(null);
 
     const placeholderClassState = !props.data||props.finishedShiftsCount<3?classes.Placeholder:"";
