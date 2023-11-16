@@ -17,8 +17,8 @@ interface IProps {
     userSlot: API.App.Statistics.UserShifts.IShiftSlot
 }
 
-function handleCurrencyInput(value: string) {
-    return parseFloat(render2FloatingPoint(parseFloat(value!=""?value:"0")));
+function handleCurrencyInput(value: number) {
+    return parseFloat(render2FloatingPoint(value));
 }
 
 export default function EditShiftModal(props: IProps) {
@@ -109,7 +109,7 @@ export default function EditShiftModal(props: IProps) {
                         label={"Tip"} 
                         formControlID={"tip"} 
                         initialValue={tip} 
-                        stateUpdater={e=>setTip(handleCurrencyInput(e.target.value))} 
+                        stateUpdater={val=>setTip(handleCurrencyInput(val))} 
                         isRequired={!limitExperience} 
                         hidden={limitExperience} 
                     />
@@ -119,7 +119,7 @@ export default function EditShiftModal(props: IProps) {
                         label={"Deduction"} 
                         formControlID={"deduction"} 
                         initialValue={deduction} 
-                        stateUpdater={e=>setDeduction(handleCurrencyInput(e.target.value))} 
+                        stateUpdater={val=>setDeduction(handleCurrencyInput(val))} 
                         isRequired={!limitExperience} 
                         hidden={limitExperience} 
                     />

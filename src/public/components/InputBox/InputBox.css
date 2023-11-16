@@ -1,3 +1,7 @@
+.InputContainer {
+    transition: filter 0.4s;
+    filter: grayscale(0);
+}
 
 .InputContainer label, .InputContainer input {
     display: block;
@@ -42,6 +46,10 @@ input[hidden] {
     display: none;
 }
 
+.InputContainer.disabled {
+    filter: grayscale(1);
+}
+
 .HorizontalContainer {
     display: flex;
     align-items: baseline;
@@ -84,6 +92,7 @@ input[hidden] {
     width: 0;
     overflow: hidden;
     margin-left: 0.15rem;
+    flex-shrink: 0;
 }
 
 .InputContainer.currency .HorizontalContainer span.Active {
