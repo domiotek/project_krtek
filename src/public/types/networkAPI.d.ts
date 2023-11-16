@@ -358,6 +358,33 @@ export namespace API {
 
                 type IEndpoint = TBuildAPIEndpoint<"GET","/api/app/statistics/:ofMonth",IResponseData, "NotSignedIn" | "InvalidDate", IURLParams>
             }
+
+            namespace GetSettings {
+                interface IResponseData {
+                    maxMilestoneCount: number
+                    goal: IGoalDetails | null
+                    wageRate: number | null
+                    externalIncome: number | null
+                }
+
+                type IEndpoint = TBuildAPIEndpoint<"GET", "/api/user/stats-settings", IResponseData, "NotSignedIn">
+            }
+
+            namespace PutSettings {
+
+                interface IRequest {
+                    props: {
+                        wage: number
+                        externalIncome: number
+                    } | undefined
+                    milestones: IMilestone[]
+                    changedMilestonesCount: number
+                    addedMilestonesCount: number
+                    removedIDList: number[]
+                }
+
+                type IEndpoint = TBuildAPIEndpoint<"PUT", "/api/user/stats-settings",undefined, "NotSignedIn">
+            }
         }
     }
 }
