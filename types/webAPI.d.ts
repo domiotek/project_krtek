@@ -1046,6 +1046,9 @@ namespace WebAPI {
             }
 
             interface IGoalManager {
+
+                readonly MAX_MILESTONE_COUNT: number;
+
                 /**
                  * Returns defined milestones along with the total goal amount.
                  * 

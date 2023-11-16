@@ -394,7 +394,7 @@ export class UserStatsManager implements WebAPI.Statistics.IUserStatsManager {
 
 
 class GoalManager implements WebAPI.Statistics.GoalAPI.IGoalManager {
-    private static readonly MAX_MILESTONE_COUNT: number = 10;
+    public readonly MAX_MILESTONE_COUNT: number = 10;
     private readonly _db: WebAPI.Mysql.IMysqlController;
     private readonly _userID: number;
     private readonly _statsManager: UserStatsManager;
@@ -457,7 +457,7 @@ class GoalManager implements WebAPI.Statistics.GoalAPI.IGoalManager {
 
         const milestonesData = await this.getMilestones(connection);
 
-        if(milestonesData.milestones.length===GoalManager.MAX_MILESTONE_COUNT) {
+        if(milestonesData.milestones.length===this.MAX_MILESTONE_COUNT) {
             connection.release();
             throw new StatsAPIError("MilestoneLimitReached");
         }
