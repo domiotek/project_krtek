@@ -50,9 +50,10 @@ button, :global(.button) {
   outline-offset: 0.2rem;
   font-size: 1rem;
   color: white;
-  transition: background 0.4s;
+  transition: background 0.4s, filter 0.4s;
   cursor: pointer;
   text-decoration: none;
+  filter: grayscale(0);
 }
 
 button:hover, :global(.button):hover {
@@ -63,4 +64,8 @@ button:hover, :global(.button):hover {
 button:active, :global(.button):active {
   background: var(--primary-dark-1-color);
   text-decoration: none;
+}
+
+button:disabled {
+  filter: grayscale(1);
 }
