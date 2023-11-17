@@ -13,7 +13,7 @@ export default {
         path: path.resolve(__dirname, 'dist/public/assets'),
         filename: `[name]${process.env.NODE_ENV=="production"?"-"+process.env.npm_package_version+"-[chunkhash]":""}.js`,
         chunkFilename: '[id].js',
-        publicPath: ''
+        publicPath: '/'
     },
     optimization: {
         minimize: true,
@@ -25,8 +25,13 @@ export default {
                     name: "react",
                     chunks: 'all',
                 },
+                luxon: {
+                    test: /[\\/]node_modules[\\/](luxon)[\\/]/,
+                    name: "luxon",
+                    chunks: 'all'
+                },
                 vendor: {
-                    test: /^(?=.*?\bnode_modules\b)((?!(react|react-dom|react-router|react-router-dom)).)*$/,
+                    test: /^(?=.*?\bnode_modules\b)((?!(react|react-dom|react-router|react-router-dom|luxon)).)*$/,
                     name: "vendor",
                     chunks: 'all'
                 }

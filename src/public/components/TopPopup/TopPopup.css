@@ -1,6 +1,6 @@
 
 .TopPopup {
-    position: absolute;
+    position: fixed;
     display: flex;
     top: -100%;
     left: 50%;

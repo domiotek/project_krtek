@@ -4,16 +4,18 @@ import {BrowserRouter, Route, Routes} from "react-router-dom";
 
 import './index.css';
 import App from './App';
-import NoPage from './pages/NoPage';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Portal from './pages/Portal';
-import PasswordRecoveryPortal from './pages/portals/PasswordRecovery/PasswordRecovery';
-import BrokenLinkPortal from './pages/portals/BrokenLink/BrokenLink';
-import OnBoardingPortal from './pages/portals/OnBoarding/OnBoarding';
-import Logout from './pages/Logout';
-import Schedule from './pages/Schedule';
-import Statistics from './pages/Statistics';
+import Portal from "./pages/Portal";
+
+const PasswordRecoveryPortal = React.lazy(()=>import(/* webpackChunkName: "p_pass_rec" */'./pages/portals/PasswordRecovery/PasswordRecovery'));
+const BrokenLinkPortal = React.lazy(()=>import(/* webpackChunkName: "p_inv_lnk" */'./pages/portals/BrokenLink/BrokenLink'));
+const OnBoardingPortal = React.lazy(()=>import(/* webpackChunkName: "p_wlcm" */'./pages/portals/OnBoarding/OnBoarding'));
+const Login = React.lazy(()=>import(/* webpackChunkName: "login" */"./pages/Login"));
+const Logout = React.lazy(()=>import(/* webpackChunkName: "logout" */"./pages/Logout"));
+
+const Home = React.lazy(()=>import(/* webpackChunkName: "home" */"./pages/Home"));
+const Schedule = React.lazy(()=>import(/* webpackChunkName: "schd" */"./pages/Schedule"));
+const Statistics = React.lazy(()=>import(/* webpackChunkName: "stats" */"./pages/Statistics"));
+const NoPage = React.lazy(()=>import(/* webpackChunkName: "nopage" */"./pages/NoPage"));
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -35,8 +37,12 @@ root.render(
               <Route path="/p/ResetPassword" element={<PasswordRecoveryPortal />} />
               <Route path="*" element={<BrokenLinkPortal />} />
           </Route>
-          <Route path='/Login' element={<Login />} />
-          <Route path="/Logout" element={<Logout />} />
+          <Route path='/Login' element={<Portal />} >
+              <Route index element={<Login />} />
+          </Route>
+          <Route path="/Logout" element={<Portal />} >
+              <Route index element={<Logout />} />
+          </Route>
         </Routes>
     </BrowserRouter>
   </React.StrictMode>

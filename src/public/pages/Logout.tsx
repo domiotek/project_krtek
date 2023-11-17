@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 
-import layoutClasses from "./layouts/MiddleBox.css";
 import classes from "./Logout.css";
 
-import RoadSignsImg from "../assets/ilustrations/RoadSigns.svg";
 import { useNavigate } from "react-router-dom";
 import { API } from "../types/networkAPI";
 import { callAPI } from "../modules/utils";
@@ -41,23 +39,19 @@ export default function Logout() {
     },[]);
 
     return (
-        <div className={layoutClasses.MiddleBoxContainer}>
-            <div className={layoutClasses.MiddleBox}>
-                <div className={`${layoutClasses.Content} ${classes.ContentBox}`}>
-                    <img src={RoadSignsImg} alt="Lost at intersection" />
-                    <h3>Log out to continue</h3>
-                    <p>
-                        You are currently logged in as:
-                        <span className={`${classes.LoadingFields} ${name==""?classes.ActiveAnim:""}`}>
-                            <span></span>
-                            <span></span>
-                        </span>
-                        <span className={name==""?classes.Hide:classes.ShowData}>{name} {surname}</span>
-                        To access the requested website, you can't be signed in.
-                    </p>
-                    <button type="button" onClick={clickHandler}>Logout and continue</button>
-                </div>
-            </div>
+        <div className={`${classes.ContentBox}`}>
+            <img src="/ilustrations/RoadSigns.svg" alt="Lost at intersection" />
+            <h3>Log out to continue</h3>
+            <p>
+                You are currently logged in as:
+                <span className={`${classes.LoadingFields} ${name==""?classes.ActiveAnim:""}`}>
+                    <span></span>
+                    <span></span>
+                </span>
+                <span className={name==""?classes.Hide:classes.ShowData}>{name} {surname}</span>
+                To access the requested website, you can't be signed in.
+            </p>
+            <button type="button" onClick={clickHandler}>Logout and continue</button>
         </div>
     );
 }

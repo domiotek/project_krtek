@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import styles from './App.css';
 import accountPanelStyles from './components/AccountPanelPopup/AccountPanelPopup.css';
@@ -16,6 +16,7 @@ import AccountPanelPopup from './components/AccountPanelPopup/AccountPanelPopup'
 import { callAPI, manageClassState } from './modules/utils';
 import Modal from './components/Modal/Modal';
 import useScrollBlocker from './hooks/useScrollBlocker/useScrollBlocker';
+import SuspenseLoader from './pages/Loader';
 
 export default function App() {
     const [userData, setUserData] = useState<WebApp.IAccountDetails | null>(null);
@@ -77,7 +78,9 @@ export default function App() {
                     <FooterContent />
                 </section>
             </section>
-            <Outlet context={[userData, setModalContent]}/>
+            <Suspense fallback={<SuspenseLoader />}>
+                <Outlet context={[userData, setModalContent]}/>
+            </Suspense>
           </section>
           <section className={styles.Footer}>
                 <FooterContent />

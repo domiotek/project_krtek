@@ -1,4 +1,4 @@
-import React, { useEffect, useState, CSSProperties } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import {DateTime} from "luxon";
 import classes from "./Statistics.css";
 import subPageClasses from "./SubPages.css";
@@ -11,8 +11,10 @@ import TabsSwitcher from "../components/TabsSwitcher/TabsSwitcher";
 import ShiftsTab from "../components/StatisticsDashboard/Tabs/Shifts/Shifts";
 import { useOutletContext } from "react-router-dom";
 import { callAPI } from "../modules/utils";
-import NerdStatsTab from "../components/StatisticsDashboard/Tabs/NerdStats/NerdStats";
-import SettingsTab from "../components/StatisticsDashboard/Tabs/Settings/Settings";
+import SuspenseLoader from "./Loader";
+
+const NerdStatsTab = React.lazy(()=>import(/* webpackChunkName: "s_nrdst" */"../components/StatisticsDashboard/Tabs/NerdStats/NerdStats"));
+const SettingsTab = React.lazy(()=>import(/* webpackChunkName: "s_sett" */"../components/StatisticsDashboard/Tabs/Settings/Settings"));
 
 function calculateShiftData(slot: API.App.Statistics.UserShifts.IAssignedShiftSlot, wage: number) {
 
@@ -122,8 +124,12 @@ export default function Statistics() {
                     ]
                 }>
                     <ShiftsTab shiftsData={statistics?.shifts ?? null} wage={statistics?.stats.wagePerHour ?? null} setModalContent={setModalContent} reloadStats={reloadStatistics} />
-                    <NerdStatsTab data={statistics?{shifts: statistics.shifts, totalEarnings: statistics.stats.totalEarnings, totalHours: statistics.stats.totalHours}:null} finishedShiftsCount={statistics?.stats.finishedShiftCount ?? 0}/>
-                    <SettingsTab setModalContent={setModalContent} reloadStats={reloadStatistics} />
+                    <Suspense fallback={<SuspenseLoader />}>
+                        <NerdStatsTab data={statistics?{shifts: statistics.shifts, totalEarnings: statistics.stats.totalEarnings, totalHours: statistics.stats.totalHours}:null} finishedShiftsCount={statistics?.stats.finishedShiftCount ?? 0}/>
+                    </Suspense>
+                    <Suspense fallback={<SuspenseLoader />}>
+                        <SettingsTab setModalContent={setModalContent} reloadStats={reloadStatistics} />
+                    </Suspense>
                 </TabsSwitcher>
             </div>
         </section>

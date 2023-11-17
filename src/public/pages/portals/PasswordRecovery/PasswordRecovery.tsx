@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from "react";
 
-import ForgotPasswordImg from "../../../assets/ilustrations/ForgotPassword.svg";
-import CompleteImg from "../../../assets/ilustrations/complete.svg";
-
 import PortalClasses from "../Portals.css";
 import classes from "./PasswordRecovery.css";
 
@@ -34,7 +31,7 @@ export default function PasswordRecoveryPortal() {
 
     return (
         <div className={`${PortalClasses.Portal} ${classes.PasswordRecoveryPortal}`}>
-            <img src={flowFinished?CompleteImg:ForgotPasswordImg} alt={flowFinished?"Action completed":"Forgotten password"}/>
+            <img src={`/ilustrations/${flowFinished?"complete":"ForgotPassword"}.svg`} alt={flowFinished?"Action completed":"Forgotten password"}/>
             <div className={`${PortalClasses.PageHolder} ${flowFinished?classes.FinalContentHolder:classes.ContentHolder}`}>
                 <div className={`${PortalClasses.Page} ${!flowFinished?PortalClasses.Show:""} `}>
                     <SetPasswordPage 

@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 
-import BrokenCarImg from "../../../assets/ilustrations/BrokenCar.svg";
-
 import PortalClasses from "../Portals.css";
 import classes from "./BrokenLink.css";
 import { useNavigate } from "react-router-dom";
@@ -19,7 +17,7 @@ export default function BrokenLinkPortal() {
 
     return (
         <div className={`${PortalClasses.Portal} ${classes.BrokenLinkPortal}`}>
-            <img src={BrokenCarImg} alt="Broken"/>
+            <img src="/ilustrations/BrokenCar.svg" alt="Broken"/>
             <h3>This link doesn't work</h3>
             <p>
                 {isServerIssue?

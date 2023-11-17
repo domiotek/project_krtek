@@ -5,11 +5,7 @@ import FlowFinishPage from "../shared/FinishPage/FinishPage";
 import PortalClasses from "../Portals.css";
 import classes from "./OnBoarding.css";
 
-import WelcomeImg from "../../../assets/ilustrations/welcome.svg";
-import PersonalInfoImg from "../../../assets/ilustrations/AddInformation.svg";
-import SecureLoginImg from "../../../assets/ilustrations/SecureLogin.svg";
 import ArrowLeftImg from "../../../assets/ui/left-arrow-angle.png";
-import CompleteImg from "../../../assets/ilustrations/complete.svg";
 
 import CustomForm from "../../../components/Forms/CustomForm/CustomForm";
 import InputBox from "../../../components/InputBox/InputBox";
@@ -48,10 +44,10 @@ export default function OnBoardingPortal() {
                 <img src={ArrowLeftImg} alt="Arrow back"></img>
             </button>
             <div className={PortalClasses.ImageHolder}>
-                <img className={`${phase==0?classes.ActiveImg:""} ${classes.Phase0Image}`} src={WelcomeImg} alt="Welcome sign" />
-                <img className={`${phase==1?classes.ActiveImg:""} ${classes.Phase1Image}`} src={PersonalInfoImg} alt="Personal information" />
-                <img className={`${phase==2?classes.ActiveImg:""} ${classes.Phase2Image}`} src={SecureLoginImg} alt="Secure login" />
-                <img className={`${phase==3?classes.ActiveImg:""} ${classes.Phase3Image}`} src={CompleteImg} alt="Action complete" />
+                <img className={`${phase==0?classes.ActiveImg:""} ${classes.Phase0Image}`} src="/ilustrations/welcome.svg" alt="Welcome sign" />
+                <img className={`${phase==1?classes.ActiveImg:""} ${classes.Phase1Image}`} src="/ilustrations/AddInformation.svg" alt="Personal information" />
+                <img className={`${phase==2?classes.ActiveImg:""} ${classes.Phase2Image}`} src="/ilustrations/SecureLogin.svg" alt="Secure login" />
+                <img className={`${phase==3?classes.ActiveImg:""} ${classes.Phase3Image}`} src="/ilustrations/complete.svg" alt="Action complete" />
             </div>
             <div className={`${PortalClasses.PageHolder} ${classes.Container}`}>
                 <div className={`${PortalClasses.Page} ${classes.WelcomePage} ${phase==0?PortalClasses.Show:""}`}>
