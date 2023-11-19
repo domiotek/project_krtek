@@ -46,19 +46,8 @@ export default async function initializeFeatures(instance: FastifyInstance | nul
         }
     } 
 
-    // Handle to display ATrigger verification file. Required for ATrigger to make requests.
-    instance?.get("/ATriggerVerify.txt",async (req,res)=>{
-        let content;
-        if((content = await global.app.fs.local().load("ATriggerVerify.txt"))) {
-            res.send(content);
-        }else {
-            Output.category("debug").print("error",new Error("[ATrigger] Couldn't load verification file. File doesn't exist."));
-            res.header("Content-Type","text/html");
-            res.send("<h2>Error 404</h2><p>ATrigger verification file couldn't be located.</p>");
-        }
-    });
 
-    //Simple endpoint for the ATrigger. Does nothing, has minimal size, but will keep server awake.
+    //Simple endpoint for external services to nudge server with minimal cost.
     instance?.get("/api/ping", async (req, res)=>{res.code(204);});
 
     // If request doesn't match with any api calls, then redirect to web portal, so react router can handle it.

@@ -1,11 +1,11 @@
 {
   "name": "project-krtek",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "System for managing restaurant's workflow.",
   "main": "dist/server.js",
   "type": "module",
   "scripts": {
-    "copy-config": "copyfiles -u 1 src/**/*.json dist && copyfiles ATriggerVerify.txt environment*.json dist",
+    "copy-config": "copyfiles -u 1 src/**/*.json dist && copyfiles environment*.json dist",
     "copy-assets": "mkdirp dist/public && mkdirp dist/public/assets && ncp src/public/downloads dist/public/downloads --filter=\"public\\b(?:\\\\?[^\\\\.]+)*(\\.zip)*$\" && ncp src/public/assets dist/public/assets",
     "clean": "rimraf dist && rimraf stats.json",
     "build-webapp-dev": "npm run copy-assets && cross-env NODE_ENV=development webpack --mode=development",
