@@ -31,7 +31,6 @@ root.render(
               <Route index element={<Home />}/>
               <Route path='/Home' element={<Home />}/>
               <Route path="/Account" element={<MyAccountDetails />} />
-              <Route path="/Announcements" element={<Home />}/>
               <Route path='/Schedule' element={<Schedule />} />
               <Route path='/Statistics' element={<Statistics />} />
               <Route path='*' element={<NoPage />} />
