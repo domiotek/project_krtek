@@ -3,3 +3,4 @@ dist
 .vscode
 environment-development.json
 project-krtek.code-workspace
+src/build-date.ts

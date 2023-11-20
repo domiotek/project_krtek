@@ -1,6 +1,27 @@
 import { API } from "../../../public/types/networkAPI.js";
 import { errorHandler } from "./common/error.js";
 
+const appVersion: WebAPI.IRouteOptions<API.App.Version.IEndpoint> = {
+    method: "GET",
+    url: "/api/app/version",
+    handler: async (req, res)=>{
+        res.header("cache-control","private, no-cache");
+        res.status(200);
+
+        const result: API.App.Version.IEndpoint["returnPacket"] = {
+            status: "Success",
+            data: {
+                version: global.app.version,
+                buildType: global.app.env.environmentName,
+                buildDate: global.app.buildDate.toISODate()
+            }
+        }
+
+        return result;
+    },
+    errorHandler
+}
+
 const basicData: WebAPI.IRouteOptions<API.App.BasicData.IEndpoint> = {
     method: "GET",
     url: "/api/user/basic-data",
@@ -193,6 +214,7 @@ const userRoles: WebAPI.IRouteOptions<API.App.GetUserRoles.IEndpoint> = {
 }
 
 export default [
+    appVersion,
     basicData,
     fullUserData,
     navMenu,

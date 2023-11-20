@@ -1,0 +1,58 @@
+.Wrapper {
+    max-width: 500px;
+}
+
+.Header {
+    display: flex;
+    flex-direction: column;
+}
+
+.Header img {
+    width: 192px;
+    align-self: center;
+}
+
+.Header h2 {
+    margin-bottom: 0;
+}
+
+.Header h5 {
+    margin: 0;
+}
+
+.Header span {
+    color: var(--primary-color);
+}
+
+.BuiltOnField {
+    font-weight: normal;
+}
+
+.AuthorField {
+    margin-top: 1rem!important;
+}
+
+.CreditsList {
+    list-style: none;
+}
+  
+.CreditsList li::before {
+    content: "\2022";
+    color: var(--primary-color); 
+    font-weight: bold; 
+    display: inline-block;
+    width: 1em; 
+    margin-left: -1em; 
+}
+
+.AboutSection div {
+    padding-left: 0.5rem;
+}
+
+
+@media screen and (min-width: 769px) {
+    .Header {
+        flex-direction: row;
+        align-items: flex-end;
+    }
+}

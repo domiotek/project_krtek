@@ -134,6 +134,16 @@ export namespace API {
 
     namespace App {
 
+        namespace Version {
+            interface IResponseData {
+                version: string
+                buildType: string
+                buildDate: string
+            }
+
+            type IEndpoint = TBuildAPIEndpoint<"GET", "/api/app/version", IResponseData>
+        }
+
         namespace BasicData {
             interface IResponseData {
                 name: string

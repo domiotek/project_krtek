@@ -70,7 +70,7 @@ export default async function initializeFeatures(instance: FastifyInstance | nul
 
         const sessionID = req.cookies.session;
         const isTargetLoginPage =url.startsWith("/login");
-        const anonymousRoutes = ["/p"];
+        const anonymousRoutes = ["/p", "/about"];
         let isTargetAnonymousRoute = false;
         
         for(const route of anonymousRoutes) {
