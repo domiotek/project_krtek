@@ -1,17 +1,22 @@
 .FlexContainer {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
     flex: 1;
+    padding: 0 1rem;
 }
 .FlexContainer >img {
-    width: 70%;
+    width: 95%;
     max-width: 20rem;
 }
 
 .MessageHolder {
     margin: 1.5rem 0;
+}
+
+.MessageHolder p {
+    font-size: small;
+    padding-left: 0.5rem;
 }
 
 .MessageHolder h2 {
@@ -20,25 +25,11 @@
 
 .MessageHolder >a {
     margin: 1.7rem auto 0;
+    border-radius: 1.5rem;
 }
 
 @media screen and (min-width: 1000px) {
     .FlexContainer {
-        flex-direction: row-reverse;
-        padding-bottom: 12rem;
-    }
-    .FlexContainer img {
-        width: 35%;
-        max-width: 30rem;
-    }
-    .MessageHolder h2 {
-        font-size: 2rem;
-    }
-    .MessageHolder p {
-        width: 70%;
-        margin: 0 auto;
-    }
-    .MessageHolder a {
-        margin: 2.4rem 4.5rem 0 auto;
+        margin-top: 5rem;
     }
 }
