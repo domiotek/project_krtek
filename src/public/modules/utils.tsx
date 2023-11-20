@@ -61,6 +61,14 @@ export function renderDate(dateTime: DateTime | undefined, fallback: string) {
 	return dateTime?.isValid?dateTime.toFormat("dd/LL/yyyy"):fallback;
 }
 
+export function renderGender(code: string) {
+    switch(code) {
+        case "m": return "Male";
+        case "f": return "Female";
+        default: return "Other";
+    }
+}
+
 export function callAPI<T extends API.IBaseAPIEndpoint>(method: T["method"], endpointURL: T["url"],values: T["urlParams"], onSuccess: (data: T["returnData"])=>void, onError?: (statusCode: number, errCode: T["errCodes"], errorType: "Server" | "Client")=>void, body?: URLSearchParams) {
 	const aborter = new AbortController();
 

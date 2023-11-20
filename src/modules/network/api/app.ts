@@ -43,6 +43,60 @@ const basicData: WebAPI.IRouteOptions<API.App.BasicData.IEndpoint> = {
     errorHandler
 }
 
+const fullUserData: WebAPI.IRouteOptions<API.App.UserData.IEndpoint> = {
+    method: "GET",
+    url: "/api/user/details",
+    handler: async (req, res)=>{
+        res.header("cache-control","private, no-cache");
+        res.status(401);
+
+        const sessionID = req.cookies.session;
+
+        let result: API.App.UserData.IEndpoint["returnPacket"] = {
+            status: "Failure",
+            errCode: "NotSignedIn"
+        }
+
+        if(sessionID) {
+            const auth = global.app.webAuthManager;
+
+            let session = await auth.getSessionDetails(sessionID);
+
+            if(session) {
+                const user = await auth.getUser(session.userID);
+
+                if(user) {
+                    const roles = await auth.getUserRoles(user.userID) as NonNullable<Awaited<ReturnType<typeof auth["getUserRoles"]>>>;
+                    const rolesResult = [];
+
+                    for (const role of roles) {
+                        rolesResult.push(role.displayName);
+                    }
+
+                    result = {
+                        status: "Success",
+                        data: {
+                            name: user.name,
+                            surname: user.surname,
+                            rankName: user.rankName,
+                            roles: rolesResult,
+                            email: user.email,
+                            gender: user.gender,
+                            lastPasswordChangeDate: user.lastPasswordChangeDate.toISO(),
+                            creationDate: user.creationDate.toISO()
+                        }
+                    }
+
+                    res.status(200);
+                }
+            }
+        }
+
+        return result;
+    },
+    errorHandler
+}
+
 const navMenu: WebAPI.IRouteOptions<API.App.NavMenu.IEndpoint> = {
     method: "GET",
     url: "/api/user/nav-menu",
@@ -140,6 +194,7 @@ const userRoles: WebAPI.IRouteOptions<API.App.GetUserRoles.IEndpoint> = {
 
 export default [
     basicData,
+    fullUserData,
     navMenu,
     getRoles,
     userRoles

@@ -144,6 +144,21 @@ export namespace API {
             type IEndpoint = TBuildAPIEndpoint<"GET", "/api/user/basic-data", IResponseData, "NotSignedIn">
         }
 
+        namespace UserData {
+            interface IResponseData {
+                name: string
+                surname: string
+                rankName: string
+                roles: string[]
+                email: string
+                gender: string
+                lastPasswordChangeDate: string
+                creationDate: string
+            }
+
+            type IEndpoint = TBuildAPIEndpoint<"GET", "/api/user/details", IResponseData, "NotSignedIn">
+        }
+
         namespace NavMenu {
             
             interface IResponseData {

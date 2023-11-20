@@ -1,0 +1,222 @@
+.MyAccountContainer {
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1rem;
+    width: 100%;
+}
+
+.Header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.Header img {
+    width: 64px;
+}
+
+.Header h2 {
+    margin-bottom: 0;
+}
+
+.Header h6 {
+    margin-top: 0;
+    color: #737373;
+}
+
+.RolesWrapper {
+    align-self: flex-start;
+    display: flex;
+}
+
+.RolesWrapper span {
+    margin: 0 0.25rem;
+    padding: 0.15rem 0.5rem;
+    border: solid 2px var(--primary-color);
+    border-radius: 1rem;
+    font-size: 0.80rem;
+}
+
+
+.MyAccountContainer section h3 {
+    color: #2d3142;
+    margin-bottom: 0;
+}
+
+.PropList {
+    list-style: none;
+    padding-left: 1rem;
+}
+
+.PropList li {
+    margin: 1.25rem 0;
+}
+
+.PropList li >h4 {
+    margin: 0;
+    color: #232323;
+}
+
+.PropList li >span, .SpanLike {
+    margin-left: 0.5rem;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+}
+
+.ChangePasswordBtn {
+    display: inline;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+    border-radius: 5rem;
+}
+
+.SubDetail {
+    margin: 0.5rem;
+    color: #232323;
+    font-weight: normal;
+}
+
+.PasswordNote {
+    font-weight: normal;
+}
+
+.DummyPage .Header h2 span {
+    display:  inline-block;
+    height: 2rem;
+    width: 5rem;
+    border-radius: 0.5rem;
+}
+
+.DummyPage .Header h2 span:nth-child(2) {
+    width: 8rem;
+}
+
+.DummyPage .Header h6 {
+    display: inline-block;
+    height: 0.8rem;
+    width: 5rem;
+    border-radius: 0.5rem;
+}
+
+.DummyPage .RolesWrapper span {
+    width: 4rem;
+    height: 1.65rem;
+    display: inline-block;
+    border-color: transparent;
+    border-radius: 0.5rem;
+}
+
+.DummyPage .PropList li span {
+    width: 11rem;
+    display: inline-block;
+    height: 1.25rem;
+    background-color: red;
+    border-radius: 0.5rem;
+}
+
+.DummyPage .PropList li:nth-of-type(2) span {
+    width: 8rem;
+}
+
+.DummyPage .PropList li:nth-of-type(3) span {
+    width: 4rem;
+}
+
+.DummyPage .SubDetail {
+    display: flex;
+    align-items: center;
+}
+
+.DummyPage .SubDetail span {
+    margin-left: 0.5rem;
+}
+
+@media screen and (min-width: 376px) {
+    .MyAccountContainer {
+        padding: 2rem 2.5rem;
+        align-items: center;
+    }
+}
+
+@media screen and (min-width: 488px) {
+    .Header {
+        width: auto;
+    }
+}
+
+@media screen and (min-width: 612px) {
+    .MyAccountContainer {
+        align-items: center; 
+    }
+
+    .Header {
+        width: 100%;
+        margin-bottom: 0;
+        max-width: 500px;
+    }
+
+    .Header h2 {
+        margin-top: 0.5rem;
+    }
+
+    .Header h6 {
+        margin-bottom: 0.5rem;
+    }
+
+    .Header img {
+        width: 96px;
+    }
+
+    .MyAccountContainer section {
+        max-width: 600px;
+    }
+    
+}
+
+
+@media screen and (min-width: 1200px) {
+    .MyAccountContainer {
+        padding-top: 7rem;
+    }
+
+    .ContentWrapper {
+        padding: 2.5rem 3.5rem 1.5rem;
+        position: relative;
+        box-shadow: 1px 1px 10px 0 #dfdfdf;
+        border-radius: 10px;
+        min-height: 470px;
+    }
+
+    .Header img {
+        position: absolute;
+        top: -55px;
+        background: white;
+        clip-path: circle(50% at 50% 50%);
+    }
+    
+    .RolesWrapper {
+        margin: 1.5rem 0;
+    }
+
+    .DetailsSection {
+        border-top: solid 1px var(--bg-dark);
+    }
+
+    .DetailsSection h3 {
+        display: none;
+    }
+
+    .PropList li > h4, .SpanLike {
+        display: inline;
+    }
+}
+
+@media screen and (min-width: 1981px) {
+    .MyAccountContainer {
+        max-width: 800px;
+    }
+}
