@@ -15,12 +15,14 @@ import commandRequestHandler, { CommandsHandler, registerCommands } from "./modu
 import AuthenticationManager from "./modules/cli-auth.js";
 import { ScheduleManager } from "./modules/network/scheduleManager.js";
 import { UserStatsManager } from "./modules/network/userStatsManager.js";
+import { BuildDate } from "./build-date.js";
 
 
 class App implements IApp {
 
 	public server: FramAPI | null = null;
 	public readonly version = process.env.npm_package_version ?? "Unknown";
+	public readonly buildDate = Time.DateTime.fromISO(BuildDate.buildDate);
 
 	private readonly mysqlController: WebAPI.Mysql.IMysqlController;
 

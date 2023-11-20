@@ -5,20 +5,27 @@
   "main": "dist/server.js",
   "type": "module",
   "scripts": {
+    "build-date-factory": "node build-date-factory.js",
     "copy-config": "copyfiles -u 1 src/**/*.json dist && copyfiles environment*.json dist",
     "copy-assets": "mkdirp dist/public && mkdirp dist/public/assets && ncp src/public/downloads dist/public/downloads --filter=\"public\\b(?:\\\\?[^\\\\.]+)*(\\.zip)*$\" && ncp src/public/assets dist/public/assets",
     "clean": "rimraf dist && rimraf stats.json",
     "build-webapp-dev": "npm run copy-assets && cross-env NODE_ENV=development webpack --mode=development",
     "build-webapp": "npm run copy-assets && cross-env NODE_ENV=production webpack --mode=production",
-    "optimize-svg-assets": "svgo src/public/assets",
-    "analyze-webpack-bundles": "webpack --profile --json > stats.json && webpack-bundle-analyzer stats.json",
+
+    "prebuild": "npm run build-date-factory",
     "build": "tsc && npm run build-webapp && npm run copy-config",
-    "prestart-dev": "npm run clean && npm run build-webapp-dev && tsc && npm run copy-config",
+
+    "prestart-dev": "npm run clean && npm run prebuild && npm run build-webapp-dev && tsc && npm run copy-config",
     "start-dev": "cross-env NODE_ENV=development PRINT_WHOLE_LOADER=yes DEBUGGER_DELAY=1000 concurrently \"tsc --watch\" \"nodemon --inspect=5858 dist/server.js\"",
-    "prestart-dev-full": "npm run clean && tsc && npm run copy-config && npm run copy-assets",
+
+    "prestart-dev-full": "npm run clean && npm run prebuild && tsc && npm run copy-config && npm run copy-assets",
     "start-dev-full": "cross-env NODE_ENV=development PRINT_WHOLE_LOADER=yes DEBUGGER_DELAY=1000 concurrently \"tsc --watch\" \"webpack --watch --mode development\" \"nodemon --inspect=5858 dist/server.js\"",
+
     "just-start-dev": "cross-env NODE_ENV=development PRINT_WHOLE_LOADER=yes node dist/server.js",
-    "start": "cross-env NODE_ENV=production node dist/server.js"
+    "start": "cross-env NODE_ENV=production node dist/server.js",
+
+    "optimize-svg-assets": "svgo src/public/assets",
+    "analyze-webpack-bundles": "webpack --profile --json > stats.json && webpack-bundle-analyzer stats.json"
   },
   "author": "Damian O.",
   "license": "ISC",

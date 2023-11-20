@@ -13,6 +13,11 @@ interface IApp {
     public readonly version: string;
 
     /**
+     * Application build timestamp
+     */
+    public readonly buildDate: DateTime;
+
+    /**
      * Filesystem interaction class.
      */
 	public readonly fs: IFileSystem;
