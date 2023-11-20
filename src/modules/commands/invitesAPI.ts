@@ -166,7 +166,7 @@ export default function(){
 
         if(invite) {
             if(template&&sender) {
-                const sendResult = await global.app.mailer.send(sender, invite.email,template, { invitation_link: `http://127.0.0.1:3000/p/Invite?token=${invite.token}`});
+                const sendResult = await global.app.mailer.send(sender, invite.email,template, { invitation_link: `${global.app.env.server.url}/p/Invite?token=${invite.token}`});
                 if(sendResult) {
                     req.respond(insertColor("fg_green",`Email has been sent!`, data.colorsMode));
                 }else req.respond(insertColor("fg_red","Couldn't send that email right now. No additional information available.", data.colorsMode));
