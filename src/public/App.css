@@ -110,6 +110,7 @@
   transition: left 0.5s;
   margin-top: 4rem;
   padding: 2rem 2rem 0;
+  flex-shrink: 0;
 }
 
 @media screen and (min-width: 426px) {
