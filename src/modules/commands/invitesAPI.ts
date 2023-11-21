@@ -96,7 +96,7 @@ export default function(){
 
         if(token) {
             req.respond("Invite Details:\n========================================", false);
-            req.respond(`Token: ${insertColor("fg_cyan",tokenID, data.colorsMode)}`, false);
+            req.respond(`Token: ${insertColor("fg_cyan",token.token, data.colorsMode)}`, false);
             req.respond(`Email: ${insertColor("fg_cyan",token.email, data.colorsMode)}`,false);
             req.respond(`Created at: ${insertColor("fg_cyan", token.creationDate.toFormat(`dd LLL yyyy HH:mm`), data.colorsMode)}`, false);
             req.respond(`Expires at: ${insertColor("fg_cyan",token.expirationDate.toFormat(`dd LLL yyyy HH:mm`), data.colorsMode)}`, false);
