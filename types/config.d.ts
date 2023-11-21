@@ -59,6 +59,11 @@ interface IEnvironmentConfig {
          * URL of server. Used for links pointing to this server or resources on it. Should look something like this: http://example.com.
          */
         url: string
+
+        /**
+         * Specifies whether server receives request from proxy or directly from clients.
+         */
+        isBehindProxy: boolean
     }
     
     /**

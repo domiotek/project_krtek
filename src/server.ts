@@ -77,7 +77,7 @@ class App implements IApp {
 			} 
 
 			try {
-				this.server = new FramAPI(Addr.getPort(),Addr.getAddress(),env.server.https);
+				this.server = new FramAPI(Addr.getPort(), Addr.getAddress(), env.server.isBehindProxy, env.server.https);
 			} catch (error: any) {
 				function emitErr(error: any) {
 					error = error ?? {};

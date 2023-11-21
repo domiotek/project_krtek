@@ -55,9 +55,11 @@ export class FramAPI {
      * @param address Address for server to bind to. If omitted, localhost address will be taken.
      * @param https Optional https configuration data. To enable https functionality, you must provide an object
      * with the 'key' and 'cert' properties. If not provided, http server instance will be created.
+     * @param isBehindProxy Allows for specifying, whether server is being run behind a proxy. This needs to be set to true
+     * when it truly is behind proxy, otherwise reported client IP address will be invalid, but should be disabled when it's not.
      */
-    constructor(port: number, address: string="127.0.0.1", https?: FramAPI.WebServer.HttpsSetupData) {
-        this.webServer = new WebServer(port, address,https);
+    constructor(port: number, address: string="127.0.0.1", isBehindProxy: boolean=false, https?: FramAPI.WebServer.HttpsSetupData) {
+        this.webServer = new WebServer(port, address, isBehindProxy, https);
         this.webServer._onCommandsHandlerUpdated = this._commandsHandlerSyncMechanism.bind(this);
         this.socketServer = new SocketServer(this.webServer.server,undefined);
         this.socketServer._onCommandsHandlerUpdated = this._commandsHandlerSyncMechanism.bind(this);

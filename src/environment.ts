@@ -30,6 +30,7 @@ export default async function initialize(local: IfsProvider | null) : Promise<IE
     else env.server.interfaceName = env.server.interfaceName ?? "eth0";
 
     env.server.port = env.server.port ?? "auto";
+    env.server.isBehindProxy = env.server.isBehindProxy ?? false;
 
     env.debuggingEnabled = env.debuggingEnabled ?? (envMode=="development");
 

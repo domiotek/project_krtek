@@ -50,15 +50,18 @@ export class WebServer {
      * @param port Port number to listen on.
      * @param https Optional https configuration data. To enable https functionality, you must provide an object
      * with the 'key' and 'cert' properties. If not provided, http server instance will be created.
+     * @param isBehindProxy Allows for specifying, whether server is being run behind a proxy. This needs to be set to true
+     * when it truly is behind proxy, otherwise reported client IP address will be invalid, but should be disabled when it's not.
      */
-    constructor(port: number, address: string="127.0.0.1", https?: FramAPI.WebServer.HttpsSetupData) {
+    constructor(port: number, address: string="127.0.0.1", isBehindProxy: boolean=false, https?: FramAPI.WebServer.HttpsSetupData,) {
 
         this.on = this._events.on.bind(this._events);
         this.off = this._events.off.bind(this._events);
 
         try {
             this._app = Fastify({
-                https: https as any
+                https: https as any,
+                trustProxy: isBehindProxy
             });
         }catch(error: any) {
             error.message = `Couldn't create the server instance.${https!==undefined?" Double check the provided HTTPS config.":""} ${error}`;
