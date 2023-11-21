@@ -1,3 +1,4 @@
+import { forwardObject, forwardText } from "./cli/subscriptions/outputForwarder.js";
 import { formatErrorStackEntry, parseErrorObject } from "./util.js";
 
 const colors = {
@@ -49,6 +50,10 @@ export default class OutputController implements IOutputController {
         this._category = category;
     }
 
+    static outputCategories() : Array<OutputCategory> {
+        return ["general","debug"];
+    }
+
     private _outputMethod: (text: string)=>void = console.log;
 
     static category<T extends OutputCategory>(output_category: T) : T extends "debug"?IDebugOutputController:IOutputController {
@@ -95,7 +100,7 @@ export default class OutputController implements IOutputController {
 
     public sendBuffer() {
         if(this._bufferingEnabled) {
-            // forwardText(this._category,this._buffer); [TO REVIEW IN FUTURE]
+            forwardText(this._category,this._buffer);
             this._buffer = {};
             this._bufferingEnabled = false;
         }
@@ -166,7 +171,7 @@ export default class OutputController implements IOutputController {
                 for (const mode in forwardEventData) {
                     this._buffer[mode] = (this._buffer[mode] ?? "") + forwardEventData[mode];
                 }
-            }// }else forwardText(this._category,forwardEventData); [TO REVIEW IN FUTURE]
+            }else forwardText(this._category,forwardEventData);
                 
         }else if(importance=="error") {
             const err = parseErrorObject(param1 as Error);
@@ -179,7 +184,7 @@ export default class OutputController implements IOutputController {
 
     public dumpObject(object: object) {
         console.dir(object,{depth: 3});
-        // forwardObject(this._category,object); [TO REVIEW IN FUTURE]
+        forwardObject(this._category,object);
         return this;
     }
 }

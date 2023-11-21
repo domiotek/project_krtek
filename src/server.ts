@@ -16,6 +16,7 @@ import AuthenticationManager from "./modules/cli-auth.js";
 import { ScheduleManager } from "./modules/network/scheduleManager.js";
 import { UserStatsManager } from "./modules/network/userStatsManager.js";
 import { BuildDate } from "./build-date.js";
+import { initializeSubscriptions } from "./modules/cli/subscriptions.js";
 
 
 class App implements IApp {
@@ -195,6 +196,8 @@ class App implements IApp {
 					subscriptions: this.server?.socketServer.subscriptions.getAll()
 				};
 			}
+
+			await initializeSubscriptions();
 	
 			this.server.commandsExecutionCallback = commandRequestHandler;
 
