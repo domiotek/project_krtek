@@ -1,4 +1,4 @@
-import {Command } from "../commands-handler.js";
+import {Command } from "../../cli/commands-handler.js";
 
 export default function(){
 

@@ -1,10 +1,10 @@
 import { DateTime } from "luxon";
 import * as yup from "yup";
 import {Command } from "../commands-handler.js";
-import { insertColor } from "../output.js";
-import { APIError, describeAPIError, getPrintableDataTable, initArrayOfArrays } from "../util.js";
+import { insertColor } from "../../output.js";
+import { APIError, describeAPIError, getPrintableDataTable, initArrayOfArrays } from "../../util.js";
 import { getCommandErrorDisplayText } from "./common/utils.js";
-import { WebAuthManager } from "../network/webAuthManager.js";
+import { WebAuthManager } from "../../network/webAuthManager.js";
 
 export default function(){
 

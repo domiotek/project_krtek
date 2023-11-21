@@ -1,5 +1,5 @@
 import {Command } from "../commands-handler.js";
-import { insertColor } from "../output.js";
+import { insertColor } from "../../output.js";
 
 export default function(){
 

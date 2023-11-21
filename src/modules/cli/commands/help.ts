@@ -27,7 +27,7 @@ export default function(){
     ],false);
 
     command.mainHandler(async (request,data)=>{
-        const result : HelpData.IHelpRemoteResponse = {
+        const result : CLIAPI.HelpData.IHelpRemoteResponse = {
             __type: "CommandHelpData",
             commandNames: [],
             commands: []
@@ -48,16 +48,16 @@ export default function(){
 
                 const variant = command.findMatchingVariant(request).variant;
 
-                result.commands.push(command.getHelpData(variant) as HelpData.ICommandHelpData);
+                result.commands.push(command.getHelpData(variant) as CLIAPI.HelpData.ICommandHelpData);
             }else result.errMessage = `Requested command isn't supported by the server.`;
         }else {
             result.commandNames = global.app.commands.getCommandNames();
 
             for (const commandName of result.commandNames) {
-                const commandData = global.app.commands.getCommand(commandName) as CommandsHandling.ICommand;
+                const commandData = global.app.commands.getCommand(commandName) as CLIAPI.CommandsHandling.ICommand;
                 const variant = commandData.findMatchingVariant(request).variant;
                 
-                result.commands.push(global.app.commands.getCommand(commandName)?.getHelpData(variant?variant:undefined) as HelpData.ICommandHelpData);
+                result.commands.push(global.app.commands.getCommand(commandName)?.getHelpData(variant?variant:undefined) as CLIAPI.HelpData.ICommandHelpData);
             }
         }
         request.respond(result);

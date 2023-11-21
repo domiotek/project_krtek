@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
 import {Command } from "../commands-handler.js";
-import { insertColor } from "../output.js";
-import { APIError, getPrintableDataTable, initArrayOfArrays } from "../util.js";
+import { insertColor } from "../../output.js";
+import { APIError, getPrintableDataTable, initArrayOfArrays } from "../../util.js";
 import { getCommandErrorDisplayText } from "./common/utils.js";
 
 export default function(){

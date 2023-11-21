@@ -57,9 +57,9 @@ interface IApp {
 
     public readonly mailer: Mailer.IMailer;
 
-    public readonly commands: CommandsHandling.ICommandsHandler;
+    public readonly commands: CLIAPI.CommandsHandling.ICommandsHandler;
 
-    public readonly userAuth: CLIUserAuthentication.IAuthenticationManager;
+    public readonly userAuth: CLIAPI.UserAuthentication.IAuthenticationManager;
 
     /**
      * Reloads server's session, by reloading config and reinitializing main services.

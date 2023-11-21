@@ -33,7 +33,7 @@ export default async function initialize(local: IfsProvider | null) : Promise<IE
 
     env.debuggingEnabled = env.debuggingEnabled ?? (envMode=="development");
 
-    let auth = (env.auth ?? {useAuth: false, authKeys: {}, actions: {}}) as CLIUserAuthentication.IAuthSecuringEnvironmentConfig["auth"];
+    let auth = (env.auth ?? {useAuth: false, authKeys: {}, actions: {}}) as CLIAPI.UserAuthentication.IAuthSecuringEnvironmentConfig["auth"];
 
     auth.useAuth = env.auth?.useAuth ?? false;
     auth.authKeys = env.auth?.authKeys ?? {};

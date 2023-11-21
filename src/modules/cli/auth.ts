@@ -1,11 +1,11 @@
 import { randomInt } from "crypto";
-import Output from "./output.js";
+import Output from "../output.js";
 
-export default class AuthenticationManager implements CLIUserAuthentication.IAuthenticationManager {
+export default class AuthenticationManager implements CLIAPI.UserAuthentication.IAuthenticationManager {
     /**
      * AuthKeys and details(user data) assigned to them.
      */
-    readonly #_authKeys: Map<string,CLIUserAuthentication.IAuthKeyDetails>;
+    readonly #_authKeys: Map<string,CLIAPI.UserAuthentication.IAuthKeyDetails>;
 
     /**
      * ActionsNames with the Arraries of users(username) that are allowed to perform said action.
@@ -53,7 +53,7 @@ export default class AuthenticationManager implements CLIUserAuthentication.IAut
             }
 
             for (const action of Object.keys(auth.actions)) 
-                this.#_actions.set(action, auth.actions[action as CLIUserAuthentication.ActionNames]);
+                this.#_actions.set(action, auth.actions[action as CLIAPI.UserAuthentication.ActionNames]);
 
             if(this.#_authKeys.size==0) {
                 Output.category("debug").print("warning","[Client Auth] No Auth keys defined.");
@@ -67,7 +67,7 @@ export default class AuthenticationManager implements CLIUserAuthentication.IAut
         }else this._isActive = false;
     }
 
-    authenticateUser(authKey: string, ip: string): CLIUserAuthentication.IAuthenticationDetails | null {
+    authenticateUser(authKey: string, ip: string): CLIAPI.UserAuthentication.IAuthenticationDetails | null {
         if(!this._isActive) return null;
 
         const data = this.#_authKeys.get(authKey);
@@ -96,7 +96,7 @@ export default class AuthenticationManager implements CLIUserAuthentication.IAut
         }
     }
 
-    isActionAllowedFor(token: string, action: CLIUserAuthentication.ActionNames): boolean {
+    isActionAllowedFor(token: string, action: CLIAPI.UserAuthentication.ActionNames): boolean {
         if(this.isActive) {
             const actionData = this.#_actions.get(action) ?? [];
             const userData = this.#_authKeys.get(this.#_activeAuthKeys.get(token)??"");
@@ -116,14 +116,14 @@ export default class AuthenticationManager implements CLIUserAuthentication.IAut
         return resultArray;
     }
 
-    isActionAvailableForEveryone(action: CLIUserAuthentication.ActionNames): boolean {
+    isActionAvailableForEveryone(action: CLIAPI.UserAuthentication.ActionNames): boolean {
         return this.#_actions.get(action)?.length===0;
     }
 
     getActiveUsers(): string[] {
         const resultArray = [];
         for (const key of this.#_activeAuthKeys.values()) {
-            resultArray.push((this.#_authKeys.get(key) as CLIUserAuthentication.IAuthKeyDetails).userName);
+            resultArray.push((this.#_authKeys.get(key) as CLIAPI.UserAuthentication.IAuthKeyDetails).userName);
         }
         return resultArray;
     }

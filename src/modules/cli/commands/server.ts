@@ -1,5 +1,5 @@
 import { Command } from "../commands-handler.js";
-import Output, { insertColor } from "../output.js";
+import Output, { insertColor } from "../../output.js";
 import procSpawn from "child_process";
 
 export default function(){

@@ -1,7 +1,7 @@
 import {Command } from "../commands-handler.js";
-import Output, { insertColor } from "../output.js";
-import { fillWith } from "../util.js";
-import * as Time from "../time.js";
+import Output, { insertColor } from "../../output.js";
+import { fillWith } from "../../util.js";
+import * as Time from "../../time.js";
 
 export default function(){
 

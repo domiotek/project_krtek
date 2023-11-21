@@ -1,10 +1,10 @@
 import { DateTime } from "luxon";
 import {Command } from "../commands-handler.js";
-import { insertColor } from "../output.js";
-import { APIError} from "../util.js";
+import { insertColor } from "../../output.js";
+import { APIError} from "../../util.js";
 import { getCommandErrorDisplayText } from "./common/utils.js";
 
-function respondWithStats(req:CommandsHandling.CommandsRequest,stats: WebAPI.Statistics.IMonthUserStats, header: string, colorsMode: OutputColorsMode) {
+function respondWithStats(req:CLIAPI.CommandsHandling.CommandsRequest,stats: WebAPI.Statistics.IMonthUserStats, header: string, colorsMode: OutputColorsMode) {
     req.respond(`Statistics of ${header}:\n===================================`, false);
     req.respond(`Total worked hours: ${insertColor("fg_cyan",stats.totalHours.toString()+" h", colorsMode)}`, false);
     req.respond(`Total shift count: ${insertColor("fg_cyan",stats.shiftCount.toString(), colorsMode)}`, false);

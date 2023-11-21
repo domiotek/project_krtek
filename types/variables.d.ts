@@ -4,13 +4,15 @@ type DebugOutputChannel = "filesystem" | "mysql" | "webapi" | "mailer" | "framap
 type LogsCollectionName = "alerts" | "debug" | "auth";
 
 
-namespace CLIUserAuthentication {
+namespace CLIAPI {
+    namespace UserAuthentication {
     
-    type ActionNames = "useDebug" | "manageServer" | 
-    "viewUsers" | "manageUsers" | 
-    "viewInvites" | "manageInvites" | 
-    "viewTokens" | "manageTokens" | 
-    "viewSessions" | "manageSessions" |
-    "viewSchedule" | "manageSchedule";
-
+        type ActionNames = "useDebug" | "manageServer" | 
+        "viewUsers" | "manageUsers" | 
+        "viewInvites" | "manageInvites" | 
+        "viewTokens" | "manageTokens" | 
+        "viewSessions" | "manageSessions" |
+        "viewSchedule" | "manageSchedule";
+    
+    }
 }

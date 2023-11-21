@@ -1,8 +1,8 @@
-import {computeVersion} from "./util.js";
-import Output, { insertColor } from "./output.js";
+import {computeVersion} from "../util.js";
+import Output, { insertColor } from "../output.js";
 import { checkVariantRequirement, matchParamsWithScheme, staticVerifyParameters} from "./commands-handling-util.js";
 
-export default async function commandRequestHandler(request: CommandsHandling.CommandsRequest) {
+export default async function commandRequestHandler(request: CLIAPI.CommandsHandling.CommandsRequest) {
     
     await global.app.commands.execute(request,request.client?.datastore.get("colorsMode") ?? "colorless");
 }
@@ -14,7 +14,7 @@ export default async function commandRequestHandler(request: CommandsHandling.Co
  */
 export async function executeCommand(command: string, params: Array<string>,colorsMode: OutputColorsMode) : Promise<string> {
     return await new Promise<string>(async resolve=>{
-        const request : CommandsHandling.CommandsRequest = {
+        const request : CLIAPI.CommandsHandling.CommandsRequest = {
             origin: "HTTP",
             command,
             params,
@@ -28,19 +28,19 @@ export async function executeCommand(command: string, params: Array<string>,colo
     });
 }
 
-export class CommandsHandler implements CommandsHandling.ICommandsHandler {
-    private readonly _commands : Map<string, CommandsHandling.ICommand> = new Map();
-    public register(command: CommandsHandling.ICommand) {
+export class CommandsHandler implements CLIAPI.CommandsHandling.ICommandsHandler {
+    private readonly _commands : Map<string, CLIAPI.CommandsHandling.ICommand> = new Map();
+    public register(command: CLIAPI.CommandsHandling.ICommand) {
         if(command.name=="") throw new Error("[Command handling] Command cannot have empty name");
 
         if(!this._commands.has(command.name.toLowerCase())) this._commands.set(command.name.toLowerCase(),command);
         else throw new Error("[Command handling] Command with that name already exists.");
     }
 
-    public async execute(request: CommandsHandling.CommandsRequest, colorsMode: OutputColorsMode) : Promise<boolean>{
+    public async execute(request: CLIAPI.CommandsHandling.CommandsRequest, colorsMode: OutputColorsMode) : Promise<boolean>{
         request.command = request.command.toLowerCase();
         if(this._commands.has(request.command)) {
-            await (this._commands.get(request.command) as CommandsHandling.ICommand).execute(request,colorsMode);
+            await (this._commands.get(request.command) as CLIAPI.CommandsHandling.ICommand).execute(request,colorsMode);
             return true;
         }
         
@@ -52,7 +52,7 @@ export class CommandsHandler implements CommandsHandling.ICommandsHandler {
         return this._commands.has(command.toLowerCase());
     }
 
-    public getCommand(name: string) : CommandsHandling.ICommand | undefined {
+    public getCommand(name: string) : CLIAPI.CommandsHandling.ICommand | undefined {
         return this._commands.get(name.toLowerCase());
     }
 
@@ -61,18 +61,18 @@ export class CommandsHandler implements CommandsHandling.ICommandsHandler {
     }
 }
 
-export class Command implements CommandsHandling.ICommand {
+export class Command implements CLIAPI.CommandsHandling.ICommand {
     public readonly name : string;
     public readonly description: string;
-    public readonly params: CommandsHandling.ParametersList;
+    public readonly params: CLIAPI.CommandsHandling.ParametersList;
     public readonly HTTPRequestsAlowed: boolean;
 
-    private _subCommands: Map<string,CommandsHandling.ISubcommandData> = new Map();
-    private _variants: Map<number, {requirements: CommandsHandling.IParsedRequirements, variantData: CommandsHandling.ICommandVariant}> = new Map();
-    private _shadowVariants: Map<string,CommandsHandling.ICommandVariant> = new Map();
-    private _mainHandler: CommandsHandling.ExecutionHandler | null = null;
+    private _subCommands: Map<string,CLIAPI.CommandsHandling.ISubcommandData> = new Map();
+    private _variants: Map<number, {requirements: CLIAPI.CommandsHandling.IParsedRequirements, variantData: CLIAPI.CommandsHandling.ICommandVariant}> = new Map();
+    private _shadowVariants: Map<string,CLIAPI.CommandsHandling.ICommandVariant> = new Map();
+    private _mainHandler: CLIAPI.CommandsHandling.ExecutionHandler | null = null;
 
-    constructor(name: string, description: string, params: CommandsHandling.ParametersList=[], allowHTTPOrignatedRequests: boolean=true) {
+    constructor(name: string, description: string, params: CLIAPI.CommandsHandling.ParametersList=[], allowHTTPOrignatedRequests: boolean=true) {
         this.name = name;
         this.description = description;
         this.params = params;
@@ -81,16 +81,16 @@ export class Command implements CommandsHandling.ICommand {
         if(global.app.env.flags.enableStaticCommandVerification) staticVerifyParameters(params);
     }
 
-    private _createShadowVariant(ID: string, variants: Array<number>) : CommandsHandling.ICommandVariant {
-        let mainHandler: CommandsHandling.ExecutionHandler | false = this._mainHandler ?? false;
-        let params: CommandsHandling.ParametersList = this.params;
+    private _createShadowVariant(ID: string, variants: Array<number>) : CLIAPI.CommandsHandling.ICommandVariant {
+        let mainHandler: CLIAPI.CommandsHandling.ExecutionHandler | false = this._mainHandler ?? false;
+        let params: CLIAPI.CommandsHandling.ParametersList = this.params;
         let desc: string = this.description;
-        let overWrittenSubcommands: Map<string, {handler: CommandsHandling.ExecutionHandler, details?: CommandsHandling.IInVariantSubCommandDetails}> = new Map();
+        let overWrittenSubcommands: Map<string, {handler: CLIAPI.CommandsHandling.ExecutionHandler, details?: CLIAPI.CommandsHandling.IInVariantSubCommandDetails}> = new Map();
         let excludedSubcommands: Set<string> = new Set();
         let subcommandsList: Set<string> = new Set(this._subCommands.keys());
 
         for (const variantID of variants) {
-            const variant = this._variants.get(variantID)?.variantData as CommandsHandling.ICommandVariant;
+            const variant = this._variants.get(variantID)?.variantData as CLIAPI.CommandsHandling.ICommandVariant;
             mainHandler = variant._overWrittenMainHandler ?? (variant._excludedMainHandler?false:mainHandler);
             if(variant._overWrittenMainHandler) {
                 mainHandler = variant._overWrittenMainHandler;
@@ -115,7 +115,7 @@ export class Command implements CommandsHandling.ICommand {
             }
                 
         }
-        const shadowVariant: CommandsHandling.ICommandVariant = {
+        const shadowVariant: CLIAPI.CommandsHandling.ICommandVariant = {
             _excludedMainHandler: mainHandler==false,
             _overWrittenMainHandler: mainHandler?mainHandler:null,
             _params: params,
@@ -128,18 +128,18 @@ export class Command implements CommandsHandling.ICommand {
         return shadowVariant;
     }
 
-    public mainHandler(handler: CommandsHandling.ExecutionHandler) {
+    public mainHandler(handler: CLIAPI.CommandsHandling.ExecutionHandler) {
         this._mainHandler = handler;
     }
 
-    public addSubCommand(details: CommandsHandling.ISubCommandDetails, handler: CommandsHandling.ExecutionHandler): void {
+    public addSubCommand(details: CLIAPI.CommandsHandling.ISubCommandDetails, handler: CLIAPI.CommandsHandling.ExecutionHandler): void {
         if(!this._subCommands.has(details.name)) {
             if(global.app.env.flags.enableStaticCommandVerification) staticVerifyParameters(details.params);
             this._subCommands.set(details.name,{details,handler});
         }else throw new Error("[Command handling] Subcommand already exists.");
     }
 
-    public addVariant(requirements: CommandsHandling.IRequirements,callback: (variant: CommandsHandling.ICommandVariantInterface)=>void) {
+    public addVariant(requirements: CLIAPI.CommandsHandling.IRequirements,callback: (variant: CLIAPI.CommandsHandling.ICommandVariantInterface)=>void) {
         if(requirements.type=="customTest") {
             if(typeof requirements.testHandler != "function") throw new Error(`[Command Variant] Requirements: TestHandler not given when type is 'customTest'.`);
         }else if(requirements.type=="HTTPOrigin") {
@@ -149,13 +149,13 @@ export class Command implements CommandsHandling.ICommand {
         }else {
             try {
                 if(typeof requirements.version!="string") throw new Error(`[Command Variant] Requirements: Version not given when the type requires it.`);
-                (requirements as CommandsHandling.IParsedRequirements).version = computeVersion(requirements.version)
+                (requirements as CLIAPI.CommandsHandling.IParsedRequirements).version = computeVersion(requirements.version)
             } catch (error) {
                 Output.category("debug").print("error",error as Error);
             }
         }
         
-        const variantData : CommandsHandling.ICommandVariant = {
+        const variantData : CLIAPI.CommandsHandling.ICommandVariant = {
             _overWrittenMainHandler: null,
             _overWrittenSubCommands: new Map(),
             _excludedMainHandler: false,
@@ -169,15 +169,15 @@ export class Command implements CommandsHandling.ICommand {
             overwriteDescription: (description: string)=>{
                 variantData._desc = description;
             },
-            overwriteParams: (params: CommandsHandling.ParametersList)=>{
+            overwriteParams: (params: CLIAPI.CommandsHandling.ParametersList)=>{
                 if(global.app.env.flags.enableStaticCommandVerification) staticVerifyParameters(params);
                 variantData._params = params;
             },
-            overwriteMainHandler: (handler: CommandsHandling.ExecutionHandler)=>{
+            overwriteMainHandler: (handler: CLIAPI.CommandsHandling.ExecutionHandler)=>{
                 if(variantData._excludedMainHandler) throw new Error("[Command Variant] Do not overwrite main handler when it was excluded before.")
                 variantData._overWrittenMainHandler = handler;
             },
-            overwriteSubCommand: (name: string, handler: CommandsHandling.ExecutionHandler, details?: CommandsHandling.IInVariantSubCommandDetails)=>{
+            overwriteSubCommand: (name: string, handler: CLIAPI.CommandsHandling.ExecutionHandler, details?: CLIAPI.CommandsHandling.IInVariantSubCommandDetails)=>{
                 if(variantData._excludedSubCommands.has(name)) throw new Error(`[Command Variant] Do not overwrite subcommand if it was excluded before.`);
                 if(details?.params&&global.app.env.flags.enableStaticCommandVerification) staticVerifyParameters(details.params);
                 if(!this._subCommands.has(name)) {
@@ -198,17 +198,17 @@ export class Command implements CommandsHandling.ICommand {
             },
             importSubCommand: (name: string, variantID: number)=>{//
                 if(!this._variants.has(variantID)) throw new Error(`[Command Variant] Can not import subcommand from {${variantID}} variant that does not exist (yet?).`);
-                const variant = this._variants.get(variantID)?.variantData as CommandsHandling.ICommandVariant;
+                const variant = this._variants.get(variantID)?.variantData as CLIAPI.CommandsHandling.ICommandVariant;
                 if(!variant._overWrittenSubCommands.has(name)) throw new Error(`[Command Variant] Can not import subcommand from {${variantID}} variant when it does not modify or add that subcommand.`);
                 if(variantData._overWrittenSubCommands.has(name)) throw new Error(`[Command Variant] Do not import subcommand from other variant, if you added subcommand with the same name in this variant.`);
-                variantData._overWrittenSubCommands.set(name, variant._overWrittenSubCommands.get(name) as CommandsHandling.ISubcommandData);
+                variantData._overWrittenSubCommands.set(name, variant._overWrittenSubCommands.get(name) as CLIAPI.CommandsHandling.ISubcommandData);
                 variantData._subcommandsList.add(name);
             }
         });
-        this._variants.set(this._variants.size,{requirements: requirements as CommandsHandling.IParsedRequirements, variantData});
+        this._variants.set(this._variants.size,{requirements: requirements as CLIAPI.CommandsHandling.IParsedRequirements, variantData});
     }
 
-    public findMatchingVariant(request: CommandsHandling.CommandsRequest): CommandsHandling.IVariantSearchResult {
+    public findMatchingVariant(request: CLIAPI.CommandsHandling.CommandsRequest): CLIAPI.CommandsHandling.IVariantSearchResult {
         let variantIDs: Array<number> = [];
 
         for (const ID of Array.from(this._variants.keys())) {
@@ -246,7 +246,7 @@ export class Command implements CommandsHandling.ICommand {
         }else return this._subCommands.has(name);
     }
 
-    public async execute(request: CommandsHandling.CommandsRequest, colorsMode?: OutputColorsMode) {
+    public async execute(request: CLIAPI.CommandsHandling.CommandsRequest, colorsMode?: OutputColorsMode) {
         const matchingVariant = this.findMatchingVariant(request).variant;
 
         if(request.origin=="HTTP"&&!matchingVariant&&!this.HTTPRequestsAlowed) {
@@ -296,7 +296,7 @@ export class Command implements CommandsHandling.ICommand {
             }
         }
 
-        const parameters : CommandsHandling.ParametersList = (subcommandExists?paramsScheme:undefined) ?? (matchingVariant?._params ?? this.params);
+        const parameters : CLIAPI.CommandsHandling.ParametersList = (subcommandExists?paramsScheme:undefined) ?? (matchingVariant?._params ?? this.params);
 
         const result = matchParamsWithScheme(requestParams,parameters);
 
@@ -309,7 +309,7 @@ export class Command implements CommandsHandling.ICommand {
                     switches: result.namedPairs
                 })
             } catch (error: any) {
-                const newErr = new Error(`[CommandsHandling] Command execution failed with error '${error.message}'. Execution details: command - '${request.command}'; params - '${request.params}'`);
+                const newErr = new Error(`[CLIAPI.CommandsHandling] Command execution failed with error '${error.message}'. Execution details: command - '${request.command}'; params - '${request.params}'`);
                 newErr.stack = error.stack;
                 Output.category("debug").print("error",newErr);
                 throw error;
@@ -335,9 +335,9 @@ export class Command implements CommandsHandling.ICommand {
         
     }
 
-    public getHelpData(variant?: CommandsHandling.ICommandVariant): HelpData.ICommandHelpData | null {
+    public getHelpData(variant?: CLIAPI.CommandsHandling.ICommandVariant): CLIAPI.HelpData.ICommandHelpData | null {
 
-        const result : HelpData.ICommandHelpData = {
+        const result : CLIAPI.HelpData.ICommandHelpData = {
             name: this.name,
             desc: variant?._desc ?? this.description,
             params: variant?._params ?? this.params,
@@ -350,8 +350,8 @@ export class Command implements CommandsHandling.ICommand {
 
             result.subcommands.push({
                 name,
-                desc: data?.details?.desc ?? ((this._subCommands.get(name) as CommandsHandling.ISubcommandData).details.desc),
-                params: data?.details?.params ?? ((this._subCommands.get(name) as CommandsHandling.ISubcommandData).details.params)
+                desc: data?.details?.desc ?? ((this._subCommands.get(name) as CLIAPI.CommandsHandling.ISubcommandData).details.desc),
+                params: data?.details?.params ?? ((this._subCommands.get(name) as CLIAPI.CommandsHandling.ISubcommandData).details.params)
             });
         }
 
@@ -363,7 +363,7 @@ export class Command implements CommandsHandling.ICommand {
  * Loads all commands from the subdirectory and initializes them.
  */
 export async function registerCommands() {
-    const files = await global.app.fs.local().listDirectory("modules/commands");
+    const files = await global.app.fs.local().listDirectory("modules/cli/commands");
     if(files) {
         for (const file of files) {
             try {

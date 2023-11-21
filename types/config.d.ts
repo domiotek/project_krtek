@@ -133,14 +133,14 @@ interface IEnvironmentConfig {
         /**
          * Pairs of authKey - userData
          */
-        authKeys: {[authKey: string]: CLIUserAuthentication.IAuthKeyDetails};
+        authKeys: {[authKey: string]: CLIAPI.UserAuthentication.IAuthKeyDetails};
 
         /**
          * Pairs of actionName - list of users that are allowed to perform said action. 
          * If list is empty, everyone will be allowed to execute the action. If you want
          * to ban some action for everyone, just add nonexisting user to the list - it can be anything.
          */
-        actions: CLIUserAuthentication.Actions
+        actions: CLIAPI.UserAuthentication.Actions
     }
 
     /**

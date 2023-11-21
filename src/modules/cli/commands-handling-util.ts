@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 /**
  * Checks whether given parameters item is an single parameter or a group of parameters.
  */
-function isGroup(item: CommandsHandling.IParameter | CommandsHandling.IParameterGroup) : item is CommandsHandling.IParameterGroup {
+function isGroup(item: CLIAPI.CommandsHandling.IParameter | CLIAPI.CommandsHandling.IParameterGroup) : item is CLIAPI.CommandsHandling.IParameterGroup {
     return (item as any).relation!=undefined;
 }
 
@@ -21,7 +21,7 @@ function isGroup(item: CommandsHandling.IParameter | CommandsHandling.IParameter
  * @param params Scheme to verify.
  * @throws Throws errors. If you see error thrown from that function in production, then verifying wasn't run in development.
  */
-export function staticVerifyParameters(params: CommandsHandling.ParametersList) {
+export function staticVerifyParameters(params: CLIAPI.CommandsHandling.ParametersList) {
     for(const item of params) {
         if(isGroup(item)) verifyGroup(item);
         else verifyParameter(item);
@@ -34,10 +34,10 @@ export function staticVerifyParameters(params: CommandsHandling.ParametersList) 
  * @param depth Measures, how deep given group is. Shouldn't be passed from the outside.
  * @throws
  */
-function verifyGroup(group: CommandsHandling.IParameterGroup, depth: number=0) {
+function verifyGroup(group: CLIAPI.CommandsHandling.IParameterGroup, depth: number=0) {
     if(group.parameters.length<2) throw new Error("[Command parameters verification] Unnecessary group use case - only one item in group.");
 
-    const usedTypes = new Set<{type: CommandsHandling.IParameter["type"], enum?: CommandsHandling.IParameter["enum"], literal: CommandsHandling.IParameter["name"]}>();
+    const usedTypes = new Set<{type: CLIAPI.CommandsHandling.IParameter["type"], enum?: CLIAPI.CommandsHandling.IParameter["enum"], literal: CLIAPI.CommandsHandling.IParameter["name"]}>();
     let prevOptionalState : boolean = false;
     let currentOptionalState: boolean = false;
     let isNamedPair = false;
@@ -90,7 +90,7 @@ function verifyGroup(group: CommandsHandling.IParameterGroup, depth: number=0) {
  * @param param parameter scheme object.
  * @throws
  */
-function verifyParameter(param: CommandsHandling.IParameter) {
+function verifyParameter(param: CLIAPI.CommandsHandling.IParameter) {
     if(param.isNamedPair) {
         if(param.name.substring(0,2)!="--") throw new Error("[Command parameters verification] namedPair parameters must start with '--' chars.");
     }
@@ -103,7 +103,7 @@ function verifyParameter(param: CommandsHandling.IParameter) {
 /**
  * Checks whether parameter type was used before (exists in provided set).
  */
-function usedTypesHas(set: Set<{type: CommandsHandling.IParameter["type"], enum?: CommandsHandling.IParameter["enum"], literal: CommandsHandling.IParameter["name"]}>, query: string) {
+function usedTypesHas(set: Set<{type: CLIAPI.CommandsHandling.IParameter["type"], enum?: CLIAPI.CommandsHandling.IParameter["enum"], literal: CLIAPI.CommandsHandling.IParameter["name"]}>, query: string) {
     for (const item of set) {
         switch(item.type) {
             case "boolean":
@@ -133,16 +133,16 @@ function usedTypesHas(set: Set<{type: CommandsHandling.IParameter["type"], enum?
 /**
  * Checks if given input parameters match provided scheme.
  */
-export function matchParamsWithScheme(inputParams: Array<string>, scheme: CommandsHandling.ParametersList) {
+export function matchParamsWithScheme(inputParams: Array<string>, scheme: CLIAPI.CommandsHandling.ParametersList) {
 
     const namedPairs = extractNamedPairs(inputParams);
 
-    const group : CommandsHandling.IParameterGroup = {relation: "many", parameters: scheme};
+    const group : CLIAPI.CommandsHandling.IParameterGroup = {relation: "many", parameters: scheme};
     let matchingResult = matchGroup(inputParams,group);
 
     if(matchingResult.matches) {
         for (let i=0; i<scheme.length; i++) {
-            const param = scheme[i] as CommandsHandling.IParameter;
+            const param = scheme[i] as CLIAPI.CommandsHandling.IParameter;
             if(param.isNamedPair) {
                 const name = param.name.toLowerCase();
                 if(Object.keys(namedPairs).includes(name)){
@@ -172,7 +172,7 @@ export function matchParamsWithScheme(inputParams: Array<string>, scheme: Comman
 /**
  * Matches input params with the group scheme.
  */
-function matchGroup(params: Array<string>, group: CommandsHandling.IParameterGroup) {
+function matchGroup(params: Array<string>, group: CLIAPI.CommandsHandling.IParameterGroup) {
     let finalResult : {
         /**
          * Whether params match scheme.
@@ -189,11 +189,11 @@ function matchGroup(params: Array<string>, group: CommandsHandling.IParameterGro
         /**
          * Object with parameter names (taken from scheme) as keys and unprocessed values as properties values.
          */
-        params: CommandsHandling.IRawParamsCollection
+        params: CLIAPI.CommandsHandling.IRawParamsCollection
         /**
          * Object with parameter names (taken from scheme) as keys and parsed values as properties values.
          */
-        processedParams: CommandsHandling.IParsedParamsCollection
+        processedParams: CLIAPI.CommandsHandling.IParsedParamsCollection
         /**
          * Potential matching error message.
          */
@@ -240,7 +240,7 @@ function matchGroup(params: Array<string>, group: CommandsHandling.IParameterGro
                         break;
                     }
                     finalResult.matches = false;
-                    finalResult.errMessage = isItemGroup?errMessage:`Expected '${finalResult.unmatchedParams[0]}' to match definition of '${(item as CommandsHandling.IParameter).name}' parameter. ${errMessage}`;
+                    finalResult.errMessage = isItemGroup?errMessage:`Expected '${finalResult.unmatchedParams[0]}' to match definition of '${(item as CLIAPI.CommandsHandling.IParameter).name}' parameter. ${errMessage}`;
                     finalResult.errItemPath?.unshift(i);
                     break;
                 }
@@ -340,7 +340,7 @@ function matchGroup(params: Array<string>, group: CommandsHandling.IParameterGro
 /**
  * Checks if input paramer matches the scheme.
  */
-function matchParameter(param: string | undefined, scheme: CommandsHandling.IParameter) {
+function matchParameter(param: string | undefined, scheme: CLIAPI.CommandsHandling.IParameter) {
     let result : {
         matches: boolean
         parsedValue: any
@@ -465,7 +465,7 @@ function extractNamedPairs(params: Array<string>) {
     return result;
 }
 
-export function checkVariantRequirement(requirements: CommandsHandling.IParsedRequirements | undefined, request: CommandsHandling.CommandsRequest): boolean {
+export function checkVariantRequirement(requirements: CLIAPI.CommandsHandling.IParsedRequirements | undefined, request: CLIAPI.CommandsHandling.CommandsRequest): boolean {
     switch(requirements?.type) {
         case "minVersion": 
             if((request.client?.datastore.get("int_clientVersion")??0)>=(requirements.version ?? 0)) return true;
@@ -477,7 +477,7 @@ export function checkVariantRequirement(requirements: CommandsHandling.IParsedRe
             if((request.client?.datastore.get("int_clientVersion")??0)==(requirements.version ?? 0)) return true;
         break;
         case "allowedAction":
-            if(global.app.userAuth.isActionAllowedFor(request.client?.datastore.get("authToken"),requirements.action as CLIUserAuthentication.ActionNames)) return true;
+            if(global.app.userAuth.isActionAllowedFor(request.client?.datastore.get("authToken"),requirements.action as CLIAPI.UserAuthentication.ActionNames)) return true;
         break;
         case "customTest":
             if(requirements.testHandler&&requirements.testHandler(request.params,request.client, (type, details)=>{

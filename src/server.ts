@@ -11,8 +11,8 @@ import { LogsCollections } from "./modules/logger.js";
 import { WebAuthManager } from "./modules/network/webAuthManager.js";
 import { DownloadsManager } from "./modules/network/api/downloads.js";
 import Mailer from "./modules/network/mailer.js";
-import commandRequestHandler, { CommandsHandler, registerCommands } from "./modules/commands-handler.js";
-import AuthenticationManager from "./modules/cli-auth.js";
+import commandRequestHandler, { CommandsHandler, registerCommands } from "./modules/cli/commands-handler.js";
+import AuthenticationManager from "./modules/cli/auth.js";
 import { ScheduleManager } from "./modules/network/scheduleManager.js";
 import { UserStatsManager } from "./modules/network/userStatsManager.js";
 import { BuildDate } from "./build-date.js";
@@ -33,8 +33,8 @@ class App implements IApp {
 	public readonly webAuthManager: WebAPI.Auth.IWebAuthManager;
 	public readonly scheduleManager: WebAPI.Schedule.IScheduleManager;
 	public readonly userStatsManager: WebAPI.Statistics.IUserStatsManager;
-	public readonly commands: CommandsHandling.ICommandsHandler;
-	public readonly userAuth: CLIUserAuthentication.IAuthenticationManager;
+	public readonly commands: CLIAPI.CommandsHandling.ICommandsHandler;
+	public readonly userAuth: CLIAPI.UserAuthentication.IAuthenticationManager;
 	public readonly mailer: Mailer.IMailer;
 
 	public get isHTTPS(): boolean {
