@@ -1,54 +1,76 @@
 import { DateTime } from "luxon";
 import {Command } from "../commands-handler.js";
 import { insertColor } from "../../output.js";
-import { APIError} from "../../util.js";
+import { APIError, getPrintableDataTable, initArrayOfArrays} from "../../util.js";
 import { getCommandErrorDisplayText } from "./common/utils.js";
-
-function respondWithStats(req:CLIAPI.CommandsHandling.CommandsRequest,stats: WebAPI.Statistics.IMonthUserStats, header: string, colorsMode: OutputColorsMode) {
-    req.respond(`Statistics of ${header}:\n===================================`, false);
-    req.respond(`Total worked hours: ${insertColor("fg_cyan",stats.totalHours.toString()+" h", colorsMode)}`, false);
-    req.respond(`Total shift count: ${insertColor("fg_cyan",stats.shiftCount.toString(), colorsMode)}`, false);
-    req.respond(`Wage per hour: ${insertColor("fg_cyan",stats.wagePerHour!=null?stats.wagePerHour.toString()+" zł":"Unavailable", colorsMode)}`, false);
-    req.respond(`Total wage: ${insertColor("fg_cyan",stats.totalWage!=null?stats.totalWage.toString()+" zł":"Unavailable", colorsMode)}`, false);
-    req.respond(`Total tip: ${insertColor("fg_cyan",stats.totalTip.toString()+" zł", colorsMode)}`, false);
-    req.respond(`Total deduction: ${insertColor("fg_cyan",stats.totalDeduction.toString()+" zł", colorsMode)}`, false);
-    req.respond(`Total earnings: ${insertColor("fg_cyan",stats.wagePerHour!=null?(stats.wagePerHour*(stats.totalWage as number) + stats.totalTip - stats.totalDeduction).toString()+" zł":"Unavailable", colorsMode)}`);
-}
 
 export default function(){
 
     const command = new Command("stats","Used to view and manage WebAPI user stats. ",[
         {
-            relation: "oneOf",
-            parameters: [
-                {
-                    name: "userID",
-                    desc: "User's ID.",
-                    type: "number"
-                },
-                {
-                    name: "email",
-                    desc: "User's email.",
-                    type: "string"
-                }
-            ]
+            name: "date",
+            desc: "Date representing target month and year.",
+            type: "date",
+            optional: true
+            
         }
     ],false);
 
     command.mainHandler(async (req, data)=>{
-        const emailParam = data.parameters["email"] as string | undefined;
-        const userIDParam = data.parameters["userID"] as number | undefined;
+        const dateParam = data.parameters["date"] as DateTime | undefined;
+
+        interface IData {
+            userID: number
+            name: string
+            shifts: number
+            hours: number
+            deduction: number
+        }
+
+        const userStats: IData[] = [];
 
         try {
-            const stats = await global.app.userStatsManager.getStatsOf(userIDParam ?? emailParam ?? "",DateTime.now());
+            const users = await global.app.webAuthManager.getAllUsers();
 
-            if(stats) {
-                respondWithStats(req, stats, "current month",data.colorsMode);
-            }else throw new APIError("UserStatsManager","NoUser");
+            for (const user of users) {
+                const stats = await global.app.userStatsManager.getStatsOf(user.userID, dateParam ?? DateTime.now()) as NonNullable<WebAPI.Statistics.IMonthUserStats>
+
+                userStats.push({
+                    userID: user.userID,
+                    name: user.name,
+                    shifts: stats.shiftCount,
+                    hours: stats.totalHours,
+                    deduction: stats.totalDeduction
+                })
+            }
         } catch (error: any) {
             if(!error.errCode) throw error;
-            req.respond(getCommandErrorDisplayText("Couldn't fetch statistics", error.errCode, data.colorsMode));
+            req.respond(getCommandErrorDisplayText("Couldn't fetch statistics",error.errCode, data.colorsMode));
+            return;
         }
+
+
+        const headers = ["UserID","Name", "Shifts", "Hours (h)", "Deduction (zł)"];
+        const dataTable = initArrayOfArrays<string>(headers.length);
+
+        for(let i=0; i< headers.length; i++)
+            dataTable[i].push(headers[i]);
+
+        for (const stats of userStats) {
+            const values = [
+                stats.userID.toString(), 
+                stats.name,
+                stats.shifts.toString(),
+                stats.hours.toString(),
+                stats.deduction.toString()
+            ];
+
+            for(let i=0; i<values.length; i++)
+                dataTable[i].push(values[i]);
+        }
+
+        req.respond(`Statistics of ${dateParam?dateParam.toFormat("LLLL yyyy"):"current month"}:\n`, false);
+        req.respond(getPrintableDataTable(dataTable));
     });
 
 
@@ -56,11 +78,6 @@ export default function(){
         name: "of",
         desc: "Displays user statistics from specified month.",
         params: [
-            {
-                name: "date",
-                desc: "Date representing target month and year.",
-                type: "date"
-            },
             {
                 relation: "oneOf",
                 parameters: [
@@ -75,20 +92,32 @@ export default function(){
                         type: "string"
                     }
                 ]
+            },
+            {
+                name: "date",
+                desc: "Date representing target month and year.",
+                type: "date",
+                optional: true
             }
         ]
     }, async (req, data)=>{
 
         const emailParam = data.parameters["email"] as string | undefined;
         const userIDParam = data.parameters["userID"] as number | undefined;
-        const dateParam = data.parameters["date"] as DateTime;
-
+        const dateParam = data.parameters["date"] as DateTime | undefined;
 
         try {
-            const stats = await global.app.userStatsManager.getStatsOf(userIDParam ?? emailParam ?? "",dateParam);
+            const stats = await global.app.userStatsManager.getStatsOf(userIDParam ?? emailParam ?? "",dateParam ?? DateTime.now());
 
             if(stats) {
-                respondWithStats(req, stats, dateParam.toFormat("LLLL yyyy"), data.colorsMode);
+                req.respond(`Statistics of ${dateParam?dateParam.toFormat("LLLL yyyy"):"current month"}:\n===================================`, false);
+                req.respond(`Total worked hours: ${insertColor("fg_cyan",stats.totalHours.toString()+" h", data.colorsMode)}`, false);
+                req.respond(`Total shift count: ${insertColor("fg_cyan",stats.shiftCount.toString(), data.colorsMode)}`, false);
+                req.respond(`Wage per hour: ${insertColor("fg_cyan",stats.wagePerHour!=null?stats.wagePerHour.toString()+" zł":"Unavailable", data.colorsMode)}`, false);
+                req.respond(`Total wage: ${insertColor("fg_cyan",stats.totalWage!=null?stats.totalWage.toString()+" zł":"Unavailable", data.colorsMode)}`, false);
+                req.respond(`Total tip: ${insertColor("fg_cyan",stats.totalTip.toString()+" zł", data.colorsMode)}`, false);
+                req.respond(`Total deduction: ${insertColor("fg_cyan",stats.totalDeduction.toString()+" zł", data.colorsMode)}`, false);
+                req.respond(`Total earnings: ${insertColor("fg_cyan",stats.wagePerHour!=null?(stats.totalWage as number + stats.totalTip - stats.totalDeduction).toString()+" zł":"Unavailable", data.colorsMode)}`);
             }else throw new APIError("UserStatsManager","NoUser");
         } catch (error: any) {
             if(!error.errCode) throw error;
