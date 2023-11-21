@@ -110,6 +110,7 @@ export default function SettingsTab(props: IProps) {
             }
 
             setMilestones(Object.assign({},milestones));
+            setChangesMade(true);
         }
 
         return (
