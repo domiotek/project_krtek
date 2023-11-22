@@ -275,6 +275,10 @@ export namespace API {
 
                 type IEndpoint = TBuildAPIEndpoint<"POST","/api/schedule/shift", undefined, "NotSignedIn" | "SlotExists" | "InvalidDate" | "InvalidTime" | "NotAllowed">
             }
+
+            namespace GetUpcomingShifts {
+                type IEndpoint = TBuildAPIEndpoint<"GET","/api/schedule/upcoming-shifts",Statistics.IUserShifts,"NotSignedIn">
+            }
         }
 
         namespace Statistics {
