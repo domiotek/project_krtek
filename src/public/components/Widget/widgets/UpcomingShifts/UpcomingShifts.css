@@ -1,0 +1,74 @@
+.WidgetWrapper {
+    font-size: 1rem;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.WidgetWrapper h4 {
+    margin: 0;
+    font-size: 1.15em;
+}
+
+.WidgetWrapper ul {
+    list-style: none;
+    margin: 0;
+    padding-left: 1em;
+}
+
+.WidgetWrapper li {
+    margin: 0.75rem 0;
+}
+
+.WidgetWrapper li h5 {
+    margin: 0 0 0.25em;
+    font-size: 0.8em;
+}
+
+.WidgetWrapper li h6 {
+    margin: 0 0 0 0.25em;
+    font-size: 0.65em;
+    color: #656565;
+}
+
+.WidgetWrapper li:first-child {
+    margin: 1.5em 0;
+}
+
+.WidgetWrapper li:first-child h5 {
+    font-size: 1.1em;
+    color: var(--primary-color);
+}
+
+.WidgetWrapper li:first-child h6 {
+    font-size: 0.75em;
+}
+
+.WidgetWrapper li h6 span {
+    display: inline-block;
+    width: 0.5em;
+    height: 0.5em;
+    border-radius: 50%;
+    background: var(--primary-color);
+    margin: 0 0.15em;
+    transform: translateY(-1px);
+}
+
+.DummyContent h5, .DummyContent h6 {
+    display: block;
+    width: 9em;
+    height: 1.6em;
+}
+
+.Message {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1.5em;
+}
+
+.Message img {
+    width: 45%;
+}
