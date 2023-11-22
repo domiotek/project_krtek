@@ -138,6 +138,7 @@ const navMenu: WebAPI.IRouteOptions<API.App.NavMenu.IEndpoint> = {
 
             if(session) {
                 const entries = [
+                    {displayName: "Alpha intro", linkDest: "/Alpha", imageName: "/ui/announcement.png", imageAlt: "Alpha intro tab link"},
                     {displayName: "Home", linkDest: "/Home", imageName: "/ui/home.png", imageAlt: "Home tab link"},
                     {displayName: "Schedule",linkDest: "/Schedule",imageName: "/ui/schedule.png",imageAlt: "Schedule tab link"},
                     {displayName: "My Statistics",linkDest: "/Statistics",imageName: "/ui/stats.png",imageAlt: "Statistics tab link"}

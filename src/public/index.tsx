@@ -15,6 +15,7 @@ const Logout = React.lazy(()=>import(/* webpackChunkName: "logout" */"./pages/Lo
 const About = React.lazy(()=>import(/* webpackChunkName: "about" */"./pages/About"));
 
 const Home = React.lazy(()=>import(/* webpackChunkName: "home" */"./pages/Home"));
+const AlphaIntro = React.lazy(()=>import(/* webpackChunkName: "alpha" */"./pages/AlphaIntro"));
 const MyAccountDetails = React.lazy(()=>import(/* webpackChunkName: "myacc" */"./pages/MyAccount"));
 const Schedule = React.lazy(()=>import(/* webpackChunkName: "schd" */"./pages/Schedule"));
 const Statistics = React.lazy(()=>import(/* webpackChunkName: "stats" */"./pages/Statistics"));
@@ -30,6 +31,7 @@ root.render(
           <Route path='/' element={<App />}>
               <Route index element={<Home />}/>
               <Route path='/Home' element={<Home />}/>
+              <Route path="/Alpha" element={<AlphaIntro />} />
               <Route path="/Account" element={<MyAccountDetails />} />
               <Route path='/Schedule' element={<Schedule />} />
               <Route path='/Statistics' element={<Statistics />} />
