@@ -7,12 +7,14 @@ import TerserPlugin from "terser-webpack-plugin";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const outputFileName = `[name]${process.env.NODE_ENV=="production"?"-[chunkhash]":""}.js`;
+
 export default {
     entry: './src/public/index.tsx',
     output: {
         path: path.resolve(__dirname, 'dist/public/assets'),
-        filename: `[name]${process.env.NODE_ENV=="production"?"-"+process.env.npm_package_version+"-[chunkhash]":""}.js`,
-        chunkFilename: '[id].js',
+        filename: outputFileName,
+        chunkFilename: outputFileName,
         publicPath: '/'
     },
     optimization: {
