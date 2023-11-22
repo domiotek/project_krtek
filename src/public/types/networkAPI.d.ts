@@ -9,7 +9,7 @@ export namespace WebApp {
 
     type TSetModalContent = (newModalContent: JSX.Element | null)=>void
 
-    type TAppOutletContext = [IAccountDetails, TSetModalContent];
+    type TAppOutletContext = [IAccountDetails | null, TSetModalContent];
 }
 
 

@@ -1,0 +1,23 @@
+.HomePage {
+	width: 100%;
+	padding: 1.5rem 1rem;
+}
+
+.WidgetContainer {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	container: widgetsViewport / inline-size;
+}
+
+@media screen and (min-width: calc(600px + 2rem)) {
+    .HomePage {
+		padding: 1.5rem;
+    }
+
+    .WidgetContainer {
+		justify-content: flex-start;
+		max-width: calc(1200px + 8rem);
+		margin: auto;
+    }
+}
