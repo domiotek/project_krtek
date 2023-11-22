@@ -69,7 +69,7 @@ export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
         throw new ScheduleAPIError("NoConnection");
     }
 
-    public async getUserShifts(userID: number, from?: WebAPI.Schedule.ScheduleManager.IDateRangeOptions | undefined, conn?: WebAPI.Mysql.IPoolConnection) {
+    public async getUserShifts(userID: number, from?: WebAPI.Schedule.ScheduleManager.IDateRangeOptions | undefined, limit?: number, conn?: WebAPI.Mysql.IPoolConnection) {
 
         async function JSONShiftsParser(this: WebAPI.Schedule.ScheduleManager.IUserShifts) {
             const JSONShifts = [];
@@ -120,7 +120,12 @@ export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
                 }else rangeErr = false;
 
                 if(!rangeErr) {
-                    const query = `SELECT workDayID, privateSlotID, date, note, noteUpdatedAt, noteUpdatedBy FROM shifts NATURAL JOIN shift_slots NATURAL JOIN work_days WHERE userID=? ${rangeStr} ORDER BY date ASC;`;
+                    let limitStr = ""
+                    if(limit&&limit > 0) {
+                        limitStr = `LIMIT ${limit}`;
+                    }
+
+                    const query = `SELECT workDayID, privateSlotID, date, note, noteUpdatedAt, noteUpdatedBy FROM shifts NATURAL JOIN shift_slots NATURAL JOIN work_days WHERE userID=? ${rangeStr} ORDER BY date ASC ${limitStr};`;
 
                     const response = await this._db.performQuery<"Select">(query, [userID], connection);
 

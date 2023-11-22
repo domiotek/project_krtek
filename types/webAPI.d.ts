@@ -771,6 +771,7 @@ namespace WebAPI {
              * Returns all shifts from specified period of time, where given user was in one of the slots.
              * @param from Optional parameter, when omitted, all records are searched. It's an object with two
              * properties - before and after. You can use both or only one of them to specify search range.
+             * @param limit Optional parameter. Defines how many records should be returned at most.
              * 
              * @async 
              * @returns User shifts object.
@@ -779,7 +780,7 @@ namespace WebAPI {
              * 
              * @throws Can throw NoConnection, DBError, NoUser or InvalidRange errors.
              */
-            getUserShifts(userID: number, from?: ScheduleManager.IDateRangeOptions): Promise<ScheduleManager.IUserShifts>
+            getUserShifts(userID: number, from?: ScheduleManager.IDateRangeOptions, limit?: number): Promise<ScheduleManager.IUserShifts>
 
             /**
              * Returns all work days from the current week.
