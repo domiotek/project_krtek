@@ -1,7 +1,7 @@
 import React from "react";
 
 import classes from "./Home.css";
-import Widget from "../components/Widget/Widget";
+import WidgetBox from "../components/Widget/WidgetBox";
 import { useOutletContext } from "react-router-dom";
 import { WebApp } from "../types/networkAPI";
 
