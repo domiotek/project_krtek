@@ -14,7 +14,7 @@ export default function Home() {
         <div className={classes.HomePage}>
             <h2>Hello, {userData?.accountName}</h2>
             <div className={classes.WidgetContainer}>
-                <WidgetBox size="Small">
+                <WidgetBox size="Small" header="Your upcoming shifts">
                     <UpcomingShiftsWidget />
                 </WidgetBox>
                 
