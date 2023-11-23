@@ -1,0 +1,54 @@
+.Container {
+    position: relative;
+    padding: 1.25rem 0 0;
+    margin: 0 0.5rem;
+}
+
+.GraphIndicator {
+    display: block;
+    position: absolute;
+    top: 0;
+    width: 1px;
+    height: 1.75rem;
+    left: calc(var(--ratio-percent,0) - 1px);
+    background-color: var(--primary-color);
+}
+
+.GraphIndicator::before {
+    position: absolute;
+    right: calc(100% + 0.35rem);
+    top: 0;
+    font-size: small;
+    counter-reset: ratio calc(var(--ratio-value) + 0);
+    content: counter(ratio) "%";
+}
+
+.GraphIndicator.DoubleMode::after {
+    position: absolute;
+    left: 0.35rem;
+    top: 0;
+    font-size: small;
+    counter-reset: ratio calc(100 - var(--ratio-value));
+    content: counter(ratio) "%";
+}
+
+.OuterGraph {
+    width: 100%;
+    height: 1.5rem;
+    background-color: #D9D9D9;
+    border-radius: 0.5rem;
+}
+
+.InnerGraph {
+    width: var(--ratio-percent, 0);
+    height: 100%;
+    background-color: var(--primary-color);
+    border-radius: inherit;
+}
+
+.GraphLegend {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    padding-top: 0.15rem;
+}

@@ -1,9 +1,11 @@
-import React, {CSSProperties} from "react";
+import React from "react";
 import { API } from "../../../../types/networkAPI";
 
 import classes from "./DefaultView.css";
 import GoalPanel from "../../../GoalPanel/GoalPanel";
 import { render2FloatingPoint } from "../../../../modules/utils";
+import ProgressBar from "../../../ProgressBar/ProgressBar";
+import RatioPie from "../../../RatioPie/RatioPie";
 
 interface IProps {
     stats: API.App.Statistics.ISafeUserStats
@@ -43,15 +45,11 @@ export default function DefaultStatsView(props: IProps) {
                     </ul>
                     <h3>Total: {render2FloatingPoint(props.stats.totalEarnings)}zł</h3>
                 </div>
-                <div className={classes.WageTipRatioPanel} style={{"--ratio-value": tipWageRatio, "--ratio-percent": `${tipWageRatio}%`} as CSSProperties}>
-                    <span className={`${tipWageRatio>0?classes.GraphIndicator:""}`}></span>
-                    <div className={classes.OuterGraph}>
-                        <div className={classes.InnerGraph}></div>
-                    </div>
-                    <div className={classes.GraphLegend}>
-                        <span>Tip</span>
-                        <span>Wage</span>
-                    </div>
+                <div className={classes.TipWageRatioBar}>
+                    <ProgressBar progress={tipWageRatio} labels={["Tip", "Wage"]} showOnlyOnePerctantage={false}/>
+                </div>
+                <div className={classes.TipWageRatioPie}>
+                    <RatioPie progress={tipWageRatio} labels={["Tip", "Wage"]} />
                 </div>
             </div>
             <div className={classes.StatisticsPanel}>

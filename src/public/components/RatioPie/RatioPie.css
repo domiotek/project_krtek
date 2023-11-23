@@ -1,0 +1,94 @@
+.Container {
+    display: flex;
+    position: relative;
+    flex-direction: column;
+    align-items: center;
+    width: -moz-fit-content;
+    width: fit-content;
+    padding: 1.25rem 0;
+    margin: auto;
+}
+
+.GraphIndicator {
+    display: block;
+    position: absolute;
+    top: 0;
+    width: 1px;
+    height: 1.75rem;
+    left: calc(var(--ratio-percent,0) - 1px);
+    background-color: var(--primary-color);
+}
+
+.GraphIndicator {
+    display: block;
+    position: absolute;
+    width: 1px;
+    height: 1.75rem;
+    background-color: var(--primary-color);
+    left: 63px;
+    top: -5px;
+}
+
+.GraphIndicator::before {
+    position: absolute;
+    right: calc(100% + 0.35rem);
+    top: 0;
+    font-size: small;
+    counter-reset: ratio calc(100 - var(--ratio-value));
+    content: counter(ratio) "%";
+}
+
+.GraphIndicator::after {
+    position: absolute;
+    left: 0.35rem;
+    top: 0;
+    font-size: small;
+    counter-reset: ratio calc(var(--ratio-value) + 0);
+    content: counter(ratio) "%";
+}
+
+.OuterGraph {
+    height: 125px;
+    width: 125px;
+    background-color: #D9D9D9;
+    border-radius: 50%;
+}
+
+.InnerGraph {
+    width: 100%;
+    height: 100%;
+    background: conic-gradient(#0000 0%, var(--primary-color) 0%, var(--primary-color) var(--ratio-percent), #0000 var(--ratio-percent));
+    border-radius: inherit;
+}
+
+.GraphLegend {
+    display: flex;
+    flex-direction: column;
+    align-self: flex-start;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    padding-top: 0.15rem;
+    margin-left: 2rem;
+    margin-top: 0.5rem;
+}
+
+.GraphLegend span {
+    position: relative;
+}
+
+.GraphLegend span::before {
+    position: absolute;
+    display: block;
+    content: "";
+    width: 10px;
+    height: 10px;
+    top: 50%;
+    left: -12px;
+    border-radius: 50%;
+    transform: translateY(-50%);
+    background-color: #D9D9D9;
+}
+
+.GraphLegend span:nth-child(1)::before {
+    background-color: var(--primary-color);
+}
