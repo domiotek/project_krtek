@@ -5,6 +5,7 @@ import WidgetBox from "../components/Widget/WidgetBox";
 import { useOutletContext } from "react-router-dom";
 import { WebApp } from "../types/networkAPI";
 import UpcomingShiftsWidget from "../components/Widget/widgets/UpcomingShifts/UpcomingShifts";
+import EarningsSummaryWidget from "../components/Widget/widgets/EarningsSummary/EarningsSummary";
 
 export default function Home() {
 
@@ -17,7 +18,15 @@ export default function Home() {
                 <WidgetBox size="Small" header="Your upcoming shifts">
                     <UpcomingShiftsWidget />
                 </WidgetBox>
-                
+                <WidgetBox size="Small" header="Your earnings this month">
+                    <EarningsSummaryWidget />
+                </WidgetBox>
+
+                {/* 
+                    Earnings summary
+                    This week Schedule
+                    Finish shift
+                */}
             </div>
         </div>
     );

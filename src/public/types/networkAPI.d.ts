@@ -416,6 +416,20 @@ export namespace API {
             namespace GetUpcomingShifts {
                 type IEndpoint = TBuildAPIEndpoint<"GET","/api/widgets/upcoming-shifts",Statistics.IUserShifts,"NotSignedIn">
             }
+
+            namespace GetEarnings {
+                interface IResponseData {
+                    setGoal: number
+                    totalEarnings: number | null
+                }
+
+                interface ISureData {
+                    setGoal: number
+                    totalEarnings: number
+                }
+
+                type IEndpoint = TBuildAPIEndpoint<"GET", "/api/widgets/earnings", IResponseData,"NotSignedIn">
+            }
         }
     }
 }

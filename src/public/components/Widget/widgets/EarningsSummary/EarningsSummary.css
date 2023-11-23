@@ -1,0 +1,71 @@
+.WidgetWrapper h4 {
+    text-align: center;
+    font-size: 1.65em;
+    color: var(--primary-color);
+    margin-bottom: 0.75em;
+}
+
+.WidgetWrapper h5 {
+    text-align: center;
+    font-size: 0.85em;
+    margin-top: 0.75em;
+    font-weight: normal;
+}
+
+.WidgetWrapper h5 span {
+    font-weight: bold;
+}
+
+.NoGoalSetView {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.DummyContainer, .DummyContainer > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.DummyContainer h4 {
+    width: 4em;
+    height: 1.4em;
+    display: block;
+    animation-delay: 0.15s;
+}
+
+.DummyContainer h5 {
+    width: 15em;
+    height: 1.5em;
+    display: block;
+    animation-delay: 0.05s;
+}
+
+.GraphImitation {
+    width: 100%;
+    height: 1.5rem;
+    border-radius: 0.5rem;
+}
+
+.Message {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1.5em;
+}
+
+.Message img {
+    width: 45%;
+}
+
+.NoWageRateView img {
+    width: 30%;
+}
+
+.NoWageRateView a {
+    font-size: 0.85em;
+}

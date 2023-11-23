@@ -39,6 +39,48 @@ const getUpcomingShifts: WebAPI.IRouteOptions<API.App.Widgets.GetUpcomingShifts.
     errorHandler
 }
 
+const getEarnings: WebAPI.IRouteOptions<API.App.Widgets.GetEarnings.IEndpoint> = {
+    method: "GET",
+    url: "/api/widgets/earnings",
+    handler: async (req, res)=>{
+        res.header("cache-control","private, no-cache");
+        res.status(401);
+
+        const sessionID = req.cookies.session;
+
+        let result: API.App.Widgets.GetEarnings.IEndpoint["returnPacket"] = {
+            status: "Failure",
+            errCode: "NotSignedIn"
+        }
+
+        if(sessionID) {
+            const session = await global.app.webAuthManager.getSessionDetails(sessionID);
+
+            if(session) {
+
+                const goal = await global.app.userStatsManager.getGoalOf(session.userID);
+
+                if(goal) {
+                    res.status(200);
+                    
+                    result = {
+                        status: "Success",
+                        data: {
+                            setGoal: await goal.getTotalAmount(),
+                            totalEarnings: await goal.getCurrentProgress()
+                        }
+                    }
+                }
+            }
+        }
+
+        return result;
+    },
+    errorHandler
+}
+
+
 export default [
-    getUpcomingShifts
+    getUpcomingShifts,
+    getEarnings
 ]
