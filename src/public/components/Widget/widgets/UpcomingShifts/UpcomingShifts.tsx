@@ -83,7 +83,7 @@ export default function UpcomingShiftsWidget() {
     const [fetchFailed, setFetchFailed] = useState<boolean>(false);
 
     useEffect(()=>{
-        return callAPI<API.App.Schedule.GetUpcomingShifts.IEndpoint>("GET","/api/schedule/upcoming-shifts",null,
+        return callAPI<API.App.Widgets.GetUpcomingShifts.IEndpoint>("GET","/api/widgets/upcoming-shifts",null,
             data=>setShifts(data),
             ()=>setFetchFailed(true));
     }, []);
