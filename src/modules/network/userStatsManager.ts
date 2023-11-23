@@ -434,15 +434,28 @@ class GoalManager implements WebAPI.Statistics.GoalAPI.IGoalManager {
         throw new StatsAPIError(this._db.getLastQueryFailureReason());
     }
 
-    public async getCurrentAmount(): ReturnType<WebAPI.Statistics.GoalAPI.IGoalManager["getCurrentAmount"]> {
+    public async getCurrentProgress(): ReturnType<WebAPI.Statistics.GoalAPI.IGoalManager["getCurrentProgress"]> {
         const stats = await this._statsManager.getStatsOf(this._userID,DateTime.now());
 
         if(stats) {
             if(stats.totalWage&&stats.wagePerHour)
-                return stats.wagePerHour * stats.totalWage + stats.totalTip + (stats.externalIncome ?? 0) - stats.totalDeduction;
+                return stats.totalWage + stats.totalTip + (stats.externalIncome ?? 0) - stats.totalDeduction;
             else return null;
         }
 
+        throw new StatsAPIError(this._db.getLastQueryFailureReason());
+    }
+
+    public async getTotalAmount(conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Statistics.GoalAPI.IGoalManager["getTotalAmount"]> {
+        const query = "SELECT SUM(targetAmount) as Total FROM goal_milestones WHERE userID=?;";
+        const response = await this._db.performQuery<"Select">(query,[this._userID], conn);
+
+        if(response) {
+            return response[0]["Total"];
+        }
+
+        conn?.rollback();
+        conn?.release();
         throw new StatsAPIError(this._db.getLastQueryFailureReason());
     }
     

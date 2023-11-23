@@ -1063,11 +1063,20 @@ namespace WebAPI {
                 /**
                  * Calculates total earnings of the user in current month.
                  * 
-                 * @returns Total earnings
+                 * @returns Total earnings or null if earnings can't be calculated because of missing data.
                  * 
                  * @throws Can throw NoConnection and DBError errors.
                  */
-                getCurrentAmount(): Promise<number | null>
+                getCurrentProgress(): Promise<number | null>
+
+                /**
+                 * Returns total goal amount, sum of all defined milestones.
+                 * 
+                 * @returns Total goal value
+                 * 
+                 * @throws Can throw NoConnection and DBError errors.
+                 */
+                getTotalAmount(): Promise<number>
 
                 /**
                  * Adds new milestone at the end of the list.
