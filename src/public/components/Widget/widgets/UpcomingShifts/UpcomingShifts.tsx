@@ -90,7 +90,6 @@ export default function UpcomingShiftsWidget() {
 
     return (
         <div className={classes.WidgetWrapper}>
-            <h4>Your upcoming shifts</h4>
             {
                 shifts?
                     shifts.shifts.length > 0?

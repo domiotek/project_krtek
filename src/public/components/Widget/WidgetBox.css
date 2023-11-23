@@ -6,6 +6,13 @@
 
     box-shadow: 1px 1px 10px 0 #7b7b7b4f;
     border-radius: 0.5rem;
+
+    container-type: inline-size;
+}
+
+.Widget > h4 {
+    margin: 0;
+    font-size: 1.15em;
 }
 
 
