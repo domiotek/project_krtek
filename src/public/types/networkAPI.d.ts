@@ -432,6 +432,11 @@ export namespace API {
 
                 type IEndpoint = TBuildAPIEndpoint<"GET", "/api/widgets/earnings", IResponseData,"NotSignedIn">
             }
+
+            namespace CurrentSchedule {
+
+                type IEndpoint = TBuildAPIEndpoint<"GET", "/api/widgets/current-schedule", CommonEntities.IWorkdays, "NotSignedIn">
+            }
         }
     }
 }

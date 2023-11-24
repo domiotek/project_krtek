@@ -217,9 +217,9 @@ export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
             
             const result = [];
 
-            const diff = getDifference(from, to,["days"]).days as number;
+            const diff = getDifference(from.startOf("day"), to.startOf("day"),["days"]).days as number;
 
-            for(let i=0; i < diff; i++) {
+            for(let i=0; i < diff + 1; i++) {
                 const date = from.plus({days: i});
                 
                 const workDay = await this.getWorkDay(date, connection);

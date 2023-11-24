@@ -16,7 +16,6 @@
     }
 
     .WidgetContainer {
-		justify-content: flex-start;
 		max-width: calc(1200px + 8rem);
 		margin: auto;
     }
