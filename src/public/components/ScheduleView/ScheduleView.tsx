@@ -5,7 +5,7 @@ import ScheduleDayView from "./ScheduleDayView";
 import { API } from "../../types/networkAPI";
 
 interface IProps {
-    workDays: API.App.Schedule.GetSchedule.IResponseData["workDays"] | null
+    workDays: API.App.CommonEntities.IWorkdays["workDays"] | null
 }
 
 export default function ScheduleView(props: IProps) {

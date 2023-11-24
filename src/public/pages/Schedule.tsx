@@ -15,7 +15,7 @@ function parseDateTime(isoStr: string | undefined) {
 }
 
 export default function Schedule(){
-    const [schedule, setSchedule] = useState<API.App.Schedule.GetSchedule.IResponseData | null>(null);
+    const [schedule, setSchedule] = useState<API.App.CommonEntities.IWorkdays | null>(null);
 
     const initialRangePoint = DateTime.fromISO(new URLSearchParams(window.location.search).get("withDay") ?? "");
     const hardLimit = DateTime.now().plus({weeks: 2}).startOf("week");

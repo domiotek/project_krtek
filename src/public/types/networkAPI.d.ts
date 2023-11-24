@@ -134,6 +134,24 @@ export namespace API {
 
     namespace App {
 
+        namespace CommonEntities {
+            interface IWorkdays {
+                rangeStart: string
+                rangeEnd: string
+                workDays: Array<{
+                    ID: number
+                    date: string
+                    slots:  Array<{
+                        ID: number
+                        requiredRole: string
+                        employeeName: string | null
+                        startTime: string
+                        endTime: string | null
+                    }>
+                }>
+            }
+        }
+
         namespace Version {
             interface IResponseData {
                 version: string
@@ -209,23 +227,7 @@ export namespace API {
                     withDay: string
                 }
 
-                interface IResponseData {
-                    rangeStart: string
-                    rangeEnd: string
-                    workDays: Array<{
-                        ID: number
-                        date: string
-                        slots:  Array<{
-                            ID: number
-                            requiredRole: string
-                            employeeName: string | null
-                            startTime: string
-                            endTime: string | null
-                        }>
-                    }>
-                }
-
-                type IEndpoint = TBuildAPIEndpoint<"GET", "/api/schedule/:withDay",IResponseData, "NotSignedIn" | "InvalidDate", IURLParams>
+                type IEndpoint = TBuildAPIEndpoint<"GET", "/api/schedule/:withDay",CommonEntities.IWorkdays, "NotSignedIn" | "InvalidDate", IURLParams>
             }
 
             namespace UpdateShift {

@@ -7,7 +7,7 @@ import { API } from "../../types/networkAPI";
 import { DateTime } from "luxon";
 
 interface IProps {
-    data: API.App.Schedule.GetSchedule.IResponseData["workDays"][number] | null
+    data: API.App.CommonEntities.IWorkdays["workDays"][number] | null
     weekDayName: string
     numOfPlaceholderSlots: number
 }
