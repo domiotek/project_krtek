@@ -1,6 +1,7 @@
 import { DateTime } from "luxon";
 import { MysqlError } from "mysql";
 import { APIError, isValidTime } from "../util.js";
+import { getDifference } from "../time.js";
 
 class ScheduleAPIError extends APIError<"Schedule"> {
     constructor(errCode: WebAPI.APIErrors<"Schedule">) {
@@ -193,6 +194,45 @@ export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
                     throw new ScheduleAPIError(this._db.getLastQueryFailureReason());
                 }
             }
+            if(!conn) {
+                connection.commit();
+                connection.release();
+            }
+            
+            return result;
+        }
+
+        throw new ScheduleAPIError("NoConnection");
+    }
+
+    public async getWorkDays(from: DateTime, to: DateTime, conn?: WebAPI.Mysql.IPoolConnection): Promise<WebAPI.Schedule.IWorkDay[] | null> {
+        if(!from.isValid||!to.isValid) {
+            return null;
+        }
+
+        const connection = conn ?? await this._db.getConnection();
+
+        if(connection) {
+            if(!conn) connection.beginTransaction();
+            
+            const result = [];
+
+            const diff = getDifference(from, to,["days"]).days as number;
+
+            for(let i=0; i < diff; i++) {
+                const date = from.plus({days: i});
+                
+                const workDay = await this.getWorkDay(date, connection);
+
+                if(workDay) {
+                    result.push(workDay);
+                }else {
+                    connection.rollback();
+                    connection.release();
+                    throw new ScheduleAPIError(this._db.getLastQueryFailureReason());
+                }
+            }
+
             if(!conn) {
                 connection.commit();
                 connection.release();

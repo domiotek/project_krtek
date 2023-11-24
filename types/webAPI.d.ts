@@ -802,6 +802,18 @@ namespace WebAPI {
              * @throws Can throw NoConnection and DBError errors.
              */
             getWeek(ofDay: DateTime): Promise<IWorkDay[] | null>
+
+            /**
+             * Returns all work days from the specified period of time.
+             * @param from Begin date. Inclusive.
+             * @param to End date. Inclusive.
+             * 
+             * @async 
+             * @returns Work day instance array or null if given dates are invalid.
+             * 
+             * @throws Can throw NoConnection and DBError errors.
+             */
+            getWorkDays(from: DateTime, to: DateTime):Promise<IWorkDay[] | null>
         }
 
         interface IWorkDay {
