@@ -33,12 +33,19 @@ function renderPanel(shift: API.App.Statistics.UserShifts.IWorkDay<"OnlyAssigned
 
     const startTime = DateTime.fromISO(ownerSlot.plannedStartTime);
     const endTime = ownerSlot.plannedEndTime?DateTime.fromISO(ownerSlot.plannedEndTime):null;
-    const then = DateTime.fromISO(shift.date);
-    const now = DateTime.now();
+    const then = DateTime.fromISO(shift.date).startOf("day");
+    const now = DateTime.now().startOf("day");
+
+    let tag;
+
+    switch(true) {
+        case then.equals(now.plus({days: 1})): tag = "Tommorow"; break;
+        case then.equals(now): tag = "Today"; break;
+    }
 
     return (
         <li key={shift.ID}>
-            <h5>{then.toFormat(then.month!=now.month?"EEEE, d/LL":"EEEE, d")}</h5>
+            <h5>{then.toFormat(then.month!=now.month?"EEEE, d/LL":"EEEE, d")} {tag?<span>{tag}</span>:""}</h5>
             <h6>{ownerSlot?.requiredRoleDisplayName} <span></span> {startTime.toFormat("HH:mm")} - {endTime?.toFormat("HH:mm") ?? "?"} <span></span> {coWorkersStr}</h6>
         </li>
     );
