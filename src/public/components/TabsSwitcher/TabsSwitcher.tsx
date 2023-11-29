@@ -5,42 +5,43 @@ import classes from "./TabsSwitcher.css";
 
 interface IProps {
     children: JSX.Element[]
-    tabs: Array<{
-        ID: string
-        displayName: string
-    }>
-    activeIndex?: number
+    tabs: {
+        [ID: string]: string
+    }
+    activeTabID?: string
     blockSwitch?: boolean
     onSwitch?: (ID: string)=>void
     onSwitchAttempt?: (ID:string, blocked: boolean)=>void
 }
 
 export default function TabsSwitcher(props: IProps) {
-    const [tabIndex, setTabIndex] = useState<number>(props.activeIndex ?? 0);
+    if(Object.keys(props.tabs).length==0) 
+        throw new Error("No tabs defined.");
 
-    if(props.tabs.length!=props.children.length) 
+    if(Object.keys(props.tabs).length!=props.children.length) 
         throw new Error("Amount of tab labels differs from the amount of the tabs.");
 
-    if(props.tabs.length==0) 
-        throw new Error("No tabs defined.");
+    const startingTab = props.tabs[props.activeTabID ?? ""]!==undefined?props.activeTabID:undefined
+
+    const [tabIndex, setTabIndex] = useState<string>(startingTab ?? Object.keys(props.tabs)[0]);
+
 
     function renderLabels() {
         const result: Array<JSX.Element> = [];
 
-        function clickHandler(this: number) {
+        function clickHandler(this: string) {
             if(!props.blockSwitch) {
-                if(props.onSwitchAttempt) props.onSwitchAttempt(props.tabs[this].ID, false);
+                if(props.onSwitchAttempt) props.onSwitchAttempt(this, false);
                 setTabIndex(this);
-                if(props.onSwitch) props.onSwitch(props.tabs[this].ID);
-            }else if(props.onSwitchAttempt) props.onSwitchAttempt(props.tabs[this].ID, true);
+                if(props.onSwitch) props.onSwitch(this);
+            }else if(props.onSwitchAttempt) props.onSwitchAttempt(this, true);
                 
         }
 
-        for (let i=0; i < props.tabs.length; i++) {
-            const tab = props.tabs[i];
+        for (const ID in props.tabs) {
             result.push(
-                <li key={tab.ID} className={i===tabIndex?classes.ActiveTabLabel:""} onClick={clickHandler.bind(i)}>
-                    {tab.displayName}
+                <li key={ID} className={ID===tabIndex?classes.ActiveTabLabel:""} onClick={clickHandler.bind(ID)}>
+                    {props.tabs[ID]}
                 </li>
             );
         }
@@ -53,7 +54,7 @@ export default function TabsSwitcher(props: IProps) {
             <ul>
                 {renderLabels()}
             </ul>
-            {props.children[tabIndex]}
+            {props.children[Object.keys(props.tabs).indexOf(tabIndex)]}
         </div>
     );
 }
