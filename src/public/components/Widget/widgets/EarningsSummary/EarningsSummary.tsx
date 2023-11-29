@@ -45,7 +45,7 @@ export default function EarningsSummaryWidget() {
                     :
                         <div className={classes.NoGoalSetView}>
                             <h5>You don't have goal set</h5>
-                            <Link to={"/Statistics"} >Set your goal</Link>
+                            <Link to={"/Statistics/Settings"} >Set your goal</Link>
                         </div>
                         
                 }
