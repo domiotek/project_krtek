@@ -59,19 +59,22 @@ export default function App() {
 
     return (
       <div className={styles.App}>
-          <section className={styles.Header}>
-              <button type='button' className={styles.HamburgerButton} onClick={()=>manageClassState(styles.NavBar,"toggle",styles.OpenNavBar)}>
-                  <img src={hamburgerImg} alt="Hamburger menu image"></img>
-              </button>
-              <Link className={styles.LogoLink} to="/"><img className={styles.Logo} src={logoImg} alt="App Logo"/></Link>
-              <button type="button" className={styles.AccountButton} onClick={()=>manageClassState(accountPanelStyles.PopupBox, "toggle", accountPanelStyles.OpenPopupBox)}>
-                  {userData?
-                  <img src={userImg} alt="Account image" />
-                  :
-                  <span className={`${styles.HeaderProfilePicturePlaceholder} ${commonClasses.PulseLoadingAnimHolder}`}></span>
-                  }
-              </button>
-          </section>
+            <section className={styles.Header}>
+                <button type='button' className={styles.HamburgerButton} onClick={()=>manageClassState(styles.NavBar,"toggle",styles.OpenNavBar)}>
+                    <img src={hamburgerImg} alt="Hamburger menu image"></img>
+                </button>
+                <Link className={styles.LogoLink} to="/"><img className={styles.Logo} src={logoImg} alt="App Logo"/></Link>
+                <button type="button" className={styles.AccountButton} onClick={()=>{
+                    manageClassState(accountPanelStyles.PopupBox, "toggle", accountPanelStyles.OpenPopupBox)
+                    manageClassState(styles.NavBar, "inactive",styles.OpenNavBar)
+                }}>
+                    {userData?
+                    <img src={userImg} alt="Account image" />
+                    :
+                    <span className={`${styles.HeaderProfilePicturePlaceholder} ${commonClasses.PulseLoadingAnimHolder}`}></span>
+                    }
+                </button>
+            </section>
           <section className={styles.ContentBox}> 
             <section className={`${styles.NavBar}`}>
                 <NavMenu activeTab={activeTab} accountDetails={userData}/>
