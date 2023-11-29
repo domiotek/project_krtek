@@ -66,6 +66,15 @@ button:active, :global(.button):active {
   text-decoration: none;
 }
 
-button:disabled {
+button:disabled, :global(.button):disabled {
   filter: grayscale(1);
+  cursor: default;
+}
+
+button:disabled:hover, :global(.button):disabled:hover {
+  background: var(--primary-color);
+}
+
+button:disabled:active, :global(.button):disabled:active {
+  background: var(--primary-color);
 }
