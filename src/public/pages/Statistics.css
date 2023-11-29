@@ -8,7 +8,7 @@
 .MonthSwitcher span {
     padding: 0.3rem;
     border-radius: 0.6rem;
-    color: var(--primary-color);
+    background: var(--bg-light-85);
     font-size: larger;
 }
 
@@ -18,7 +18,7 @@
 }
 
 .MonthSwitcher button {
-    background: none;
+    background: none!important;
     padding: 0;
     height: 1.2rem;
     width: 1.2rem;
@@ -28,7 +28,12 @@
 .MonthSwitcher img {
     width: 100%;
     height: 100%;
-    filter: grayscale(1) brightness(0);
+    filter: grayscale(0) brightness(1);
+    transition: filter 0.4s;
+}
+
+.MonthSwitcher button:disabled img {
+    filter: grayscale(1) brightness(1.5);
 }
 
 .MonthSwitcher button:nth-child(3) {
