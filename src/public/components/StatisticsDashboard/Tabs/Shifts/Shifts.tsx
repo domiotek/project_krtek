@@ -9,11 +9,11 @@ import ShiftPanel from "./ShiftPanel";
 import { LoadingShiftsView, NoFilterResultsMessage, NoShiftsMessage } from "./Views";
 import FilterBox from "../../../FilterBox/FilterBox";
 import { DateTime } from "luxon";
-import { callAPI } from "../../../../modules/utils";
 
 
 import eFilterImg from "../../../../assets/ui/empty_filter.png";
 import fFilterImg from "../../../../assets/ui/filled_filter.png";
+import { useNavigate } from "react-router-dom";
 
 type IShiftFilters = {
     states: {
@@ -37,6 +37,7 @@ type IShiftFiltersState = {
 
 interface IProps {
     shiftsData: API.App.Statistics.IParsedUserShifts | null;
+    roles: API.App.GetRoles.IRoleDetails[] | null
     wage: number | null
     setModalContent: WebApp.TSetModalContent
     reloadStats: ()=>void
@@ -49,17 +50,29 @@ export default function ShiftsTab(props: IProps) {
     const [filterBoxActive, setFilterBoxActive] = useState<boolean>(false);
     const [filteringActive, setFilteringActive] = useState<boolean>(false);
 
+    const navigate = useNavigate();
+    
     useEffect(()=>{
-        return callAPI<API.App.GetRoles.IEndpoint>("GET","/api/app/roles",null,
-            data=>{
-                const roles: Array<[string, string]> = [];
-                for (const roleData of data) {
-                    roles.push([roleData.name, roleData.displayName]);
-                }
-                setFilterRoles(roles);
-            }
-        );
-    }, []);
+        const params = new URLSearchParams(window.location.search);
+        
+        if(["assigned", "pending", "finished"].includes(params.get("state")?.toLowerCase() ?? "")) {
+            const newState = Object.assign({},filters);
+            newState["states"].add(params.get("state") as any);
+            setFilters(newState);
+        }
+
+        navigate("/Statistics/Shifts");
+        
+    },[]);
+
+    useEffect(()=>{
+        const roles: Array<[string, string]> = [];
+        for (const roleData of props.roles ?? []) {
+            roles.push([roleData.name, roleData.displayName]);
+        }
+        
+        setFilterRoles(roles);
+    }, [props.roles]);
 
     useEffect(()=>{
         let count = 0;
@@ -77,7 +90,7 @@ export default function ShiftsTab(props: IProps) {
     function checkWithFilter<N extends keyof IShiftFilters = keyof IShiftFilters>(name: N, value: IShiftFilters[N]["values"][0][0]) {
         const rule = filters[name];
 
-        if(rule.size==0||rule.has(value))
+        if(rule&&(rule.size==0||rule.has(value)))
             return true;
         
         return false;

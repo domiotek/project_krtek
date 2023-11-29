@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Suspense } from "react";
+import React, { useEffect, useState, Suspense, createRef } from "react";
 import {DateTime} from "luxon";
 import classes from "./Statistics.css";
 import subPageClasses from "./SubPages.css";
@@ -9,7 +9,7 @@ import arrowImg from "../assets/ui/left-arrow-angle.png";
 import StatsDashboard from "../components/StatisticsDashboard/Dashboard";
 import TabsSwitcher from "../components/TabsSwitcher/TabsSwitcher";
 import ShiftsTab from "../components/StatisticsDashboard/Tabs/Shifts/Shifts";
-import { useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { callAPI } from "../modules/utils";
 import SuspenseLoader from "./Loader";
 
@@ -55,6 +55,7 @@ function calculateShiftData(slot: API.App.Statistics.UserShifts.IAssignedShiftSl
 
 export default function Statistics() {
     const [statistics, setStatistics] = useState<API.App.Statistics.GetStatistics.IParsedStats | null>(null);
+    const [roles, setRoles] = useState<API.App.GetRoles.IRoleDetails[] | null>(null);
 
     const initialRangePoint = DateTime.fromISO(new URLSearchParams(window.location.search).get("fromMonth") ?? "");
     const hardLimit = DateTime.now().startOf("month");
@@ -63,6 +64,22 @@ export default function Statistics() {
     const [rangeSwitcherStates, setRangeSwitcherStates] = useState<boolean[]>([false,false]);
 
     const [userData, setModalContent] = useOutletContext() as WebApp.TAppOutletContext;
+
+    const {tab: startingTabID} = useParams();
+    const navigate = useNavigate()
+
+    const tabsWrapperRef = createRef<HTMLDivElement>();
+
+    useEffect(()=>{
+        if(startingTabID!=undefined) 
+            tabsWrapperRef.current?.scrollIntoView({behavior: "smooth"});
+    },[]);
+
+    useEffect(()=>{
+        return callAPI<API.App.GetRoles.IEndpoint>("GET","/api/app/roles",null,
+            data=>setRoles(data)
+        );
+    }, []);
 
     async function seekStatistics(direction: -1 | 0 | 1 , targetButton?: HTMLButtonElement) {
         if(targetButton?.hasAttribute("disabled")) return;
@@ -115,15 +132,17 @@ export default function Statistics() {
             
             <StatsDashboard data={statistics} month={rangePoint.startOf("month")}/>
 
-            <div className={classes.TabsWrapper}>
-                <TabsSwitcher 
-                    tabs={[
-                        {ID: "shifts", displayName: "Your shifts"}, 
-                        {ID: "stats", displayName: "Stats for nerds"}, 
-                        {ID: "settings", displayName: "Settings"}
-                    ]
-                }>
-                    <ShiftsTab shiftsData={statistics?.shifts ?? null} wage={statistics?.stats.wagePerHour ?? null} setModalContent={setModalContent} reloadStats={reloadStatistics} />
+            <div ref={tabsWrapperRef} className={classes.TabsWrapper}>
+                <TabsSwitcher
+                    tabs={{
+                        shifts: "Your shifts",
+                        stats: "Stats for nerds",
+                        settings: "Settings"
+                    }}
+                    activeTabID={startingTabID?.toLowerCase()}
+                    onSwitch={data=>navigate(`/Statistics/${data.substring(0,1).toUpperCase()}${data.substring(1)}`)}
+                >
+                    <ShiftsTab shiftsData={statistics?.shifts ?? null} roles={roles} wage={statistics?.stats.wagePerHour ?? null} setModalContent={setModalContent} reloadStats={reloadStatistics} />
                     <Suspense fallback={<SuspenseLoader />}>
                         <NerdStatsTab data={statistics?{shifts: statistics.shifts, totalEarnings: statistics.stats.totalEarnings, totalHours: statistics.stats.totalHours}:null} finishedShiftsCount={statistics?.stats.finishedShiftCount ?? 0}/>
                     </Suspense>

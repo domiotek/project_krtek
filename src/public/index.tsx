@@ -34,7 +34,7 @@ root.render(
               <Route path="/Alpha" element={<AlphaIntro />} />
               <Route path="/Account" element={<MyAccountDetails />} />
               <Route path='/Schedule' element={<Schedule />} />
-              <Route path='/Statistics' element={<Statistics />} />
+              <Route path='/Statistics/:tab?' element={<Statistics />} />
               <Route path='*' element={<NoPage />} />
           </Route>
           <Route path='/p' element={<Portal />}>

@@ -21,7 +21,7 @@ import SuspenseLoader from './pages/Loader';
 export default function App() {
     const [userData, setUserData] = useState<WebApp.IAccountDetails | null>(null);
 
-	const [activeTab, setActiveTab] = useState(window.location.pathname.substring(1));
+	const [activeTab, setActiveTab] = useState("");
 
     const [modalContent, setModalContent] = useState<JSX.Element | null>(null);
 
@@ -31,7 +31,8 @@ export default function App() {
     else allowScroll();
 
 	useEffect(()=>{
-		setActiveTab(window.location.pathname.substring(1));
+        const slashPos = window.location.pathname.substring(1).lastIndexOf("/");
+		setActiveTab(window.location.pathname.substring(1,slashPos!=-1?slashPos + 1:undefined));
 		manageClassState(styles.NavBar,"inactive",styles.OpenNavBar);
 		manageClassState(accountPanelStyles.PopupBox,"inactive",accountPanelStyles.OpenPopupBox);
 	}, [useLocation()]);
