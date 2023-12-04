@@ -52,6 +52,10 @@
     width: 7rem;
 }
 
+.DisableOnMobile {
+    display: none;
+}
+
 @media screen and (min-width: 386px) {
     .DummyEarningsSummary i {
         animation-delay: 0.2s;
@@ -75,6 +79,10 @@
 
     .DummyStatisticsPanel {
         --goal-panel-animation-delay: 0.1s;
+    }
+
+    .DisableOnMobile {
+        display: block;
     }
 }
 

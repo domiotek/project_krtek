@@ -2,6 +2,8 @@ import React from "react";
 
 import layoutClasses from "../DefaultView/DefaultView.css"
 import commonClasses from "../../../common.css"
+import pieClasses from "../../../RatioPie/RatioPie.css";
+import barClasses from "../../../ProgressBar/ProgressBar.css";
 import classes from "./LoadingView.css"
 import { LoadingGoalPanel } from "../../../GoalPanel/GoalPanel";
 
@@ -18,9 +20,17 @@ export default function LoadingStatsView() {
                     </ul>
                     <h3><span className={commonClasses.PulseLoadingAnimHolder}></span></h3>
                 </div>
-                <div className={layoutClasses.WageTipRatioPanel}>
-                    <div className={`${layoutClasses.OuterGraph} ${commonClasses.PulseLoadingAnimHolder} ${classes.DummyWageTipRatioGraph}`}></div>
-                    <div className={layoutClasses.GraphLegend}>
+                <div className={`${layoutClasses.TipWageRatioPie} ${pieClasses.Container} ${classes.DisableOnMobile}`}>
+                    <div className={`${pieClasses.OuterGraph} ${commonClasses.PulseLoadingAnimHolder} ${classes.DummyWageTipRatioGraph}`}></div>
+                    <div className={pieClasses.GraphLegend}>
+                        <span>Tip</span>
+                        <span>Wage</span>
+                    </div>
+                </div>
+
+                <div className={`${layoutClasses.TipWageRatioBar} ${barClasses.Container}`}>
+                    <div className={`${barClasses.OuterGraph} ${commonClasses.PulseLoadingAnimHolder} ${classes.DummyWageTipRatioGraph}`}></div>
+                    <div className={barClasses.GraphLegend}>
                         <span>Tip</span>
                         <span>Wage</span>
                     </div>
