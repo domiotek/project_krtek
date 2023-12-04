@@ -130,7 +130,8 @@ const putSettingsRequestSchema = yup.object().shape({
     })).required(),
     removedIDList: yup.array().of(yup.number().moreThan(0).required()).required(),
     addedMilestonesCount: yup.number().required(),
-    changedMilestonesCount: yup.number().required()
+    changedMilestonesCount: yup.number().required(),
+    reorderedMilestones: yup.bool().required()
 });
 
 const putSettings: WebAPI.IRouteOptions<API.App.Statistics.PutSettings.IEndpoint> = {
@@ -173,10 +174,10 @@ const putSettings: WebAPI.IRouteOptions<API.App.Statistics.PutSettings.IEndpoint
                     await global.app.userStatsManager.dropCacheState(session.userID);
                 }
 
-                if(params.addedMilestonesCount > 0 || params.changedMilestonesCount > 0 || params.removedIDList.length > 0) {
+                if(params.addedMilestonesCount > 0 || params.changedMilestonesCount > 0 || params.removedIDList.length > 0 || params.reorderedMilestones) {
                     
                     const goal = await global.app.userStatsManager.getGoalOf(session.userID);
-                    let nextOrderTag = 1;
+                    let nextOrderTag = 0;
 
                     for (const milestone of params.milestones) {
                         if(milestone.ID < 0&&params.removedIDList.length==0) {

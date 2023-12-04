@@ -408,6 +408,7 @@ export namespace API {
                     changedMilestonesCount: number
                     addedMilestonesCount: number
                     removedIDList: number[]
+                    reorderedMilestones: boolean
                 }
 
                 type IEndpoint = TBuildAPIEndpoint<"PUT", "/api/user/stats-settings",undefined, "NotSignedIn">

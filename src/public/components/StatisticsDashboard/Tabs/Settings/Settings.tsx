@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import {DragDropContext, Draggable, DropResult, Droppable, DroppableProvided} from "@hello-pangea/dnd";
 
 import classes from "./Settings.css";
 import commonClasses from "../../../common.css";
@@ -11,17 +12,17 @@ import { callAPI, render2FloatingPoint } from "../../../../modules/utils";
 
 import EditImage from "../../../../assets/ui/pen.png";
 import DeleteImage from "../../../../assets/ui/bin.png";
+import DragImage from "../../../../assets/ui/drag.png";
 
 interface IProps {
     setModalContent: WebApp.TSetModalContent
     reloadStats: ()=>void
 }
 
-interface IMilestones {
-    [ID: number]: IMilestoneData
-}
+type Milestones = Array<IMilestoneData>;
 
 interface IMilestoneData {
+    ID: number
     title: string
     value: number
     changed: boolean
@@ -32,13 +33,16 @@ export default function SettingsTab(props: IProps) {
     const orgWage = useRef<number>(0);
     const [income, setIncome] = useState<number>(0);
     const orgIncome = useRef<number>(0);
-    const [milestones, setMilestones] = useState<IMilestones>({});
+
+    const [milestones, setMilestones] = useState<Milestones>([]);
+
     const maxMilestoneCount = useRef<number>(0);
     let newMilestoneIDCounter = useRef<number>(-1);
     let removedMilestonesIDList = useRef<number[]>([]);
     let addedMilestonesCount = useRef<number>(0);
-    const [disableInputs, setDisableInputs] = useState<boolean>(false);
+    let reorderedMilestones = useRef<boolean>(false);
 
+    const [disableInputs, setDisableInputs] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [changesMade, setChangesMade] = useState<boolean>(false);
     const afterFetchUpdate = useRef<boolean>(false);
@@ -53,17 +57,19 @@ export default function SettingsTab(props: IProps) {
                 setIncome(data.externalIncome ?? 0);
 
                 if(data.goal) {
-                    const obj: IMilestones = {};
+                    const arr: Milestones = [];
 
-                    for (const milestone of data.goal?.milestones) {
-                        obj[milestone.ID] = {
+                    for (let i=0; i < data.goal.milestones.length; i++) {
+                        const milestone = data.goal?.milestones[i];
+                        arr.push({
+                            ID: milestone.ID,
                             title: milestone.title,
                             value: milestone.amount,
                             changed: false
-                        }
+                        });
                     }
 
-                    setMilestones(obj);
+                    setMilestones(arr);
                 }
 
                 setIsLoading(false);
@@ -76,9 +82,9 @@ export default function SettingsTab(props: IProps) {
             setChangesMade(true);
 
         afterFetchUpdate.current=false;
-    },[newMilestoneIDCounter, removedMilestonesIDList, addedMilestonesCount, wage, income]);
+    },[newMilestoneIDCounter.current, removedMilestonesIDList.current, addedMilestonesCount.current, reorderedMilestones.current, wage, income]);
 
-    function renderMilestonePanel(ID: number, milestone: IMilestoneData) {
+    function renderMilestonePanel(milestone: IMilestoneData, index: number) {
 
         function EditMilestoneClickHandler() {
             props.setModalContent(
@@ -87,58 +93,59 @@ export default function SettingsTab(props: IProps) {
                     successCallback={(title, value)=>{
                         const changed =  milestone.title!=title||milestone.value!=value;
                         props.setModalContent(null);
-                        milestones[ID] = {
+
+                        milestones[index] = {
+                            ID: milestone.ID,
                             title,
                             value,
                             changed
                         }
-                        setMilestones(Object.assign({},milestones));
+                        setMilestones([...milestones]);
                         if(changed) setChangesMade(true);
                     }} 
-                    milestoneInfo={{ID: ID, title: milestone.title, value: milestone.value}}
+                    milestoneInfo={{ID: milestone.ID, title: milestone.title, value: milestone.value}}
                 />
             )
         }
 
-        function DeleteMilestoneClickHandler() {
-            delete milestones[ID];
+        function DeleteMilestoneClickHandler(this: number) {
+            const arr = [...milestones];
 
-            if(ID > 0) {
-                removedMilestonesIDList.current.push(ID);
+            arr.splice(index,1);
+
+            if(milestone.ID > 0) {
+                removedMilestonesIDList.current.push(milestone.ID);
             }else {
                 addedMilestonesCount.current--;
             }
 
-            setMilestones(Object.assign({},milestones));
+            setMilestones(arr);
             setChangesMade(true);
         }
 
         return (
-            <li key={ID} className={classes.MilestonePanel}>
-                <span>{milestone.title}</span>
-                <div className={classes.RightPanel}>
-                    <span>{render2FloatingPoint(milestone.value)}zł</span>
-                    <div className={classes.ButtonsContainer}>
-                        <button type="button" disabled={disableInputs} onClick={EditMilestoneClickHandler}>
-                            <img src={EditImage} alt="Edit"/>
-                        </button>
-                        <button type="button" disabled={disableInputs} onClick={DeleteMilestoneClickHandler}>
-                            <img src={DeleteImage} alt="Delete" />
-                        </button>
-                    </div>
-                </div>        
-            </li>
+            <Draggable draggableId={`${milestone.ID}`} index={index} key={milestone.ID}>
+                {(provided, snapshot)=>(
+                    <li ref={provided.innerRef} className={`${classes.MilestonePanel} ${snapshot.isDragging?classes.DraggedPanel:""}`} {...provided.draggableProps} >
+                        <span>{milestone.title}</span>
+                        <div className={classes.RightPanel}>
+                            <span>{render2FloatingPoint(milestone.value)}zł</span>
+                            <div className={classes.ButtonsContainer}>
+                                <button type="button" disabled={disableInputs} onClick={EditMilestoneClickHandler.bind(index)}>
+                                    <img src={EditImage} alt="Edit" />
+                                </button>
+                                <button type="button" disabled={disableInputs} onClick={DeleteMilestoneClickHandler.bind(index)}>
+                                    <img src={DeleteImage} alt="Delete" />
+                                </button>
+                            </div>
+                        </div> 
+                        <i className={classes.DragSurface} {...provided.dragHandleProps}>
+                            <img src={DragImage} alt="Drag here"/>    
+                        </i>       
+                    </li>
+                )}
+            </Draggable>
         );
-    }
-
-    function renderMilestones() {
-        const result = [];
-
-        for (const ID in milestones) {
-            result.push(renderMilestonePanel(parseInt(ID), milestones[ID]));
-        }
-
-        return result;
     }
 
     function addMilestoneClickHandler() {
@@ -148,10 +155,16 @@ export default function SettingsTab(props: IProps) {
                 successCallback={(title, value)=>{
                     props.setModalContent(null);
         
-                    milestones[newMilestoneIDCounter.current] = {title, value, changed: true};
+                    milestones.push({
+                        ID: newMilestoneIDCounter.current,
+                        title, 
+                        value, 
+                        changed: true
+                    });
                     newMilestoneIDCounter.current--;
                     addedMilestonesCount.current++;
                     setMilestones(milestones);
+                    
                 }}
                 milestoneInfo={null}
             />
@@ -171,22 +184,21 @@ export default function SettingsTab(props: IProps) {
         const processedMilestones: API.App.Statistics.IMilestone[] = [];
     
         let changedMilestones = 0;
-        for (const ID in milestones) {
-            const element = milestones[ID];
-            const intID = parseInt(ID);
+        for (const element of milestones) {
     
             processedMilestones.push({
-                ID: intID,
+                ID: element.ID,
                 title: element.title,
                 amount: element.value
             });
-            if(element.changed&& intID > 0) changedMilestones++;
+            if(element.changed&& element.ID > 0) changedMilestones++;
         }
     
         formData["milestones"] = JSON.stringify(processedMilestones);
         formData["removedIDList"] = JSON.stringify(removedMilestonesIDList.current);
         formData["addedMilestonesCount"] = addedMilestonesCount.current.toString();
         formData["changedMilestonesCount"] = changedMilestones.toString();
+        formData["reorderedMilestones"] = reorderedMilestones.current.toString();
 
         return formData;
     }
@@ -216,12 +228,24 @@ export default function SettingsTab(props: IProps) {
 
     function renderNoMilestonesPanel() {
         return (
-            <li className={classes.NoMilestonesPanel}>
+            <div className={classes.NoMilestonesPanel}>
                 <img src="/ilustrations/NoData.svg" alt="No data"/>
                 <h5>No milestones</h5>
-            </li>
+            </div>
         );
     }
+
+    function MilestoneReorderHandler({ destination, source }: DropResult) {
+        // dropped outside the list
+        if (!destination) return;
+        
+        const newMilestones = Array.from(milestones);
+        const [removed] = newMilestones.splice(source.index, 1);
+        newMilestones.splice(destination.index, 0, removed);
+
+        setMilestones(newMilestones);
+        reorderedMilestones.current = true;
+    };
 
     if(isLoading) {
         return (
@@ -300,14 +324,26 @@ export default function SettingsTab(props: IProps) {
                         >
                             Add milestone
                         </button>
-                        <ul className={classes.MilestoneList}>
+                        <div className={classes.MilestoneList}>
                             {
                                 Object.keys(milestones).length>0?
-                                    renderMilestones()
+                                    <DragDropContext onDragEnd={MilestoneReorderHandler}>
+                                        <Droppable droppableId="list">
+                                            {(provided)=>(
+                                                <ul ref={provided.innerRef} {...provided.droppableProps}>
+                                                    {
+                                                        milestones.map(renderMilestonePanel)
+                                                    }
+                                                    {provided.placeholder}
+                                                </ul>
+                                            )}
+                                        </Droppable>
+                                    </DragDropContext>
                                 :
                                     renderNoMilestonesPanel()
                             }
-                        </ul>
+                           
+                        </div>
                     </div>
                 </div>
             </CustomForm>
