@@ -81,7 +81,7 @@ export default function EarningsSummaryWidget() {
                         <div className={`${classes.Message} ${classes.NoWageRateView}`}>
                             <img src="/ilustrations/NoData.svg" alt="Missing information" />
                             <h5>Couldn't calculate</h5>
-                            <Link to={"/Statistics"}>Set wage rate</Link>
+                            <Link to={"/Statistics/Settings"}>Set wage rate</Link>
                         </div>
                 :
                     renderDummyContent()
