@@ -1,0 +1,46 @@
+.WidgetWrapper, .MainContent {
+    font-size: 1rem;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    align-items: center;
+}
+
+.WidgetWrapper h4 {
+    text-align: center;
+    font-size: 1.65em;
+    color: var(--primary-color);
+    margin-bottom: 0.75em;
+}
+
+.WidgetWrapper h5 {
+    margin: 0;
+    text-align: center;
+    font-weight: normal;
+    padding: 0 0.5em;
+}
+
+.WidgetWrapper a {
+    margin-top: 2.3em;
+    font-size: 0.8em;
+    border-radius: 2em;
+    padding: 0.75em 0.9em;
+}
+
+
+.Message {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+}
+
+.Message img {
+    width: 30%;
+}
+
+.Message h5 {
+    margin-top: 1em;
+    font-size: 0.9em;
+}
