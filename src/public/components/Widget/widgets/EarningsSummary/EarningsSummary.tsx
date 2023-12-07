@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import classes from "./EarningsSummary.css";
 import commonClasses from "../../../common.css";
@@ -7,18 +7,23 @@ import { API } from "../../../../types/networkAPI";
 import { callAPI, render2FloatingPoint } from "../../../../modules/utils";
 import ProgressBar from "../../../ProgressBar/ProgressBar";
 import { Link } from "react-router-dom";
+import { WidgetContext } from "../../WidgetBox";
 
 export default function EarningsSummaryWidget() {
     const [data, setData] = useState<API.App.Widgets.GetEarnings.IResponseData | null>(null);
-    const [fetchFailed, setFetchFailed] = useState<boolean>(false);
+
+    const [widgetState, setWidgetState] = useContext(WidgetContext);
 
     useEffect(()=>{
         return callAPI<API.App.Widgets.GetEarnings.IEndpoint>("GET","/api/widgets/earnings",null,
-            data=>setData(data),
-            ()=>setFetchFailed(true));
+            data=>{
+                setData(data);
+                setWidgetState("Ready");
+            },
+            ()=>setWidgetState("Unavailable"));
     }, []);
 
-    
+
 
 
     function renderContent(data: API.App.Widgets.GetEarnings.ISureData) {
@@ -79,13 +84,7 @@ export default function EarningsSummaryWidget() {
                             <Link to={"/Statistics"}>Set wage rate</Link>
                         </div>
                 :
-                    fetchFailed?
-                        <div className={classes.Message}>
-                            <img src="/ilustrations/Broken.svg" alt="Error"/>
-                            <h5>That didn't work</h5>
-                        </div>
-                    :
-                        renderDummyContent()
+                    renderDummyContent()
             }
         </div>
     );

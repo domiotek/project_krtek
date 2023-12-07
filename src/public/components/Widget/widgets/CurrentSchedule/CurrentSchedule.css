@@ -47,20 +47,6 @@
     font-weight: normal;
 }
 
-.Message {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    align-items: center;
-    justify-content: center;
-    margin-top: 1.5em;
-}
-
-.Message img {
-    width: 45%;
-    max-width: 125px;
-}
-
 .DummyContent h5, .DummyContent h6 {
     width: 6em;
     display: inline-block;

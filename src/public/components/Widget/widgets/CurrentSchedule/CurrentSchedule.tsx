@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import classes from "./CurrentSchedule.css";
 import commonClasses from "../../../common.css";
@@ -6,15 +6,19 @@ import commonClasses from "../../../common.css";
 import { API } from "../../../../types/networkAPI";
 import { callAPI } from "../../../../modules/utils";
 import { DateTime } from "luxon";
+import { WidgetContext } from "../../WidgetBox";
 
 export default function CurrentScheduleWidget() {
     const [data, setData] = useState<API.App.CommonEntities.IWorkdays | null>(null);
-    const [fetchFailed, setFetchFailed] = useState<boolean>(false);
+    const [widgetState, setWidgetState] = useContext(WidgetContext);
 
     useEffect(()=>{
         return callAPI<API.App.Widgets.CurrentSchedule.IEndpoint>("GET","/api/widgets/current-schedule",null,
-            data=>setData(data),
-            ()=>setFetchFailed(true));
+            data=>{
+                setData(data);
+                setWidgetState("Ready");
+            },
+            ()=>setWidgetState("Unavailable"));
     }, []);
 
     function renderPanels(days: API.App.CommonEntities.IWorkdays) {
@@ -83,19 +87,14 @@ export default function CurrentScheduleWidget() {
 
     return (
         <div className={classes.WidgetWrapper}>
-                {
-                    data?
-                        <ul className={classes.DayList}>{renderPanels(data)}</ul>
-                    :
-                        fetchFailed?
-                            <div className={classes.Message}>
-                                <img src="/ilustrations/BrokenCar.svg" alt="Error"/>
-                                <h5>That didn't work</h5>
-                            </div>
-                        :
-                        <ul className={classes.DayList}>{renderDummyContent()}</ul>
-                }
-            
+            <ul className={classes.DayList}>
+            {
+                data?
+                    renderPanels(data)
+                :
+                    renderDummyContent()
+            }
+            </ul>
         </div>
     );
 }
