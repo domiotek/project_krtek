@@ -17,13 +17,13 @@ export default function Home() {
         <div className={classes.HomePage}>
             <h2>Hello, {userData?.accountName}</h2>
             <div className={classes.WidgetContainer}>
-                <WidgetBox size="Large" header="Schedule">
+                <WidgetBox size="Large" header="Schedule" skipLoading>
                     <CurrentScheduleWidget />
                 </WidgetBox>
-                <WidgetBox size="Small" header="Your upcoming shifts">
+                <WidgetBox size="Small" header="Your upcoming shifts" skipLoading>
                     <UpcomingShiftsWidget />
                 </WidgetBox>
-                <WidgetBox size="Small" header="Your earnings this month">
+                <WidgetBox size="Small" header="Your earnings this month" skipLoading>
                     <EarningsSummaryWidget />
                 </WidgetBox>
                 <WidgetBox size="Small" header="Your pending shifts">

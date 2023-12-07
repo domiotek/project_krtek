@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import classes from "./UpcomingShifts.css";
 import commonClasses from "../../../common.css";
@@ -6,6 +6,7 @@ import commonClasses from "../../../common.css";
 import { API } from "../../../../types/networkAPI";
 import { callAPI } from "../../../../modules/utils";
 import { DateTime } from "luxon";
+import { WidgetContext } from "../../WidgetBox";
 
 function renderPanel(shift: API.App.Statistics.UserShifts.IWorkDay<"OnlyAssigned">, slotID: number) {
     const ownerSlot = shift.slots[slotID] as NonNullable<typeof shift.slots[0]>;
@@ -87,12 +88,15 @@ function renderMessage(text: string, iamgeFileName: string, alt: string) {
 
 export default function UpcomingShiftsWidget() {
     const [shifts, setShifts] = useState<API.App.Statistics.IUserShifts | null>(null);
-    const [fetchFailed, setFetchFailed] = useState<boolean>(false);
+    const [widgetState, setWidgetState] = useContext(WidgetContext);
 
     useEffect(()=>{
         return callAPI<API.App.Widgets.GetUpcomingShifts.IEndpoint>("GET","/api/widgets/upcoming-shifts",null,
-            data=>setShifts(data),
-            ()=>setFetchFailed(true));
+            data=>{
+                setShifts(data);
+                setWidgetState("Ready");
+            },
+            ()=>setWidgetState("Unavailable"));
     }, []);
 
     return (
@@ -104,10 +108,7 @@ export default function UpcomingShiftsWidget() {
                     :
                         renderMessage("No shifts", "NoData.svg", "No data")
                 :
-                    fetchFailed?
-                        renderMessage("That didn't work", "Broken.svg", "Error")
-                    :
-                        renderDummyContent()
+                    renderDummyContent()
             }
             
         </div>
