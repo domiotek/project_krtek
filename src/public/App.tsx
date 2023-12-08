@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, createContext, useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import styles from './App.css';
 import accountPanelStyles from './components/AccountPanelPopup/AccountPanelPopup.css';
@@ -17,6 +17,8 @@ import { callAPI, manageClassState } from './modules/utils';
 import Modal from './components/Modal/Modal';
 import useScrollBlocker from './hooks/useScrollBlocker/useScrollBlocker';
 import SuspenseLoader from './pages/Loader';
+
+const AppContext = createContext<WebApp.TAppOutletContext>([null,()=>{}]);
 
 export default function App() {
     const [userData, setUserData] = useState<WebApp.IAccountDetails | null>(null);
@@ -41,8 +43,10 @@ export default function App() {
         return callAPI<API.App.BasicData.IEndpoint>("GET","/api/user/basic-data", null, (data=>{
             setUserData({
                 accountName: data.name,
-                accountRole: data.rankName,
-                accountImage: userImg
+                accountSurname: data.surname,
+                accountRank: data.rankName,
+                accountImage: userImg,
+                accountGender: data.gender
             });
         }));
     },[]);
@@ -83,7 +87,9 @@ export default function App() {
                 </section>
             </section>
             <Suspense fallback={<SuspenseLoader />}>
-                <Outlet context={[userData, setModalContent]}/>
+                <AppContext.Provider value={[userData, setModalContent]}>
+                    <Outlet context={[userData, setModalContent]}/>
+                </AppContext.Provider>
             </Suspense>
           </section>
           <section className={styles.Footer}>

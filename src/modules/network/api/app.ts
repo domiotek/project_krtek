@@ -50,7 +50,8 @@ const basicData: WebAPI.IRouteOptions<API.App.BasicData.IEndpoint> = {
                         data: {
                             name: user.name,
                             surname: user.surname,
-                            rankName: user.rankName
+                            rankName: user.rankName,
+                            gender: user.gender
                         }
                     }
 

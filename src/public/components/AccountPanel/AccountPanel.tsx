@@ -23,7 +23,7 @@ export default function AccountPanel(props: AccountPanel.IProps) {
                 <img src={props.accountDetails.accountImage} alt="User Avatar" />
                 <div className={styles.TextWrapper}>
                     <h4>{props.accountDetails.accountName}</h4>
-                    <span>{props.accountDetails.accountRole}</span>
+                    <span>{props.accountDetails.accountRank}</span>
                 </div>
                 <div className={styles.ButtonsWrapper}>
                     <Link className={styles.SettingsLink} to="/Account">
