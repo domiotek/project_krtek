@@ -1,0 +1,13 @@
+{
+    "builton": "Skompilowano",
+    "author": "Autor",
+    "credits": "Użyte zasoby",
+    "about": "O projekcie",
+    "freepik-credit": "Ikony interfejsu graficznego zostały wykonane przez ",
+    "from": "z",
+    "undraw-credit": "Ilustratracje pochodzą z ",
+    "desc-1": "System ten powstał z myślą o małym pubie, a pozwala on na zarządzanie pracownikami oraz ich grafikami.",
+    "desc-2": "Jego celem jest zapewnienie przestrzeni, w której pracownicy będą mogli znaleźć wszystko, czego potrzebują i co jest związane z ich pracą. Ponieważ z założenia serwis ten ma służyć tylko pracownikom, rejestracje z zewnątrz są niedostępne.",
+    "desc-3": "Po więcej szczegółów jak i plan rozwoju projektu zajrzyj na:",
+    "github-link": "repozytorium Github"
+}
