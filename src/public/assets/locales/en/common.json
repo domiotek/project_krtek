@@ -2,5 +2,8 @@
     "nav-menu.home": "Home",
     "nav-menu.alpha_intro": "Alpha Intro",
     "nav-menu.schedule": "Schedule",
-    "nav-menu.statistics": "My Statistics" 
+    "nav-menu.statistics": "My Statistics",
+    "signout": "Sign out",
+    "footer": "All rights reserved.",
+    "footerLink": "About"
 }

@@ -7,6 +7,7 @@ import commonClasses from "../common.css";
 import settingsImg from "../../assets/ui/gray-settings.png";
 import logoutImg from "../../assets/ui/exit.png";
 import { WebApp } from "../../types/networkAPI";
+import { useTranslation } from "react-i18next";
 
 export namespace AccountPanel {
     export interface IProps {
@@ -16,6 +17,8 @@ export namespace AccountPanel {
 }
 
 export default function AccountPanel(props: AccountPanel.IProps) {
+
+    const {t} = useTranslation("common");
 
     if(props.accountDetails) {
         return (
@@ -31,7 +34,7 @@ export default function AccountPanel(props: AccountPanel.IProps) {
                     </Link>
                     <a className={styles.LogoutLink} href="/auth/signout">
                         <img src={logoutImg} alt="Logout link" />
-                        <span>Sign out</span>
+                        <span>{t("signout")}</span>
                     </a>
                 </div>
             </div>

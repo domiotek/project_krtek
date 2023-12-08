@@ -71,7 +71,7 @@
 }
 
 .Vertical .LogoutLink {
-    width: 6rem;
+    min-width: 6rem;
     height: 2rem;
     display: flex;
     padding: 0.4rem;
@@ -87,6 +87,7 @@
 .Vertical .LogoutLink span {
     color: black;
     font-size: small;
+    margin: 0 0.5em;
 }
 
 .ProfilePictureImitation {
