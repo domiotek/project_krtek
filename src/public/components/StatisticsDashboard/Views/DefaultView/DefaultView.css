@@ -156,8 +156,8 @@
     }
 
     .TipWageRatioPie {
-        margin-left: 3rem;
-        margin-right: 3rem;
+        margin-left: 3rem!important;
+        margin-right: 3rem!important;
     }
 
 }

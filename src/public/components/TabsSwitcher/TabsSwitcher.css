@@ -16,6 +16,8 @@
     margin: 0 0.5rem 0.5rem;
     flex-shrink: 0;
     cursor: pointer;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .ActiveTabLabel {
