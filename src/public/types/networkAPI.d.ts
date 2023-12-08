@@ -3,8 +3,10 @@ import { DateTime } from "luxon";
 export namespace WebApp {
     interface IAccountDetails {
         accountName: string
-        accountRole: string
+        accountSurname: string
+        accountRank: string
         accountImage: string
+        accountGender: "m" | "f" | "o"
     }
 
     type TSetModalContent = (newModalContent: JSX.Element | null)=>void
@@ -167,6 +169,7 @@ export namespace API {
                 name: string
                 surname: string
                 rankName: string
+                gender: "m" | "f" | "o"
             }
 
             type IEndpoint = TBuildAPIEndpoint<"GET", "/api/user/basic-data", IResponseData, "NotSignedIn">
