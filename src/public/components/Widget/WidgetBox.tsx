@@ -31,7 +31,7 @@ export default function WidgetBox(props: IProps) {
                         <h5>That didn't work</h5>
                     </div>
                     <div className={`${classes.LoadingPanel} ${state=="Loading"?classes.Visible:""}`}>
-                        <PuffLoader size="80" color="#4166DC" />
+                        <PuffLoader size="80px" color="#4166DC" />
                     </div>
                 </div>
             </div>
