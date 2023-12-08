@@ -18,7 +18,10 @@ import Modal from './components/Modal/Modal';
 import useScrollBlocker from './hooks/useScrollBlocker/useScrollBlocker';
 import SuspenseLoader from './pages/Loader';
 
+import "./modules/luxon";
+
 export const AppContext = createContext<WebApp.TAppOutletContext>([null,()=>{}]);
+
 
 export default function App() {
     const [userData, setUserData] = useState<WebApp.IAccountDetails | null>(null);

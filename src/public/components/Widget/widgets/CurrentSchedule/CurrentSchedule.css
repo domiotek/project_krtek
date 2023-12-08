@@ -37,6 +37,7 @@
     display: inline;
     font-size: 1em;
     font-weight: normal;
+    text-transform: capitalize;
 }
 
 .SmallLayout h6 {
@@ -123,6 +124,7 @@
     .LargeLayout >h5 {
         margin: 0;
         font-size: 1em;
+        text-transform: capitalize;
     }
 
     .LargeLayout >h6 {

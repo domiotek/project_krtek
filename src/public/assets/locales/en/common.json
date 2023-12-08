@@ -5,5 +5,10 @@
     "nav-menu.statistics": "My Statistics",
     "signout": "Sign out",
     "footer": "All rights reserved.",
-    "footerLink": "About"
+    "footerLink": "About",
+    "no-one-else": "No one else",
+    "today": "Today",
+    "tommorow": "Tommorow",
+    "unassigned": "unassigned",
+    "and": "and"
 }

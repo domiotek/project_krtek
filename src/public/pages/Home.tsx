@@ -8,25 +8,28 @@ import UpcomingShiftsWidget from "../components/Widget/widgets/UpcomingShifts/Up
 import EarningsSummaryWidget from "../components/Widget/widgets/EarningsSummary/EarningsSummary";
 import CurrentScheduleWidget from "../components/Widget/widgets/CurrentSchedule/CurrentSchedule";
 import PendingShiftsWidget from "../components/Widget/widgets/PendingShifts/PendingShifts";
+import { useTranslation } from "react-i18next";
 
 export default function Home() {
 
-    const [userData, setModalContent] = useOutletContext() as WebApp.TAppOutletContext;
+    const [userData] = useOutletContext() as WebApp.TAppOutletContext;
+    
+    const {t} = useTranslation("home");
 
     return (
         <div className={classes.HomePage}>
-            <h2>Hello, {userData?.accountName}</h2>
+            <h2>{t("greeting",{name: userData?.accountName})}</h2>
             <div className={classes.WidgetContainer}>
-                <WidgetBox size="Large" header="Schedule" skipLoading>
+                <WidgetBox size="Large" header={t("schedule-widget.header")} skipLoading>
                     <CurrentScheduleWidget />
                 </WidgetBox>
-                <WidgetBox size="Small" header="Your upcoming shifts" skipLoading>
+                <WidgetBox size="Small" header={t("upc-shts-widget.header")} skipLoading>
                     <UpcomingShiftsWidget />
                 </WidgetBox>
-                <WidgetBox size="Small" header="Your earnings this month" skipLoading>
+                <WidgetBox size="Small" header={t("earnings-widget.header")} skipLoading>
                     <EarningsSummaryWidget />
                 </WidgetBox>
-                <WidgetBox size="Small" header="Your pending shifts">
+                <WidgetBox size="Small" header={t("pnd-shts-widget.header")}>
                     <PendingShiftsWidget />
                 </WidgetBox>
             </div>
