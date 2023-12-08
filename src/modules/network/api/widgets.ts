@@ -119,9 +119,50 @@ const getCurrentSchedule: WebAPI.IRouteOptions<API.App.Widgets.CurrentSchedule.I
     errorHandler
 }
 
+const getPendingShiftsCount: WebAPI.IRouteOptions<API.App.Widgets.GetPendingShiftsCount.IEndpoint> = {
+    method: "GET",
+    url: "/api/widgets/pending-shifts-count",
+    handler: async (req, res)=>{
+        res.header("cache-control","private, no-cache");
+        res.status(401);
+
+        const sessionID = req.cookies.session;
+
+        let result: API.App.Widgets.GetPendingShiftsCount.IEndpoint["returnPacket"] = {
+            status: "Failure",
+            errCode: "NotSignedIn"
+        }
+
+        if(sessionID) {
+            const session = await global.app.webAuthManager.getSessionDetails(sessionID);
+
+            if(session) {
+                res.status(200);
+                
+                const now = DateTime.now().startOf("month");
+                const options: WebAPI.Schedule.ScheduleManager.IUserShiftsOptions = {
+                    from: {before: now.plus({months: 1}).minus({days: 1}), after: now},
+                    state: "Pending"
+                }
+
+                const shiftCount = await global.app.scheduleManager.countUserShifts(session.userID, options);
+                
+                result = {
+                    status: "Success",
+                    data: shiftCount
+                }
+            }
+        }
+
+        return result;
+    },
+    errorHandler
+}
+
 
 export default [
     getUpcomingShifts,
     getEarnings,
-    getCurrentSchedule
+    getCurrentSchedule,
+    getPendingShiftsCount
 ]

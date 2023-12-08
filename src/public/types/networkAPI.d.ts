@@ -420,6 +420,10 @@ export namespace API {
                 type IEndpoint = TBuildAPIEndpoint<"GET","/api/widgets/upcoming-shifts",Statistics.IUserShifts,"NotSignedIn">
             }
 
+            namespace GetPendingShiftsCount {
+                type IEndpoint = TBuildAPIEndpoint<"GET","/api/widgets/pending-shifts-count",number,"NotSignedIn">
+            }
+
             namespace GetEarnings {
                 interface IResponseData {
                     setGoal: number

@@ -7,6 +7,7 @@ import { WebApp } from "../types/networkAPI";
 import UpcomingShiftsWidget from "../components/Widget/widgets/UpcomingShifts/UpcomingShifts";
 import EarningsSummaryWidget from "../components/Widget/widgets/EarningsSummary/EarningsSummary";
 import CurrentScheduleWidget from "../components/Widget/widgets/CurrentSchedule/CurrentSchedule";
+import PendingShiftsWidget from "../components/Widget/widgets/PendingShifts/PendingShifts";
 
 export default function Home() {
 
@@ -24,6 +25,9 @@ export default function Home() {
                 </WidgetBox>
                 <WidgetBox size="Small" header="Your earnings this month" skipLoading>
                     <EarningsSummaryWidget />
+                </WidgetBox>
+                <WidgetBox size="Small" header="Your pending shifts">
+                    <PendingShiftsWidget />
                 </WidgetBox>
             </div>
         </div>
