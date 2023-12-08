@@ -7,6 +7,8 @@ import App from './App';
 import Portal from "./pages/Portal";
 import SuspenseLoader from './pages/Loader';
 
+import "./modules/i18n";
+
 const PasswordRecoveryPortal = React.lazy(()=>import(/* webpackChunkName: "p_pass_rec" */'./pages/portals/PasswordRecovery/PasswordRecovery'));
 const BrokenLinkPortal = React.lazy(()=>import(/* webpackChunkName: "p_inv_lnk" */'./pages/portals/BrokenLink/BrokenLink'));
 const OnBoardingPortal = React.lazy(()=>import(/* webpackChunkName: "p_wlcm" */'./pages/portals/OnBoarding/OnBoarding'));

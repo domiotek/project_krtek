@@ -8,6 +8,7 @@ import styles from "./NavMenu.css";
 import AccountPanel from "../AccountPanel/AccountPanel";
 import { WebApp, API } from "../../types/networkAPI";
 import { callAPI } from "../../modules/utils";
+import { useTranslation } from "react-i18next";
 
 
 interface IProps {
@@ -20,12 +21,14 @@ export default function NavMenu(props: IProps) {
 
     const navigate = useNavigate();
 
+    const {t} = useTranslation("common", {keyPrefix: "nav-menu"});
+
     const createElement = (elem: API.App.NavMenu.IResponseData)=> {
         const tabID = elem.linkDest.substring(1);
         return (
             <li key={`${tabID}NavBarElem`} className={`${styles.ListEntry} ${tabID==props.activeTab||tabID==="Home"&&props.activeTab===""?styles.ActiveTab:""}`} onClick={()=>navigate(elem.linkDest ?? window.location)}>
                 <img src={elem.imageName} alt={elem.imageAlt} />
-                <span>{elem.displayName}</span>
+                <span>{t(elem.displayName)}</span>
             </li>
         );
     }
