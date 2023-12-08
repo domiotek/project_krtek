@@ -32,7 +32,7 @@
     margin-bottom: 1.5rem;
 }
 
-.MilestoneList {
+.MilestoneList ul {
     list-style: none;
     padding: 0 .25rem;
 }
