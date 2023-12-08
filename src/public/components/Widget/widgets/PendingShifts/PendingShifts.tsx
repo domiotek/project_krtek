@@ -4,8 +4,8 @@ import classes from "./PendingShifts.css";
 
 import { API } from "../../../../types/networkAPI";
 import { callAPI } from "../../../../modules/utils";
-import { Link } from "react-router-dom";
 import { WidgetContext } from "../../WidgetBox";
+import { Link } from "react-router-dom";
 
 export default function PendingShiftsWidget() {
     const [shiftsCount, setShiftsCount] = useState<number | null>(null);
@@ -25,13 +25,13 @@ export default function PendingShiftsWidget() {
             {
                 shiftsCount&&shiftsCount>0?
                     <div className={classes.MainContent}>
-                        <h4>3 shifts</h4>
+                        <h4>{shiftsCount} shift{shiftsCount!=1?"s":""}</h4>
                         <h5>You still have shifts this month that require finishing.</h5>
-                        <Link className={"button"} to={"/Statistics/Shifts?state=pending"}>Go to shifts</Link>
+                        <Link className={"button"} to={"/Statistics/Shifts?state=Pending"}>Go to shifts</Link>
                     </div>
                 :
                     <div className={classes.Message}>
-                        <img src="/ilustrations/Celebrations.svg" alt="Celebrations"/>
+                        <img src="/ilustrations/Celebrating.svg" alt="Celebrations"/>
                         <h5>All done</h5>
                     </div>
             }
