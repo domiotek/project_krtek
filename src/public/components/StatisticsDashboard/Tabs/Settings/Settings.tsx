@@ -286,6 +286,8 @@ export default function SettingsTab(props: IProps) {
                     setDisableInputs(false);
                     setChangesMade(false);
                     props.reloadStats();
+                    orgWage.current = wage;
+                    orgIncome.current = income;
                 }}
                 submitCaption="Save"
                 doReset={false}
