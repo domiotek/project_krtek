@@ -137,6 +137,8 @@ const getPendingShiftsCount: WebAPI.IRouteOptions<API.App.Widgets.GetPendingShif
             const session = await global.app.webAuthManager.getSessionDetails(sessionID);
 
             if(session) {
+                res.status(200);
+                
                 const now = DateTime.now().startOf("month");
                 const options: WebAPI.Schedule.ScheduleManager.IUserShiftsOptions = {
                     from: {before: now.plus({months: 1}).minus({days: 1}), after: now},
@@ -144,14 +146,10 @@ const getPendingShiftsCount: WebAPI.IRouteOptions<API.App.Widgets.GetPendingShif
                 }
 
                 const shiftCount = await global.app.scheduleManager.countUserShifts(session.userID, options);
-
-                if(shiftCount) {
-                    res.status(200);
-                    
-                    result = {
-                        status: "Success",
-                        data: shiftCount
-                    }
+                
+                result = {
+                    status: "Success",
+                    data: shiftCount
                 }
             }
         }
