@@ -41,7 +41,7 @@ const getStatistics: WebAPI.IRouteOptions<API.App.Statistics.GetStatistics.IEndp
                 const date = DateTime.fromISO(params.ofMonth).startOf("month");
 
                 const stats = await global.app.userStatsManager.getStatsOf(session.userID, date);
-                const shifts = await global.app.scheduleManager.getUserShifts(session.userID,{before: date.plus({months: 1}).minus({days: 1}), after: date});
+                const shifts = await global.app.scheduleManager.getUserShifts(session.userID,{from: {before: date.plus({months: 1}).minus({days: 1}), after: date}});
                 let goal = null;
                 let historicGoalAmount = undefined;
 

@@ -70,7 +70,51 @@ export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
         throw new ScheduleAPIError("NoConnection");
     }
 
-    public async getUserShifts(userID: number, from?: WebAPI.Schedule.ScheduleManager.IDateRangeOptions | undefined, limit?: number, conn?: WebAPI.Mysql.IPoolConnection) {
+    private _processShiftOptions({from, state, limit}: WebAPI.Schedule.ScheduleManager.IUserShiftsOptions) {
+        const result: {
+            range: string | null
+            state: string
+            limit: string
+        } = {range: null, state: "", limit: ""};
+
+        if(from) {
+            switch(true) {
+                case from.after!=undefined&&from.before!=undefined:
+                    if(from.after?.isValid&&from.before?.isValid) {
+
+                        if(from.after < from.before && from.after!= from.before) {
+                            result.range = `AND date BETWEEN '${from.after.toISODate()}' AND '${from.before.toISODate()}'`;
+                        }
+                    }
+                break;
+                case from.before!=undefined&&from.before.isValid:
+                    result.range = `AND date < '${from.before?.toISODate()}'`;
+                break;
+                case from.after!=undefined&&from.after.isValid:
+                    result.range = `AND date > '${from.after?.toISODate()}'`;
+                break;
+            }
+        }
+        if(limit&&limit > 0) {
+            result.limit = `LIMIT ${limit}`;
+        }
+
+        switch(state) {
+            case "Assigned":
+                result.state = "AND date > CURDATE()";
+            break;
+            case "Pending":
+                result.state = "AND date <= CURDATE() AND ISNULL(startTime) AND ISNULL(endTime)";
+            break;
+            case "Finished":
+                result.state = "AND NOT ISNULL(startTime) AND NOT ISNULL(endTime)";
+            break;
+        }
+
+        return result;
+    }
+    
+    public async getUserShifts(userID: number, {from, state, limit}: WebAPI.Schedule.ScheduleManager.IUserShiftsOptions, conn?: WebAPI.Mysql.IPoolConnection) {
 
         async function JSONShiftsParser(this: WebAPI.Schedule.ScheduleManager.IUserShifts) {
             const JSONShifts = [];
@@ -95,38 +139,11 @@ export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
             let errCode: WebAPI.APIErrors<"Schedule"> | null = null;
 
             if(userExists) {
-                let rangeStr = "";
-                let rangeErr = true;
+                const queryParts = this._processShiftOptions({from, limit, state});
 
-                if(from) {
-                    switch(true) {
-                        case from.after!=undefined&&from.before!=undefined:
-                            if(from.after?.isValid&&from.before?.isValid) {
+                if(queryParts.range!=null) {
 
-                                if(from.after < from.before && from.after!= from.before) {
-                                    rangeErr = false;
-                                    rangeStr = `AND date BETWEEN '${from.after.toISODate()}' AND '${from.before.toISODate()}'`;
-                                }
-                            }
-                        break;
-                        case from.before!=undefined&&from.before.isValid:
-                            rangeErr = false;
-                            rangeStr = `AND date < '${from.before?.toISODate()}'`;
-                        break;
-                        case from.after!=undefined&&from.after.isValid:
-                            rangeErr = false;
-                            rangeStr = `AND date > '${from.after?.toISODate()}'`;
-                        break;
-                    }
-                }else rangeErr = false;
-
-                if(!rangeErr) {
-                    let limitStr = ""
-                    if(limit&&limit > 0) {
-                        limitStr = `LIMIT ${limit}`;
-                    }
-
-                    const query = `SELECT workDayID, privateSlotID, date, note, noteUpdatedAt, noteUpdatedBy FROM shifts NATURAL JOIN shift_slots NATURAL JOIN work_days WHERE userID=? ${rangeStr} ORDER BY date ASC ${limitStr};`;
+                    const query = `SELECT workDayID, privateSlotID, date, note, noteUpdatedAt, noteUpdatedBy FROM shifts NATURAL JOIN shift_slots NATURAL JOIN work_days WHERE userID=? ${queryParts.range} ${queryParts.state} ORDER BY date ASC ${queryParts.limit};`;
 
                     const response = await this._db.performQuery<"Select">(query, [userID], connection);
 
@@ -151,6 +168,44 @@ export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
                             connection.release();
                         }
                         return result;
+                    }else errCode = this._db.getLastQueryFailureReason();
+                }else errCode = "InvalidRange";
+            }else errCode = "NoUser";
+
+            connection.rollback();
+            connection.release();
+            if(errCode) throw new ScheduleAPIError(errCode);
+        }
+
+        throw new ScheduleAPIError("NoConnection");
+    }
+
+    public async countUserShifts(userID: number, {from, state}: WebAPI.Schedule.ScheduleManager.IUserShiftsOptions, conn?: WebAPI.Mysql.IPoolConnection) {
+        const connection = conn ?? await this._db.getConnection();
+
+        if(connection) {
+            if(!conn) connection.beginTransaction();
+
+            const userExists = await (global.app.webAuthManager as InternalWebAuthManager).userExists(userID, true, connection);
+
+            let errCode: WebAPI.APIErrors<"Schedule"> | null = null;
+
+            if(userExists) {
+                const queryParts = this._processShiftOptions({from, state});
+
+                if(queryParts.range!=null) {
+
+                    const query = `SELECT COUNT(*) as count FROM shifts NATURAL JOIN shift_slots NATURAL JOIN work_days WHERE userID=? ${queryParts.range} ${queryParts.state} ORDER BY date ASC;`;
+
+                    const response = await this._db.performQuery<"Select">(query, [userID], connection);
+
+                    if(response) {
+
+                        if(!conn) {
+                            connection.rollback();
+                            connection.release();
+                        }
+                        return response[0]["count"];
                     }else errCode = this._db.getLastQueryFailureReason();
                 }else errCode = "InvalidRange";
             }else errCode = "NoUser";

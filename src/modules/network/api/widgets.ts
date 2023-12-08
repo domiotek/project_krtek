@@ -22,7 +22,7 @@ const getUpcomingShifts: WebAPI.IRouteOptions<API.App.Widgets.GetUpcomingShifts.
 
             if(session) {
 
-                const shifts = await global.app.scheduleManager.getUserShifts(session.userID, {after: DateTime.now().minus({days: 1})},3);
+                const shifts = await global.app.scheduleManager.getUserShifts(session.userID, {from: {after: DateTime.now().minus({days: 1})}, limit: 3});
 
                 if(shifts) {
                     res.status(200);

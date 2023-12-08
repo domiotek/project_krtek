@@ -676,6 +676,12 @@ namespace WebAPI {
                 after?: DateTime
             }
 
+            interface IUserShiftsOptions {
+                from?: IDateRangeOptions
+                state?: Exclude<WorkDayAPI.IShiftSlot["status"],"Unassigned">
+                limit?: number
+            }
+
             interface IUserShifts {
                 shifts: IWorkDay[]
                 userSlots: number[]
@@ -768,10 +774,11 @@ namespace WebAPI {
             getWorkDay(when: DateTime): Promise<IWorkDay | null>
 
             /**
-             * Returns all shifts from specified period of time, where given user was in one of the slots.
-             * @param from Optional parameter, when omitted, all records are searched. It's an object with two
+             * Returns all shifts from specified period of time, where given user was in one of the slots and the shift matches filters.
+             * @param options.from Optional property, when omitted, all records are searched. It's an object with two
              * properties - before and after. You can use both or only one of them to specify search range.
-             * @param limit Optional parameter. Defines how many records should be returned at most.
+             * @param options.state Optional property. Allows for filtering shifts only with specified state.
+             * @param options.limit Optional property. Defines how many records should be returned at most.
              * 
              * @async 
              * @returns User shifts object.
@@ -780,7 +787,25 @@ namespace WebAPI {
              * 
              * @throws Can throw NoConnection, DBError, NoUser or InvalidRange errors.
              */
-            getUserShifts(userID: number, from?: ScheduleManager.IDateRangeOptions, limit?: number): Promise<ScheduleManager.IUserShifts>
+            getUserShifts(userID: number, options?: ScheduleManager.IUserShiftsOptions): Promise<ScheduleManager.IUserShifts>
+
+
+            /**
+             * Returns number of shifts from specified period of time, where given user was in one of the slots and the shift matches filters.
+             * @param options.from Optional property, when omitted, all records are searched. It's an object with two
+             * properties - before and after. You can use both or only one of them to specify search range.
+             * @param options.state Optional property. Allows for filtering shifts only with specified state.
+             * @param options.limit Has no effect.
+             * 
+             * @async 
+             * @returns User shifts object.
+             * User shifts object consists of two properties - shifts which is an array of work days where user is assigned
+             * and userSlots which is also an array and its values are the slot IDs to which user is assigned in the corresponding work day.
+             * 
+             * @throws Can throw NoConnection, DBError, NoUser or InvalidRange errors.
+             */
+            countUserShifts(userID: number, options?: ScheduleManager.IUserShiftsOptions): Promise<number>
+
 
             /**
              * Returns all work days from the current week.

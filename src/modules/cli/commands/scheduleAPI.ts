@@ -211,7 +211,7 @@ export default function(){
         
         let workDays;
         try {
-            workDays = await global.app.scheduleManager.getUserShifts(userID, fromOpts);
+            workDays = await global.app.scheduleManager.getUserShifts(userID, {from: fromOpts});
         } catch (error: any) {
             if(!error.errCode) throw error;
             req.respond(getCommandErrorDisplayText(`Couldn't get shifts of the user identified by: ${insertColor("fg_cyan",userIDParam?.toString() ?? emailParam ?? "", data.colorsMode)}`,error.errCode, data.colorsMode));
