@@ -165,14 +165,7 @@ const putSettings: WebAPI.IRouteOptions<API.App.Statistics.PutSettings.IEndpoint
                     return result;
                 }
 
-                if(params.props) {
-                    await global.app.userStatsManager.setHistoricUserData(session.userID,DateTime.now(),{
-                        wage: params.props.wage==0?null:params.props.wage,
-                        externalIncome: params.props.externalIncome==0?null:params.props.externalIncome
-                    });
-
-                    await global.app.userStatsManager.dropCacheState(session.userID);
-                }
+                let goalAmount = 0;
 
                 if(params.addedMilestonesCount > 0 || params.changedMilestonesCount > 0 || params.removedIDList.length > 0 || params.reorderedMilestones) {
                     
@@ -186,6 +179,8 @@ const putSettings: WebAPI.IRouteOptions<API.App.Statistics.PutSettings.IEndpoint
                             await goal?.setMilestone(milestone.ID < 0?params.removedIDList.pop() as number:milestone.ID, milestone.title, milestone.amount, nextOrderTag);
                         }
 
+                        goalAmount += milestone.amount;
+
                         nextOrderTag++;
                     }
 
@@ -193,7 +188,30 @@ const putSettings: WebAPI.IRouteOptions<API.App.Statistics.PutSettings.IEndpoint
                         await goal?.dropMilestone(ID);
                     }
                 }
-                
+
+                if(params.props||goalAmount>0) {
+                    let wage = undefined;
+                    let income = undefined;
+
+                    if(goalAmount==0) {
+                        const goalController = await global.app.userStatsManager.getGoalOf(session.userID) as WebAPI.Statistics.GoalAPI.IGoalManager;
+                        goalAmount = await goalController.getTotalAmount();
+                    }
+
+                    if(params.props) {
+                        wage = params.props.wage==0?null:params.props.wage;
+                        income = params.props.externalIncome==0?null:params.props.externalIncome;
+                    }
+
+                    await global.app.userStatsManager.setHistoricUserData(session.userID,DateTime.now(),{
+                        wage,
+                        externalIncome: income,
+                        goalAmount
+                    });
+
+                    await global.app.userStatsManager.dropCacheState(session.userID);
+                }
+
 
                 res.status(200);
 
