@@ -1,10 +1,12 @@
-import React, {CSSProperties} from "react";
+import React, {CSSProperties, useContext} from "react";
 import { API } from "../../types/networkAPI";
 import ProgressRing from "../ProgressRing/ProgressRing";
 
 import classes from "./GoalPanel.css";
 import commonClasses from "../common.css";
 import { render2FloatingPoint } from "../../modules/utils";
+import { useTranslation } from "react-i18next";
+import { AppContext } from "../../App";
 
 interface IProps {
     data: API.App.Statistics.IGoalDetails | null
@@ -18,22 +20,26 @@ interface ISureProps {
 }
 
 function GoalCompletedContent(savings: number) {
+    const {t} = useTranslation("statistics", {keyPrefix: "goal-panel.finish"});
+
     return (
         <div className={classes.GoalCompleteContainer}>
-            <h5>All milestones fulfilled</h5>
+            <h5>{t("title")}</h5>
             <img src="/ilustrations/Savings.svg" alt="Money box"></img>
-            <h4>You have {render2FloatingPoint(savings)}zł of savings</h4>
-            <p>Congratulations. From now on, you earn just for yourself and your needs.</p>
+            <h4>{t("subtitle", {amount: render2FloatingPoint(savings)})}</h4>
+            <p>{t("desc")}</p>
         </div>
     );
 }
 
 function GoalNoMilestonesContent() {
+    const {t} = useTranslation("statistics", {keyPrefix: "goal-panel.no-milestone"});
+
     return (
         <div className={classes.NoDataContainer}>
             <img src="/ilustrations/NoData.svg" alt="No data image" />
-            <h5>No milestones set</h5>
-            <p>You can edit your goal details in the settings below.</p>
+            <h5>{t("title")}</h5>
+            <p>{t("desc")}</p>
         </div>
     );
 }
@@ -44,6 +50,7 @@ interface IHistoricPanelProps {
 }
 
 function GoalHistoricDataContent(props: IHistoricPanelProps) {
+    const {t} = useTranslation("statistics", {keyPrefix: "goal-panel.arch"});
 
     const diff = props.earnings - props.goalAmount;
     const hasSaved = diff > 0;
@@ -51,34 +58,33 @@ function GoalHistoricDataContent(props: IHistoricPanelProps) {
     return (
         <div className={`${classes.HistoricGoalContainer} ${hasSaved?classes.Saved:""}`}>
             <img src={`/ilustrations/${hasSaved?"Celebrations":"Progress"}.svg`} alt={hasSaved?"Celebrations":"Goal progress"} />
-            <h5>{hasSaved?"Congratulations!":"It wasn't enough"}</h5>
+            <h5>{t("title", {context: hasSaved?"success":"failure"})}</h5>
             <p>
-                {hasSaved?
-                    ["You managed to accumulate ",
-                    <span>{render2FloatingPoint(diff)}zł</span>,
-                    " of savings that month."]
-                :
-                    ["There was still ",
-                    <span>{render2FloatingPoint(diff*-1)}zł</span>,
-                    " to earn in order to meet your goal."]
-                }
+                {t("desc-prefix", {context: hasSaved?"success":"failure"})}
+                <span>{render2FloatingPoint(diff * (hasSaved?1:-1))}zł</span>
+                {t("desc-sufix", {context: hasSaved?"success":"failure"})}
             </p>
         </div>
     );
 }
 
 function GoalNoHistoricDataContent() {
+    const {t} = useTranslation("statistics", {keyPrefix: "goal-panel"});
+
+    const [userData] = useContext(AppContext);
+    
     return (
         <div className={classes.NoDataContainer}>
             <img src="/ilustrations/NoData.svg" alt="No data image" />
-            <h5>No goal data</h5>
-            <p>You didn't have a goal set for that month.</p>
+            <h5>{t("no-goal-title")}</h5>
+            <p>{t("no-goal-desc", {context: userData?.accountGender=="f"?"female":"male"})}</p>
         </div>
     );
 }
 
 
 function GoalMainContent(props: ISureProps) {
+    const {t} = useTranslation("statistics", {keyPrefix: "goal-panel.main"});
     
     if(props.earnings >= props.data.totalAmount) {
         return GoalCompletedContent(props.earnings - props.data.totalAmount);
@@ -91,7 +97,7 @@ function GoalMainContent(props: ISureProps) {
             return (
                 <li key={overwriteKey ?? data.ID} style={{"--progress": `${percentage}%`} as CSSProperties}>
                     {data.title ?? "[?]"}
-                    <i>{render2FloatingPoint(progressAmount)} of {render2FloatingPoint(data.amount)}zł ({percentage}%)</i>
+                    <i>{render2FloatingPoint(progressAmount)} {t("of")} {render2FloatingPoint(data.amount)}zł ({percentage}%)</i>
                     <span>
                         <span></span>
                     </span>
@@ -125,7 +131,7 @@ function GoalMainContent(props: ISureProps) {
 
         return (
             <div>
-                <h5 className={classes.SubHeader}>{firstUnfulfilledIndex} out of {milestoneCount} milestones completed</h5>
+                <h5 className={classes.SubHeader}>{t("subheader", {index: firstUnfulfilledIndex, total: milestoneCount})}</h5>
                 <div className={`${classes.MilestoneCarouselWrapper} ${isFirst?classes.First:(isLast?classes.Last:"")} ${milestoneCount==1?classes.OnlyOne:""}`}>
                     <ul className={classes.MilestoneCarousel}>
                         {
@@ -143,9 +149,9 @@ function GoalMainContent(props: ISureProps) {
                 <div className={classes.GoalSummary}>
                     <div className={classes.Graph}>
                         <ProgressRing radius={10} stroke={2} progress={props.earnings / props.data.totalAmount *100}/>
-                        {render2FloatingPoint(props.earnings)} of {render2FloatingPoint(props.data.totalAmount)}zł
+                        {render2FloatingPoint(props.earnings)} {t("of")} {render2FloatingPoint(props.data.totalAmount)}zł
                     </div>
-                    <h5>{render2FloatingPoint((props.data.totalAmount - props.earnings))}zł more to complete the goal</h5>
+                    <h5>{t("summary", {amount: render2FloatingPoint((props.data.totalAmount - props.earnings))})}</h5>
                 </div>
             </div>
         );
@@ -153,9 +159,12 @@ function GoalMainContent(props: ISureProps) {
 }
 
 export default function GoalPanel(props: IProps) {
+    const {t} = useTranslation("statistics", {keyPrefix: "goal-panel"});
+
     return (
         <div className={classes.GoalPanel}>
-            <h3>Your goal</h3>
+            <h3>{t("header")}</h3>
+
             {
                 props.data?
                     props.data.milestones.length >0?

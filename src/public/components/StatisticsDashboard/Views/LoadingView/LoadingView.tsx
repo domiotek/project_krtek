@@ -6,8 +6,11 @@ import pieClasses from "../../../RatioPie/RatioPie.css";
 import barClasses from "../../../ProgressBar/ProgressBar.css";
 import classes from "./LoadingView.css"
 import { LoadingGoalPanel } from "../../../GoalPanel/GoalPanel";
+import { useTranslation } from "react-i18next";
 
 export default function LoadingStatsView() {
+    const {t} = useTranslation("Statistics", {keyPrefix: "default-view"});
+
     return (
         <div className={layoutClasses.DefaultViewWrapper}>
             <div className={layoutClasses.EarningsPanel}>
@@ -23,16 +26,16 @@ export default function LoadingStatsView() {
                 <div className={`${layoutClasses.TipWageRatioPie} ${pieClasses.Container} ${classes.DisableOnMobile}`}>
                     <div className={`${pieClasses.OuterGraph} ${commonClasses.PulseLoadingAnimHolder} ${classes.DummyWageTipRatioGraph}`}></div>
                     <div className={pieClasses.GraphLegend}>
-                        <span>Tip</span>
-                        <span>Wage</span>
+                        <span>{t("tip-label")}</span>
+                        <span>{t("wage-label")}</span>
                     </div>
                 </div>
 
                 <div className={`${layoutClasses.TipWageRatioBar} ${barClasses.Container}`}>
                     <div className={`${barClasses.OuterGraph} ${commonClasses.PulseLoadingAnimHolder} ${classes.DummyWageTipRatioGraph}`}></div>
                     <div className={barClasses.GraphLegend}>
-                        <span>Tip</span>
-                        <span>Wage</span>
+                        <span>{t("tip-label")}</span>
+                        <span>{t("wage-label")}</span>
                     </div>
                 </div>
             </div>

@@ -12,6 +12,7 @@ import ShiftsTab from "../components/StatisticsDashboard/Tabs/Shifts/Shifts";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { callAPI } from "../modules/utils";
 import SuspenseLoader from "./Loader";
+import { useTranslation } from "react-i18next";
 
 const NerdStatsTab = React.lazy(()=>import(/* webpackChunkName: "s_nrdst" */"../components/StatisticsDashboard/Tabs/NerdStats/NerdStats"));
 const SettingsTab = React.lazy(()=>import(/* webpackChunkName: "s_sett" */"../components/StatisticsDashboard/Tabs/Settings/Settings"));
@@ -68,6 +69,8 @@ export default function Statistics() {
     const {tab: startingTabID} = useParams();
     const navigate = useNavigate()
 
+    const {t} = useTranslation("statistics");
+
     const tabsWrapperRef = createRef<HTMLDivElement>();
 
     useEffect(()=>{
@@ -122,11 +125,11 @@ export default function Statistics() {
         <section className={subPageClasses.SubPage}>
              <div className={classes.MonthSwitcher}>
                 <button type="button" onClick={ev=>seekStatistics(-1, ev.target as HTMLButtonElement)} disabled={rangeSwitcherStates[0]===false}>
-                    <img src={arrowImg} alt="Previous month"/>    
+                    <img src={arrowImg} alt={t("previous-month")}/>    
                 </button>
                 <span>{rangePoint.toFormat("LLLL yyyy")}</span>
                 <button type="button" onClick={ev=>seekStatistics(1, ev.target as HTMLButtonElement)} disabled={rangeSwitcherStates[1]===false}>
-                    <img src={arrowImg} alt="Next month" />
+                    <img src={arrowImg} alt={t("next-month")}/>
                 </button>
             </div>
             
@@ -135,9 +138,9 @@ export default function Statistics() {
             <div ref={tabsWrapperRef} className={classes.TabsWrapper}>
                 <TabsSwitcher
                     tabs={{
-                        shifts: "Your shifts",
-                        stats: "Stats for nerds",
-                        settings: "Settings"
+                        shifts: t("shifts-tab"),
+                        stats: t("nerd-stats-tab"),
+                        settings: t("settings-tab")
                     }}
                     activeTabID={startingTabID?.toLowerCase()}
                     onSwitch={data=>navigate(`/Statistics/${data.substring(0,1).toUpperCase()}${data.substring(1)}`)}

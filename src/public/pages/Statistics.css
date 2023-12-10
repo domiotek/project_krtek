@@ -10,6 +10,7 @@
     border-radius: 0.6rem;
     background: var(--bg-light-85);
     font-size: larger;
+    text-transform: capitalize;
 }
 
 .DateRangePlaceholder {
