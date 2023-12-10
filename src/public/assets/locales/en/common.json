@@ -17,6 +17,7 @@
     "clear-all": "Clear all",
     "reset": "Reset",
     "edit": "Edit",
+    "save": "Save",
     "no-data": "No data",
     "details": "Details",
     "unset": "Unset",
@@ -25,5 +26,6 @@
     "total": "Total",
     "maximum": "Maximum",
     "minimum": "Minimum",
-    "average": "Average"
+    "average": "Average",
+    "unsaved-changes": "You have unsaved changes"
 }

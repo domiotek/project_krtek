@@ -19,6 +19,7 @@
     "clear-all": "Wyczyść",
     "reset": "Przywróć",
     "edit": "Edytuj",
+    "save": "Zapisz",
     "no-data": "Brak danych",
     "details": "Szczegółowe informacje",
     "unset": "Brak",
@@ -27,5 +28,6 @@
     "total": "Razem",
     "maximum": "Największy",
     "minimum": "Najmniejszy",
-    "average": "Średni"
+    "average": "Średni",
+    "unsaved-changes": "Masz niezapisane zmiany"
 }

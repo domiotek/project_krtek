@@ -57,5 +57,11 @@
     "nerd-stats-tab.disclaimer-subtitle": "...in the future!",
     "nerd-stats-tab.disclaimer-desc": "There is a lot of stuff planned, like statistics based on the day of the week, summary of shifts worked with certain people and more. If you have any interesting idea, let me know.",
     "nerd-stats-tab.max-tip-date-placeholder": "Nice, but not true",
-    "nerd-stats-tab.min-tip-date-placeholder": "yikes"
+    "nerd-stats-tab.min-tip-date-placeholder": "yikes",
+    "settings-tab.no-milestones-title": "No milestones",
+    "settings-tab.goal-settings-header": "Goal settings",
+    "settings-tab.add-milestone": "Add milestone",
+    "settings-tab.wage-rate-label": "Wage rate",
+    "settings-tab.ext-income-label": "External income"
+    
 }

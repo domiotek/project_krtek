@@ -62,5 +62,10 @@
     "nerd-stats-tab.disclaimer-subtitle": "...w przyszłości!",
     "nerd-stats-tab.disclaimer-desc": "W planach jest jeszcze mnóstwo ciekawych statystyk, jak analizy z podziałem na dni, czy takie z uwzględnieniem współpracowników - i to też nie wszystko. Jeśli masz jakiś ciekawy pomysł, daj znać.",
     "nerd-stats-tab.max-tip-date-placeholder": "Ekstra, tylko, że nie prawda",
-    "nerd-stats-tab.min-tip-date-placeholder": "eh..."
+    "nerd-stats-tab.min-tip-date-placeholder": "eh...",
+    "settings-tab.no-milestones-title": "Nic tu nie ma",
+    "settings-tab.goal-settings-header": "Ustawienia celu",
+    "settings-tab.add-milestone": "Dodaj nowy",
+    "settings-tab.wage-rate-label": "Godzinowa stawka",
+    "settings-tab.ext-income-label": "Zewnętrzny dochód"
 }

@@ -13,6 +13,7 @@ import { callAPI, render2FloatingPoint } from "../../../../modules/utils";
 import EditImage from "../../../../assets/ui/pen.png";
 import DeleteImage from "../../../../assets/ui/bin.png";
 import DragImage from "../../../../assets/ui/drag.png";
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     setModalContent: WebApp.TSetModalContent
@@ -46,6 +47,10 @@ export default function SettingsTab(props: IProps) {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [changesMade, setChangesMade] = useState<boolean>(false);
     const afterFetchUpdate = useRef<boolean>(false);
+
+    const {t} = useTranslation("statistics", {keyPrefix: "settings-tab"});
+    const {t: tc} = useTranslation("common");
+    const {t: tg} = useTranslation("glossary");
 
     useEffect(()=>{
         return callAPI<API.App.Statistics.GetSettings.IEndpoint>("GET","/api/user/stats-settings",null,
@@ -230,7 +235,7 @@ export default function SettingsTab(props: IProps) {
         return (
             <div className={classes.NoMilestonesPanel}>
                 <img src="/ilustrations/NoData.svg" alt="No data"/>
-                <h5>No milestones</h5>
+                <h5>{t("no-milestones-title")}</h5>
             </div>
         );
     }
@@ -262,7 +267,7 @@ export default function SettingsTab(props: IProps) {
                         </div>
                     </div>
                     <div className={classes.GoalSettingsContainer}>
-                        <h4>Goal settings</h4>
+                        <h4>{t("goal-settings-header")}</h4>
                         <div className={`${classes.AddMilestoneBtn} ${commonClasses.PulseLoadingAnimHolder} ${classes.DummyAddMilestoneBtn}`}></div>
                         <ul className={classes.MilestoneList}>
                             {renderDummyMilestonePanel()}
@@ -276,7 +281,7 @@ export default function SettingsTab(props: IProps) {
     }else return (
         <div className={classes.SettingsTabContainer}>
             <p className={`${classes.UnsavedChangesMessage} ${changesMade?classes.Shown:""}`}>
-                You have unsaved changes.
+                {tc("unsaved-changes")}
             </p>
             <CustomForm<API.App.Statistics.PutSettings.IEndpoint>
                 url="/api/user/stats-settings"
@@ -289,7 +294,7 @@ export default function SettingsTab(props: IProps) {
                     orgWage.current = wage;
                     orgIncome.current = income;
                 }}
-                submitCaption="Save"
+                submitCaption={tc("save")}
                 doReset={false}
                 ignoreList={["wageRate", "income"]}
                 onBeforeSubmit={onBeforeSubmitHandler}
@@ -298,7 +303,7 @@ export default function SettingsTab(props: IProps) {
                     <div className={classes.GeneralInputsWrapper}>
                         <CurrencyInputBox 
                             globalID="statsSettings_wageRate"
-                            label="Wage rate"
+                            label={t("wage-rate-label")}
                             formControlID="wageRate"
                             initialValue={wage}
                             stateUpdater={val=>setWage(val)}
@@ -308,7 +313,7 @@ export default function SettingsTab(props: IProps) {
                         />
                         <CurrencyInputBox 
                             globalID="statsSettings_income"
-                            label="External income"
+                            label={t("ext-income-label")}
                             formControlID="income"
                             initialValue={income}
                             stateUpdater={val=>setIncome(val)}
@@ -317,14 +322,14 @@ export default function SettingsTab(props: IProps) {
                         />
                     </div>
                     <div className={classes.GoalSettingsContainer}>
-                        <h4>Goal settings</h4>
+                        <h4>{t("goal-settings-header")}</h4>
                         <button
                             type="button"
                             className={classes.AddMilestoneBtn} 
                             disabled={disableInputs||Object.keys(milestones).length==maxMilestoneCount.current}
                             onClick={addMilestoneClickHandler}
                         >
-                            Add milestone
+                            {t("add-milestone")}
                         </button>
                         <div className={classes.MilestoneList}>
                             {
