@@ -9,6 +9,18 @@
     "no-one-else": "No one else",
     "today": "Today",
     "tommorow": "Tommorow",
-    "unassigned": "unassigned",
-    "and": "and"
+    "unassigned": "Unassigned",
+    "unassigned-count": "unassigned",
+    "and": "and",
+    "filters": "Filters",
+    "apply": "Apply",
+    "clear-all": "Clear all",
+    "reset": "Reset",
+    "edit": "Edit",
+    "no-data": "No data",
+    "details": "Details",
+    "unset": "Unset",
+    "never": "never",
+    "last-updated": "Last updated",
+    "total": "Total"
 }

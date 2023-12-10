@@ -1,0 +1,14 @@
+{
+    "shift-states.assigned": "Zaplanowana",
+    "shift-states.pending": "Oczekująca",
+    "shift-states.finished": "Zakończona",
+    "roles.waiter": "Kelner",
+    "roles.bartender": "Barman",
+    "ranks.employee": "Pracownik",
+    "ranks.manager": "Menedżer",
+    "ranks.administrator": "Administrator",
+    "shift.wage": "Godzinówka",
+    "shift.tip": "Napiwek",
+    "shift.ext-income": "Dodatkowy dochód",
+    "shift.deduction": "Odpis"
+}

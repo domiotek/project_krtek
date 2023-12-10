@@ -9,6 +9,20 @@
     "no-one-else": "Nikt więcej",
     "today": "Dzisiaj",
     "tommorow": "Jutro",
-    "unassigned": "nie przypisanych",
-    "and": "i"
+    "unassigned": "Pusta",
+    "unassigned-count_one": "nie przypisana",
+    "unassigned-count_few": "nie przypisane",
+    "unassigned-count_many": "nie przypisanych",
+    "and": "i",
+    "filters": "Filtry",
+    "apply": "Zastosuj",
+    "clear-all": "Wyczyść",
+    "reset": "Przywróć",
+    "edit": "Edytuj",
+    "no-data": "Brak danych",
+    "details": "Szczegółowe informacje",
+    "unset": "Brak",
+    "never": "nigdy",
+    "last-updated": "Ostatnia aktualizacja",
+    "total": "Razem"
 }

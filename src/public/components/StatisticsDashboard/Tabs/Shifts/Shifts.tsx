@@ -8,12 +8,13 @@ import AddShiftModal from "../../../../modals/AddShift/AddShift";
 import ShiftPanel from "./ShiftPanel";
 import { LoadingShiftsView, NoFilterResultsMessage, NoShiftsMessage } from "./Views";
 import FilterBox from "../../../FilterBox/FilterBox";
-import { DateTime } from "luxon";
+import { DateTime, Info } from "luxon";
 
 
 import eFilterImg from "../../../../assets/ui/empty_filter.png";
 import fFilterImg from "../../../../assets/ui/filled_filter.png";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 type IShiftFilters = {
     states: {
@@ -51,6 +52,10 @@ export default function ShiftsTab(props: IProps) {
     const [filteringActive, setFilteringActive] = useState<boolean>(false);
 
     const navigate = useNavigate();
+    const {t} = useTranslation("statistics",{keyPrefix: "shifts-tab"});
+    const {t: tg} = useTranslation("glossary");
+
+    const weekDayLabels = Info.weekdays();
     
     useEffect(()=>{
         const params = new URLSearchParams(window.location.search);
@@ -68,7 +73,7 @@ export default function ShiftsTab(props: IProps) {
     useEffect(()=>{
         const roles: Array<[string, string]> = [];
         for (const roleData of props.roles ?? []) {
-            roles.push([roleData.name, roleData.displayName]);
+            roles.push([roleData.name, tg(`roles.${roleData.name}`)]);
         }
         
         setFilterRoles(roles);
@@ -165,37 +170,37 @@ export default function ShiftsTab(props: IProps) {
                 <div className={classes.ButtonRow}>
                     <button type="button" className={classes.FilterButton} onClick={filterClickHandler}>
                         <img src={filteringActive?fFilterImg:eFilterImg} alt="Filter icon"/>
-                        Filter
+                        {t("filter-label")}
                     </button>
                     <button type="button" className={classes.AddShiftButton} onClick={addShiftClickHandler}>
-                        Add shift
+                        {t("new-shift-label")}
                     </button>
                 </div>
                 <div className={`${classes.FilterBox} ${filterBoxActive?classes.Active:""}`}>
                     <FilterBox<IShiftFilters, keyof IShiftFilters>
                         rules={{
                             "states": {
-                                name: "States",
+                                name: t("shift-state-label"),
                                 values:[
-                                    ["Assigned", "Planned"],
-                                    ["Pending", "Pending"],
-                                    ["Finished", "Finished"]
+                                    ["Assigned", tg("shift-states.assigned")],
+                                    ["Pending", tg("shift-states.pending")],
+                                    ["Finished", tg("shift-states.finished")]
                                 ]
                             },
                             "days": {
-                                name: "Week days",
+                                name: t("week-days-label"),
                                 values: [
-                                    ["1", "Monday"],
-                                    ["2", "Tuesday"],
-                                    ["3", "Wednesday"],
-                                    ["4", "Thursday"],
-                                    ["5", "Friday"],
-                                    ["6", "Saturday"],
-                                    ["7", "Sunday"]
+                                    ["1", weekDayLabels[0]],
+                                    ["2", weekDayLabels[1]],
+                                    ["3", weekDayLabels[2]],
+                                    ["4", weekDayLabels[3]],
+                                    ["5", weekDayLabels[4]],
+                                    ["6", weekDayLabels[5]],
+                                    ["7", weekDayLabels[6]]
                                 ]
                             },
                             "roles": {
-                                name: "Roles",
+                                name: t("roles-label"),
                                 values: filterRoles ?? []
                                 
                             }

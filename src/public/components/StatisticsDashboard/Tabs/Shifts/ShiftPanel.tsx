@@ -6,6 +6,7 @@ import EditImg from "../../../../assets/ui/pen.png";
 import { render2FloatingPoint } from "../../../../modules/utils";
 
 import classes from "./Shifts.css";
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     workDay: API.App.Statistics.UserShifts.IWorkDay<"OnlyAssigned">
@@ -19,7 +20,9 @@ interface IProps {
 
 
 export default function ShiftPanel(props: IProps)  {
-
+    const {t} = useTranslation("statistics", {keyPrefix: "shifts-tab"});
+    const {t: tc} = useTranslation("common");
+    const {t: tg} = useTranslation("glossary");
 
     function generateCoWorkersData() {
         let coWorkersStr = "";
@@ -33,7 +36,7 @@ export default function ShiftPanel(props: IProps)  {
 
                 const slot = day.slots[ID] as NonNullable<typeof day.slots[0]>;
 
-                let name = "Unassigned";
+                let name = tc("unassigned");
                 let startTime = DateTime.fromISO(slot.plannedStartTime);
                 let endTime = slot.plannedEndTime?DateTime.fromISO(slot.plannedEndTime):null;
 
@@ -59,9 +62,9 @@ export default function ShiftPanel(props: IProps)  {
             coWorkersStr = coWorkersStr.substring(0,coWorkersStr.length-2);
 
             if(coWorkersUnassignedCount!=0) {
-                coWorkersStr +=` ${coWorkersUnassignedCount!=coWorkersCount?"and ":""}${coWorkersUnassignedCount} unassigned`;
+                coWorkersStr +=` ${coWorkersUnassignedCount!=coWorkersCount?tc("and")+" ":""}${coWorkersUnassignedCount} ${tc("unassigned-count", {count: coWorkersUnassignedCount})}`;
             }
-        }else coWorkersStr = "No one else";
+        }else coWorkersStr = tc("no-one-else");
 
         return {
             nameList: coWorkersStr,
@@ -81,16 +84,16 @@ export default function ShiftPanel(props: IProps)  {
                         ownerSlot?.status=="Assigned"||ownerSlot?.status=="Pending"?
                             <div className={classes.UnfinishedShiftView}>
                                 <h4>
-                                    {ownerSlot.status=="Assigned"?"Planned":"Pending"}
+                                    {ownerSlot.status=="Assigned"?tg("shift-states.assigned"):tg("shift-states.pending")}
                                 </h4>
                                 <h6>
-                                    {ownerSlot.status=="Assigned"?`${props.calcStats.startTime.toFormat("HH:mm")} - ${props.calcStats.endTime?.toFormat("HH:mm") ?? "?"}`:"Requires action"}
+                                    {ownerSlot.status=="Assigned"?`${props.calcStats.startTime.toFormat("HH:mm")} - ${props.calcStats.endTime?.toFormat("HH:mm") ?? "?"}`:t("requires-action")}
                                 </h6>
                             </div>
                         :
                             <div className={classes.FinishedShiftView}>
                                     <h4>{props.calcStats.startTime.toFormat("HH:mm")} - {props.calcStats.endTime?.toFormat("HH:mm") ?? "?"} ({props.calcStats.duration}h)</h4>
-                                    <h2>{props.wage?`+ ${render2FloatingPoint(props.calcStats.totalEarnings)}zł`:"Finished"}</h2>
+                                    <h2>{props.wage?`+ ${render2FloatingPoint(props.calcStats.totalEarnings)}zł`:tg("shift-states.finished")}</h2>
                             </div>
                     }
                 </div>
@@ -100,24 +103,26 @@ export default function ShiftPanel(props: IProps)  {
     }
 
     function renderEarningsSection(details: API.App.Statistics.ICalculatedShiftData) {
+
+
         return (
             <div className={`${classes.Section} ${classes.EarningsSection}`}>
-                <h4>Earnings</h4>
+                <h4>{t("earnings-section-header")}</h4>
                 <ul className={`${classes.SectionList} ${classes.EarningsSummaryList}`}>
                     <li>
-                        <h5>{props.wage?`+ ${render2FloatingPoint(details.wageEarnings)}zł`:"No data"}</h5>
-                        <h6>Wage</h6>
+                        <h5>{props.wage?`+ ${render2FloatingPoint(details.wageEarnings)}zł`:tc("no-data")}</h5>
+                        <h6>{tg("shift.wage")}</h6>
                     </li>
                     <li>
                         <h5>+ {render2FloatingPoint(details.tip)}zł</h5>
-                        <h6>Tip</h6>
+                        <h6>{tg("shift.tip")}</h6>
                     </li>
                     <li>
                         <h5>- {render2FloatingPoint(details.deduction)}zł</h5>
-                        <h6>Deduction</h6>
+                        <h6>{tg("shift.deduction")}</h6>
                     </li>
                 </ul>
-                <h5>Total: {render2FloatingPoint(details.totalEarnings)}zł</h5>
+                <h5>{tc("total")}: {render2FloatingPoint(details.totalEarnings)}zł</h5>
             </div>
         );
     }
@@ -134,36 +139,36 @@ export default function ShiftPanel(props: IProps)  {
             {renderHeader(coWorkersData.nameList)}
             <div className={classes.ShiftDetails}>
                 <div className={classes.Section}>
-                    <h4>Co-workers</h4>
+                    <h4>{t("co-workers-label")}</h4>
                     <ul className={classes.SectionList}>
-                        {coWorkersData.panelList.length!=0?coWorkersData.panelList:<li><h5>No data</h5></li>}
+                        {coWorkersData.panelList.length!=0?coWorkersData.panelList:<li><h5>{tc("no-data")}</h5></li>}
                     </ul>
                 </div>
 
                 {ownerSlot.status=="Finished"?renderEarningsSection(props.calcStats):[]}
 
                 <div className={classes.Section}>
-                    <h4>Details</h4>
+                    <h4>{tc("details")}</h4>
                     <ul className={classes.SectionList}>
                         {
                             ownerSlot.status=="Finished"?
                                 <li>
-                                    <h5>Actual wage rate: <span className={classes.PropValue}>{props.wage?`${render2FloatingPoint(props.calcStats.realWageRate)}zł/h`:"No data"}</span></h5>
+                                    <h5>{t("act-wage-rate")}: <span className={classes.PropValue}>{props.wage?`${render2FloatingPoint(props.calcStats.realWageRate)}zł/h`:tc("no-data")}</span></h5>
                                 </li>
                             :""
                         }
                         
                         <li className={classes.NoteHolder}>
-                            <h5>Shared note: <span className={classes.PropValue}>{day.note ?? "Unset"}</span></h5>
-                            <h6>Last updated: {noteUpdateTime!=null?`${noteUpdateTime.toFormat("dd/LL/yyyy HH:mm")} by ${day.noteLastUpdater ?? "Moderator"}`:"never"}</h6>
+                            <h5>{t("shared-note")}: <span className={classes.PropValue}>{day.note ?? tc("unset")}</span></h5>
+                            <h6>{tc("last-updated")}: {noteUpdateTime!=null?t("shared-note-updated-on",{date: noteUpdateTime.toFormat("dd/LL/yyyy HH:mm"), actor: day.noteLastUpdater ?? tg("rank.administrator")}): tc("never")}</h6>
                         </li>
                         <li className={classes.NoteHolder}>
-                            <h5>Private note: <span className={classes.PropValue}>{ownerSlot.assignedShift.note ?? "Unset"}</span></h5>
+                            <h5>{t("private-note")}: <span className={classes.PropValue}>{ownerSlot.assignedShift.note ?? tc("unset")}</span></h5>
                         </li>
                     </ul>
                 </div>
                 <button type="button" className={classes.ShiftEditButton} onClick={props.showEditModal}>
-                    <img src={EditImg} alt="Edit"/>
+                    <img src={EditImg} alt={tc("edit")}/>
                 </button>
             </div>
         </div>

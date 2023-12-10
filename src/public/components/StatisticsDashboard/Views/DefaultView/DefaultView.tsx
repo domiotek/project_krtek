@@ -17,6 +17,8 @@ interface IProps {
 export default function DefaultStatsView(props: IProps) {
 
     const {t} = useTranslation("statistics",{keyPrefix: "default-view"});
+    const {t: tc} = useTranslation("common");
+    const {t: tg} = useTranslation("glossary");
 
     const tipWageRatio = props.stats?props.stats.totalTip / (props.stats.totalTip + props.stats.totalWage) * 100:0;
     return (
@@ -27,32 +29,32 @@ export default function DefaultStatsView(props: IProps) {
                     <ul>
                         <li>
                             + {render2FloatingPoint(props.stats.totalWage)}zł
-                            <span>{t("wage-label")}</span>
+                            <span>{tg("shift.wage")}</span>
                         </li>
                         <li>
                             + {render2FloatingPoint(props.stats.totalTip)}zł
-                            <span>{t("tip-label")}</span>
+                            <span>{tg("shift.tip")}</span>
                         </li>
                         {
                             props.stats.externalIncome?
                                 <li>
                                     + {render2FloatingPoint(props.stats.externalIncome)}zł
-                                    <span>{t("ext-incm-label")}</span>
+                                    <span>{tg("shift.ext-income")}</span>
                                 </li>
                             :""
                         }
                         <li>
                             - {render2FloatingPoint(props.stats.totalDeduction)}zł
-                            <span>{t("deduction-label")}</span>
+                            <span>{tg("shift.deduction")}</span>
                         </li>
                     </ul>
-                    <h3>{t("total-label")}: {render2FloatingPoint(props.stats.totalEarnings)}zł</h3>
+                    <h3>{tc("total")}: {render2FloatingPoint(props.stats.totalEarnings)}zł</h3>
                 </div>
                 <div className={classes.TipWageRatioBar}>
-                    <ProgressBar progress={tipWageRatio} labels={[t("tip-label"), t("wage-label")]} showOnlyOnePerctantage={false}/>
+                    <ProgressBar progress={tipWageRatio} labels={[tg("shift.tip"), tg("shift.wage")]} showOnlyOnePerctantage={false}/>
                 </div>
                 <div className={classes.TipWageRatioPie}>
-                    <RatioPie progress={tipWageRatio} labels={[t("tip-label"), t("wage-label")]} />
+                    <RatioPie progress={tipWageRatio} labels={[tg("shift.tip"), tg("shift.wage")]} />
                 </div>
             </div>
             <div className={classes.StatisticsPanel}>

@@ -1,0 +1,14 @@
+{
+    "shift-states.assigned": "Planned",
+    "shift-states.pending": "Pending",
+    "shift-states.finished": "Finished",
+    "roles.waiter": "Waiter",
+    "roles.bartender": "Bartender",
+    "ranks.employee": "Employee",
+    "ranks.manager": "Manager",
+    "ranks.administrator": "Administrator",
+    "shift.wage": "Wage",
+    "shift.tip": "Tip",
+    "shift.ext-income": "Additional income",
+    "shift.deduction": "Deduction"
+}
