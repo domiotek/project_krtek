@@ -61,7 +61,7 @@ export default function ShiftsTab(props: IProps) {
             setFilters(newState);
         }
 
-        navigate("/Statistics/Shifts");
+        navigate("/Statistics/Shifts", {replace: true});
         
     },[]);
 
