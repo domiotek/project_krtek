@@ -53,5 +53,14 @@
     "shifts-tab.shared-note-updated-on": "{{date}} przez {{actor}}",
     "shifts-tab.private-note": "Notatka prywatna",
     "shifts-tab.requires-action": "Wymagana akcja",
-    "shifts-tab.earnings-section-header": "Zarobki"
+    "shifts-tab.earnings-section-header": "Zarobki",
+    "nerd-stats-tab.work-more-header": "Popracuj jeszcze trochę",
+    "nerd-stats-tab.loading-header": "Zbieranie danych...",
+    "nerd-stats-tab.act-month-wage": "Realna miesięczna stawka",
+    "nerd-stats-tab.avg-daily-wage": "Średnia dzienna stawka",
+    "nerd-stats-tab.disclaimer-title": "I jeszcze więcej statystyk...",
+    "nerd-stats-tab.disclaimer-subtitle": "...w przyszłości!",
+    "nerd-stats-tab.disclaimer-desc": "W planach jest jeszcze mnóstwo ciekawych statystyk, jak analizy z podziałem na dni, czy takie z uwzględnieniem współpracowników - i to też nie wszystko. Jeśli masz jakiś ciekawy pomysł, daj znać.",
+    "nerd-stats-tab.max-tip-date-placeholder": "Ekstra, tylko, że nie prawda",
+    "nerd-stats-tab.min-tip-date-placeholder": "eh..."
 }

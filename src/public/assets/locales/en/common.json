@@ -22,5 +22,8 @@
     "unset": "Unset",
     "never": "never",
     "last-updated": "Last updated",
-    "total": "Total"
+    "total": "Total",
+    "maximum": "Maximum",
+    "minimum": "Minimum",
+    "average": "Average"
 }

@@ -24,5 +24,8 @@
     "unset": "Brak",
     "never": "nigdy",
     "last-updated": "Ostatnia aktualizacja",
-    "total": "Razem"
+    "total": "Razem",
+    "maximum": "Największy",
+    "minimum": "Najmniejszy",
+    "average": "Średni"
 }
