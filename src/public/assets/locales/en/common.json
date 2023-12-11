@@ -12,11 +12,13 @@
     "unassigned": "Unassigned",
     "unassigned-count": "unassigned",
     "and": "and",
+    "unknown": "Unknown",
     "filters": "Filters",
     "apply": "Apply",
     "clear-all": "Clear all",
     "reset": "Reset",
     "edit": "Edit",
+    "change": "Change",
     "save": "Save",
     "no-data": "No data",
     "details": "Details",
@@ -27,5 +29,8 @@
     "maximum": "Maximum",
     "minimum": "Minimum",
     "average": "Average",
-    "unsaved-changes": "You have unsaved changes"
+    "unsaved-changes": "You have unsaved changes",
+    "email-address": "Email address",
+    "gender": "Gender",
+    "password": "Password"
 }

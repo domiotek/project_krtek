@@ -19,5 +19,8 @@
     "shift.shared-note": "Shared note",
     "error-messages.add-shift-forbidden": "You can only add shifts to the last 3 days.",
     "error-messages.invalid-time-input": "Only quarters of an hour are allowed.",
-    "error-messages.shift-duration-zero": "Shift duration must be at least 15 minutes."
+    "error-messages.shift-duration-zero": "Shift duration must be at least 15 minutes.",
+    "gender_m": "Male",
+    "gender_f": "Female",
+    "gender_o": "Other"
 }

@@ -19,5 +19,8 @@
     "shift.shared-note": "Notatka współdzielona",
     "error-messages.add-shift-forbidden": "Możesz dodać zmianę tylko do trzech ostatnich dni.",
     "error-messages.invalid-time-input": "Niewłaściwa godzina. Jako minuty akceptowalne są tylko ćwiartki godziny.",
-    "error-messages.shift-duration-zero": "Długość zmiany musi wynosić co najmniej 15min."
+    "error-messages.shift-duration-zero": "Długość zmiany musi wynosić co najmniej 15min.",
+    "gender_m": "Mężczyzna",
+    "gender_f": "Kobieta",
+    "gender_o": "Inna"
 }
