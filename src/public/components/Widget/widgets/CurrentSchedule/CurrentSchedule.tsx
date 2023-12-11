@@ -52,7 +52,7 @@ export default function CurrentScheduleWidget() {
                         <h5>{date.toFormat("EEEE")}</h5>
                         <h6>{date.toFormat("d LLLL")}</h6>
                         <ul className={classes.EmployeeList}>
-                            {ll_Employees.length==0?<li>No one</li>:ll_Employees}
+                            {ll_Employees.length==0?<li>{t("empty-employee-set")}</li>:ll_Employees}
                         </ul>
                     </div>
                 </li>
