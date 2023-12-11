@@ -243,7 +243,7 @@ export default function(){
             return;
         }
 
-        const headers = ["Rank ID", "Name","Display name"];
+        const headers = ["Rank ID", "Name"];
         const dataTable = initArrayOfArrays<string>(headers.length);
 
         
@@ -253,8 +253,7 @@ export default function(){
         for (const rank of ranks) {
             const values = [
                 rank.ID.toString(), 
-                rank.rankName, 
-                rank.displayName,
+                rank.rankName
             ];
 
             for(let i=0; i<values.length; i++)

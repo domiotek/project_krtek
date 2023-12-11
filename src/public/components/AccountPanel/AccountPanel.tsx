@@ -19,6 +19,7 @@ export namespace AccountPanel {
 export default function AccountPanel(props: AccountPanel.IProps) {
 
     const {t} = useTranslation("common");
+    const {t: tg} = useTranslation("glossary");
 
     if(props.accountDetails) {
         return (
@@ -26,7 +27,7 @@ export default function AccountPanel(props: AccountPanel.IProps) {
                 <img src={props.accountDetails.accountImage} alt="User Avatar" />
                 <div className={styles.TextWrapper}>
                     <h4>{props.accountDetails.accountName}</h4>
-                    <span>{props.accountDetails.accountRank}</span>
+                    <span>{tg(`ranks.${props.accountDetails.accountRank}`)}</span>
                 </div>
                 <div className={styles.ButtonsWrapper}>
                     <Link className={styles.SettingsLink} to="/Account">

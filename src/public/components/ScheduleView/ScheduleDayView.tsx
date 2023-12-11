@@ -20,11 +20,12 @@ export default function ScheduleDayView(props: IProps) {
 
     const {t} = useTranslation("schedule");
     const {t: tc} = useTranslation("common");
+    const {t: tg} = useTranslation("glossary");
     
 
     function renderSlot(slot: NonNullable<IProps["data"]>["slots"][number]) {
         return (<li key={slot.ID} className={`${classes.SlotPanel} ${slot.employeeName==null?classes.Unassigned:""}`}>
-            <h5>{slot.requiredRole} {DateTime.fromISO(slot.startTime).toFormat("HH:mm")} - {slot.endTime?DateTime.fromISO(slot.endTime).toFormat("HH:mm"):"?"}</h5> 
+            <h5>{tg(`roles.${slot.requiredRole}`)} {DateTime.fromISO(slot.startTime).toFormat("HH:mm")} - {slot.endTime?DateTime.fromISO(slot.endTime).toFormat("HH:mm"):"?"}</h5> 
             <h3>{slot.employeeName ?? t("unassigned-slot")}</h3> 
         </li>);
     }

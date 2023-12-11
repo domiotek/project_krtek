@@ -311,7 +311,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                     surname: response[0]["surname"],
                     gender: response[0]["gender"],
                     rankID: response[0]["rankID"],
-                    rankName: response[0]["displayName"],
+                    rankName: response[0]["rankName"],
                     creationDate: DateTime.fromJSDate(response[0]["creationDate"]),
                     lastAccessDate: DateTime.fromJSDate(response[0]["lastAccessDate"]),
                     lastPasswordChangeDate: DateTime.fromJSDate(response[0]["lastPasswordChangeDate"])
@@ -372,7 +372,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                     surname: row["surname"],
                     gender: row["gender"],
                     rankID: row["rankID"],
-                    rankName: row["displayName"],
+                    rankName: row["rankName"],
                     creationDate: DateTime.fromJSDate(row["creationDate"]),
                     lastAccessDate: DateTime.fromJSDate(row["lastAccessDate"]),
                     lastPasswordChangeDate: DateTime.fromJSDate(row["lastPasswordChangeDate"]),
@@ -423,15 +423,14 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
     }
 
     public async getRank(rankName: string, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["getRank"]> {
-        const response = await this.db.performQuery<"Select">("SELECT rankID, displayName FROM ranks WHERE rankName=?",[rankName], conn);
+        const response = await this.db.performQuery<"Select">("SELECT rankID FROM ranks WHERE rankName=?",[rankName], conn);
         let errCode;
 
         if(response) {
             if(response.length===1) {
                 return {
                     ID: response[0]["rankID"],
-                    rankName,
-                    displayName: response[0]["displayName"]
+                    rankName
                 }
             }
         }else errCode = this.db.getLastQueryFailureReason();
@@ -453,8 +452,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             for (const row of response) {
                 result.push({
                     ID: row["rankID"],
-                    rankName: row["rankName"],
-                    displayName: row["displayName"]
+                    rankName: row["rankName"]
                 })
             }
             return result;
@@ -482,7 +480,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                     surname: row["surname"],
                     gender: row["gender"],
                     rankID: row["rankID"],
-                    rankName: row["displayName"],
+                    rankName: row["rankName"],
                     creationDate: DateTime.fromJSDate(row["creationDate"]),
                     lastAccessDate: DateTime.fromJSDate(row["lastAccessDate"]),
                     lastPasswordChangeDate: DateTime.fromJSDate(row["lastPasswordChangeDate"]),
@@ -513,20 +511,6 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
 
-    public async getRoleDisplayName(roleName: string, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["getRoleDisplayName"]> {
-        const response = await this.db.performQuery<"Select">("SELECT displayName FROM roles where roleName=?",[roleName],conn);
-
-        if(response) {
-            if(response.length==1) {
-                return response[0]["displayName"];
-            }else return null;
-        }
-        
-        conn?.rollback();
-        conn?.release();
-        throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
-    }
-
     public async getDefinedRoles(conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["getDefinedRoles"]> {
         const result = [];
 
@@ -538,8 +522,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             for (const row of response) {
                 result.push({
                     ID: row["roleID"],
-                    name: row["roleName"],
-                    displayName: row["displayName"]
+                    name: row["roleName"]
                 })
             }
         }else errCode = this.db.getLastQueryFailureReason();
@@ -577,7 +560,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                                 surname: row["surname"],
                                 gender: row["gender"],
                                 rankID: row["rankID"],
-                                rankName: row["displayName"],
+                                rankName: row["rankName"],
                                 creationDate: DateTime.fromJSDate(row["creationDate"]),
                                 lastAccessDate: DateTime.fromJSDate(row["lastAccessDate"]),
                                 lastPasswordChangeDate: DateTime.fromJSDate(row["lastPasswordChangeDate"]),
@@ -625,8 +608,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
                     for (const row of response) {
                         result.push({
                             ID: row["roleID"],
-                            name: row["roleName"],
-                            displayName: row["displayName"]
+                            name: row["roleName"]
                         });
                     }
 

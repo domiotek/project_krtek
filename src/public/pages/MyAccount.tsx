@@ -79,10 +79,10 @@ export default function MyAccountDetailsPage() {
                     <div className={classes.Header}>
                         <img src="/ui/user.png" alt="User profile" />
                         <h2>{userDetails.name} {userDetails.surname}</h2>
-                        <h6>{userDetails?.rankName}</h6>
+                        <h6>{tg(`ranks.${userDetails?.rankName}`)}</h6>
                         <div className={classes.RolesWrapper}>
                             {
-                                userDetails.roles.map(val=><span key={val}>{val}</span>)
+                                userDetails.roles.map(val=><span key={val}>{tg(`roles.${val}`)}</span>)
                             }
                         </div>
                     </div>

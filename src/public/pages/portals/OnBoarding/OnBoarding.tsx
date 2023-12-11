@@ -15,7 +15,7 @@ import { API } from "../../../types/networkAPI";
 import { useTranslation } from "react-i18next";
 
 export default function OnBoardingPortal() {
-    const [phase, setPhase] = useState(3);
+    const [phase, setPhase] = useState(0);
     const [username, setUsername] = useState("");
     const [name, setName] = useState("");
     const [surname, setSurname] = useState("");

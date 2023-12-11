@@ -16,8 +16,6 @@ export default async function prepareWorkDayArrayResponse(workDays: WebAPI.Sched
         for (const slotID in slots) {
             const slot = slots[slotID] as WebAPI.Schedule.WorkDayAPI.IShiftSlot;
 
-            const role = await global.app.webAuthManager.getRoleDisplayName(slot.requiredRole);
-
             let user, startTime, endTime;
             if(slot.assignedShift) {
                 let userResult;
@@ -36,7 +34,7 @@ export default async function prepareWorkDayArrayResponse(workDays: WebAPI.Sched
             }
             dayData.slots.push({
                 ID: parseInt(slotID),
-                requiredRole: role ?? "Invalid Role",
+                requiredRole: slot.requiredRole,
                 employeeName: user?.name ?? null,
                 startTime: startTime.toString(),
                 endTime: endTime?.toString() ?? null

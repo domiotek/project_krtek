@@ -92,7 +92,7 @@ const fullUserData: WebAPI.IRouteOptions<API.App.UserData.IEndpoint> = {
                     const rolesResult = [];
 
                     for (const role of roles) {
-                        rolesResult.push(role.displayName);
+                        rolesResult.push(role.name);
                     }
 
                     result = {

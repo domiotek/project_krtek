@@ -54,7 +54,7 @@ export default function ShiftPanel(props: IProps)  {
                 coWorkerPanels.push( 
                     <li key={name}>
                         <h5>{name}</h5>
-                        <h6>{slot.requiredRoleDisplayName} <span className={classes.InlineBullet}></span> {startTime.toFormat("HH:mm")} - {endTime?endTime.toFormat("HH:mm"):"?"}</h6>
+                        <h6>{tg(`roles.${slot.requiredRole}`)} <span className={classes.InlineBullet}></span> {startTime.toFormat("HH:mm")} - {endTime?endTime.toFormat("HH:mm"):"?"}</h6>
                     </li>
                 );
             }
@@ -77,7 +77,7 @@ export default function ShiftPanel(props: IProps)  {
             <div className={classes.Header} onClick={props.expandToggler.bind(day.ID)}>
                 <div className={classes.LeftPanel}>
                     <h2>{DateTime.fromISO(day.date).toFormat("EEEE, d")}</h2>
-                    <h5>{ownerSlot?.requiredRoleDisplayName} <span className={classes.InlineBullet}></span> {coWorkersStr}</h5>
+                    <h5>{tg(`roles.${ownerSlot.requiredRole}`)} <span className={classes.InlineBullet}></span> {coWorkersStr}</h5>
                 </div>
                 <div className={classes.RightPanel}>
                     {
@@ -160,7 +160,7 @@ export default function ShiftPanel(props: IProps)  {
                         
                         <li className={classes.NoteHolder}>
                             <h5>{t("shared-note")}: <span className={classes.PropValue}>{day.note ?? tc("unset")}</span></h5>
-                            <h6>{tc("last-updated")}: {noteUpdateTime!=null?t("shared-note-updated-on",{date: noteUpdateTime.toFormat("dd/LL/yyyy HH:mm"), actor: day.noteLastUpdater ?? tg("rank.administrator")}): tc("never")}</h6>
+                            <h6>{tc("last-updated")}: {noteUpdateTime!=null?t("shared-note-updated-on",{date: noteUpdateTime.toFormat("dd/LL/yyyy HH:mm"), actor: day.noteLastUpdater ?? tg("ranks.administrator")}): tc("never")}</h6>
                         </li>
                         <li className={classes.NoteHolder}>
                             <h5>{t("private-note")}: <span className={classes.PropValue}>{ownerSlot.assignedShift.note ?? tc("unset")}</span></h5>

@@ -15,6 +15,7 @@ export default function UpcomingShiftsWidget() {
 
     const {t} = useTranslation("home", {keyPrefix: "upc-shts-widget"});
     const {t:tc} = useTranslation("common");
+    const {t: tg} = useTranslation("glossary");
 
     function renderPanel(shift: API.App.Statistics.UserShifts.IWorkDay<"OnlyAssigned">, slotID: number) {
         const ownerSlot = shift.slots[slotID] as NonNullable<typeof shift.slots[0]>;
@@ -55,7 +56,7 @@ export default function UpcomingShiftsWidget() {
         return (
             <li key={shift.ID}>
                 <h5>{then.toFormat(then.month!=now.month?"EEEE, d/LL":"EEEE, d")} {tag?<span>{tag}</span>:""}</h5>
-                <h6>{ownerSlot?.requiredRoleDisplayName} <span></span> {startTime.toFormat("HH:mm")} - {endTime?.toFormat("HH:mm") ?? "?"} <span></span> {coWorkersStr}</h6>
+                <h6>{tg(`roles.${ownerSlot.requiredRole}`)} <span></span> {startTime.toFormat("HH:mm")} - {endTime?.toFormat("HH:mm") ?? "?"} <span></span> {coWorkersStr}</h6>
             </li>
         );
     }

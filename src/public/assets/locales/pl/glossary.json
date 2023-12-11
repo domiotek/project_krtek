@@ -6,7 +6,7 @@
     "roles.bartender": "Barman",
     "ranks.employee": "Pracownik",
     "ranks.manager": "Menedżer",
-    "ranks.administrator": "Administrator",
+    "ranks.admin": "Administrator",
     "shift.wage": "Godzinówka",
     "shift.tip": "Napiwek",
     "shift.ext-income": "Dodatkowy dochód",

@@ -149,7 +149,7 @@ export default function EditShiftModal(props: IProps) {
                         sizeLimit={255}
                     />
                     <h6 className={classes.SharedNoteLastUpdateText}>
-                        {tc("last-updated")}: {noteUpdateTime!=null?t("shared-note-updated-on",{date: noteUpdateTime.toFormat("dd/LL/yyyy HH:mm"), actor: props.shiftData.noteLastUpdater ?? tg("rank.administrator")}): tc("never")}
+                        {tc("last-updated")}: {noteUpdateTime!=null?t("shared-note-updated-on",{date: noteUpdateTime.toFormat("dd/LL/yyyy HH:mm"), actor: props.shiftData.noteLastUpdater ?? tg("ranks.administrator")}): tc("never")}
                     </h6>
                     <h4 className={classes.SharedNoteDisclaimerText}>
                         {t("shared-note-disclaimer")}

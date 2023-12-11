@@ -134,7 +134,6 @@ namespace WebAPI {
             interface IRankDetails {
                 ID: number
                 rankName: string
-                displayName: string
             }
         }
 
@@ -148,7 +147,6 @@ namespace WebAPI {
             interface IRoleDetails {
                 ID: number
                 name: string
-                displayName: string
             }
 
         }
@@ -427,18 +425,6 @@ namespace WebAPI {
             getRoleID(roleName: string): Promise<number | null>
 
             /**
-             * Returns friendly, display name of the role
-             * @param roleName role's code name.
-             * 
-             * @async
-             * 
-             * @returns role's display name in string format or null if role not found.
-             * 
-             * @throws Can throw with NoConnection and DBError errors.
-             */
-            getRoleDisplayName(roleName: string): Promise<string | null>
-
-            /**
              * Returns details of all defined roles
              * 
              * @async
@@ -715,7 +701,6 @@ namespace WebAPI {
                 plannedStartTime: DateTime
                 plannedEndTime: DateTime | null
                 requiredRole: string
-                requiredRoleDisplayName: string
                 assignedShift: IShift | null
             }
 
@@ -728,7 +713,6 @@ namespace WebAPI {
                 plannedStartTime: string
                 plannedEndTime: string | null
                 requiredRole: string
-                requiredRoleDisplayName: string
                 assignedShift: ShiftAPI.IJSONShift | null
             }
 
