@@ -19,6 +19,8 @@
     border-radius: 0.5rem;
     box-shadow: 1px 1px 7px 0 #7373736e;
     overflow: auto;
+    max-width: 500px;
+    margin: 2rem 0;
 }
 
 @media screen and (min-width: 426px) {
