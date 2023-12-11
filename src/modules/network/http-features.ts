@@ -118,22 +118,22 @@ export default async function initializeFeatures(instance: FastifyInstance | nul
 
                 const token = query["token"];
 
-                let portalValidationResult: true | string = true;
+                let portalValidationResult: "OK" | "InvalidToken" | "Other" = "OK";
                 
                 try {
                     switch(true) {
                         case url.startsWith("/p/invite"):
-                            await global.app.webAuthManager.getInviteDetails(token ?? "");
+                            if(await global.app.webAuthManager.getInviteDetails(token ?? "")===null) portalValidationResult = "InvalidToken";
                         break;
                         default: 
-                            await global.app.webAuthManager.getTokenDetails(token ?? "")
+                            if(await global.app.webAuthManager.getTokenDetails(token ?? "")===null) portalValidationResult = "InvalidToken";
                     }
                 } catch (error: any) {
                     if(!error.errCode) throw error;
-                    portalValidationResult = error.errCode;
+                    portalValidationResult = "Other";
                 }
 
-                if(portalValidationResult!==true) {
+                if(portalValidationResult!=="OK") {
                     
                     if(portalValidationResult=="InvalidToken") {
                         res.redirect(302, invalidLinkUrl);
