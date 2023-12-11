@@ -67,5 +67,16 @@
     "settings-tab.goal-settings-header": "Ustawienia celu",
     "settings-tab.add-milestone": "Dodaj nowy",
     "settings-tab.wage-rate-label": "Godzinowa stawka",
-    "settings-tab.ext-income-label": "Zewnętrzny dochód"
+    "settings-tab.ext-income-label": "Zewnętrzny dochód",
+    "add-shift-modal.header-title": "Dodaj nową zmianę",
+    "add-shift-modal.header-subtitle": "Ręcznie utwórz zmianę spoza grafiku",
+    "add-shift-modal.message-p-1": "Opcja ta może być przydatna, gdy ktoś zastępuje kogoś na część zmiany i powinna być stosowana tylko w przypadkach nagłych zmian względem ustalonego grafiku.",
+    "add-shift-modal.message-p-2": "Miej na uwadze, że menedżer będzie w stanie odróżnić zmianę dodaną w taki sposób od tej z grafiku.",
+    "edit-shift-modal.header-title": "Edytuj szczegóły zmiany",
+    "edit-shift-modal.shift-duration": "Długość zmiany",
+    "edit-shift-modal.shared-note-disclaimer": "Notatka współdzielona widoczna jest dla wszystkich pracujących z Tobą w danym dniu.",
+    "manage-milestone-modal.header_add": "Dodaj nowy krok do celu",
+    "manage-milestone-modal.header_edit": "Edytuj krok do celu",
+    "manage-milestone-modal.title": "Tytuł",
+    "manage-milestone-modal.value": "Wartość"
 }

@@ -9,3 +9,7 @@
     font-size: small;
 }
 
+.HeaderSubtitle {
+    text-transform: capitalize;
+}
+

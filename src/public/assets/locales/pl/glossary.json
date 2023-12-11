@@ -10,5 +10,14 @@
     "shift.wage": "Godzinówka",
     "shift.tip": "Napiwek",
     "shift.ext-income": "Dodatkowy dochód",
-    "shift.deduction": "Odpis"
+    "shift.deduction": "Odpis",
+    "shift.date": "Data",
+    "shift.start-time": "Godzina rozpoczęcia",
+    "shift.end-time": "Godzina zakończenia",
+    "shift.role": "Rola",
+    "shift.private-note": "Notatka prywatna",
+    "shift.shared-note": "Notatka współdzielona",
+    "error-messages.add-shift-forbidden": "Możesz dodać zmianę tylko do trzech ostatnich dni.",
+    "error-messages.invalid-time-input": "Niewłaściwa godzina. Jako minuty akceptowalne są tylko ćwiartki godziny.",
+    "error-messages.shift-duration-zero": "Długość zmiany musi wynosić co najmniej 15min."
 }

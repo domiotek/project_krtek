@@ -62,6 +62,16 @@
     "settings-tab.goal-settings-header": "Goal settings",
     "settings-tab.add-milestone": "Add milestone",
     "settings-tab.wage-rate-label": "Wage rate",
-    "settings-tab.ext-income-label": "External income"
-    
+    "settings-tab.ext-income-label": "External income",
+    "add-shift-modal.header-title": "Add new shift",
+    "add-shift-modal.header-subtitle": "Manually add out-of-schedule shift",
+    "add-shift-modal.message-p-1": "It can be useful in cases where someone is covering for the part of the shift.",
+    "add-shift-modal.message-p-2": "Please note, that manager will be able to see, that the shift was manually added.",
+    "edit-shift-modal.header-title": "Edit shift details",
+    "edit-shift-modal.shift-duration": "Shift duration",
+    "edit-shift-modal.shared-note-disclaimer": "Shared note is visible to everyone that is working with you on that day.",
+    "manage-milestone-modal.header_add": "Add new milestone",
+    "manage-milestone-modal.header_edit": "Edit miletsone",
+    "manage-milestone-modal.title": "Title",
+    "manage-milestone-modal.value": "Amount"
 }
