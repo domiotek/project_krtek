@@ -12,7 +12,7 @@ export default function(){
         params: []
 
     },(request)=>{
-        request.respond("Project Krtek " + global.app.version);
+        request.respond("eHospudka " + global.app.version);
     });
 
     command.addVariant({
