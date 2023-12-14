@@ -1,2 +1,6 @@
 import {Settings} from "luxon";
-Settings.defaultLocale = "pl";
+import i18n from "./i18n";
+
+setTimeout(()=>{
+    Settings.defaultLocale = i18n.language;
+});
