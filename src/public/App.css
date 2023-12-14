@@ -22,6 +22,10 @@
   z-index: 4;
 }
 
+.BlockScroll .Header {
+  padding-right: 23px;
+}
+
 .HamburgerButton, .AccountButton {
   background: none;
   display: flex;

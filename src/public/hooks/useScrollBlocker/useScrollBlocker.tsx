@@ -9,7 +9,7 @@ export default (className: string) => {
 
     const blockScroll = () => {
         if (scrollBlocked.current) return;
-
+        document.body.style.paddingRight = `${window.innerWidth - document.body.clientWidth}px`;
         document.body.classList.add(className);
 
         scrollBlocked.current = true;
@@ -19,6 +19,7 @@ export default (className: string) => {
         if (!scrollBlocked.current) return;
 
         document.body.classList.remove(className);
+        document.body.style.paddingRight = "";
 
         scrollBlocked.current = false;
     };
