@@ -4,7 +4,7 @@
 Project Krtek (or eHospudka) will be a web application that will serve employees of certain Pub (hopefully). In summary, each employee will have an account and will be able to view and influence work schedule by reporting their availability, trade their shifts and more. Users will have the ability to receive notifications about important events, like posting of the new schedule. There will be more, that's just an outline.
 
 ### Current stage
-Currently project is at a very initial stage. There is a basic accounts system already done and ready to use, which includes account creation, password resetting and logging in and out - just the basics. Along with the accounts system there is also basic responsive app structure with the initial design. Design can and probably will change in the future, especially the color palette. Server side is quite well developed thanks to the code sharing with my other projects. There is a whole backdoor cli service which allows to access and manage most of the server data and functionality. 
+Project is currently stable within the basic functionality that was scheduled for version 1.0.0. Application features basic, yet functional accounts, schedule and statististics system. Current stage allows for quite comfortable tracking of the current schedule and earnings of all of the employees.
 
 ### Roadmap
 
