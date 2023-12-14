@@ -1,0 +1,23 @@
+{
+    "greeting": "Hello, {{name}}",
+    "widget.error-message": "That didn't work",
+    "schedule-widget.header": "Current schedule",
+    "schedule-widget.empty-employee-set": "No one",
+    "upc-shts-widget.header": "Your upcoming shifts",
+    "upc-shts-widget.no-shifts": "No shifts",
+    "earnings-widget.header": "Your earnings this month",
+    "earnings-widget.calc-failure": "Couldn't calculate",
+    "earnings-widget.set-wage-link": "Set wage rate",
+    "earnings-widget.no-goal-set": "You don't have goal set",
+    "earnings-widget.set-goal-link": "Set your goal",
+    "earnings-widget.still-need-prefix": "Still have ",
+    "earnings-widget.still-need-sufix": " to earn",
+    "earnings-widget.has-more-prefix": "You earned ",
+    "earnings-widget.has-more-sufix": " more than needed",
+    "pnd-shts-widget.header": "Your pending shifts",
+    "pnd-shts-widget.has-pnd-shifts-desc": "You still have shifts this month that require finishing.",
+    "pnd-shts-widget.go-to-shifts-link": "Go to shifts",
+    "pnd-shts-widget.no-pnd-shifts-desc": "All done",
+    "pnd-shts-widget.pnd-shifts-counter_one": "{{count}} shift",
+    "pnd-shts-widget.pnd-shifts-counter_other": "{{count}} shifts"
+}

@@ -7,10 +7,13 @@ import { API } from "../../../../types/networkAPI";
 import { callAPI } from "../../../../modules/utils";
 import { DateTime } from "luxon";
 import { WidgetContext } from "../../WidgetBox";
+import { useTranslation } from "react-i18next";
 
 export default function CurrentScheduleWidget() {
     const [data, setData] = useState<API.App.CommonEntities.IWorkdays | null>(null);
     const [widgetState, setWidgetState] = useContext(WidgetContext);
+
+    const {t} = useTranslation("home", {keyPrefix: "schedule-widget"});
 
     useEffect(()=>{
         return callAPI<API.App.Widgets.CurrentSchedule.IEndpoint>("GET","/api/widgets/current-schedule",null,
@@ -37,7 +40,7 @@ export default function CurrentScheduleWidget() {
 
             sl_Employees = sl_Employees.substring(0,sl_Employees.length - 2);
 
-            if(sl_Employees.length==0) sl_Employees="No one";
+            if(sl_Employees.length==0) sl_Employees=t("empty-employee-set");
 
             result.push(
                 <li key={day.ID}>
@@ -49,7 +52,7 @@ export default function CurrentScheduleWidget() {
                         <h5>{date.toFormat("EEEE")}</h5>
                         <h6>{date.toFormat("d LLLL")}</h6>
                         <ul className={classes.EmployeeList}>
-                            {ll_Employees.length==0?<li>No one</li>:ll_Employees}
+                            {ll_Employees.length==0?<li>{t("empty-employee-set")}</li>:ll_Employees}
                         </ul>
                     </div>
                 </li>

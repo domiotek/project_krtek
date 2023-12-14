@@ -5,6 +5,7 @@ import classes from "./NerdStats.css"
 import { render2FloatingPoint, renderDate } from "../../../../modules/utils";
 import { API } from "../../../../types/networkAPI";
 import { DateTime } from "luxon";
+import { useTranslation } from "react-i18next";
 
 
 interface IProps {
@@ -30,8 +31,12 @@ interface IStatsData {
 export default function NerdStatsTab(props: IProps) {
     const [stats, setStats] = useState<IStatsData | null>(null);
 
+    const {t} = useTranslation("statistics", {keyPrefix: "nerd-stats-tab"});
+    const {t: tc} = useTranslation("common");
+    const {t: tg} = useTranslation("glossary");
+
     const placeholderClassState = !props.data||props.finishedShiftsCount<3?classes.Placeholder:"";
-    const placeholderText = props.data?"Work some more":"Working on it..."
+    const placeholderText = t(props.data?"work-more-header":"loading-header");
 
     useEffect(()=>{
         const stats: IStatsData = {
@@ -83,44 +88,41 @@ export default function NerdStatsTab(props: IProps) {
     return (
         <div className={classes.NerdStatsWrapper}>
             <div className={classes.Section}>
-                <h3>Tip</h3>
+                <h3>{tg("shift.tip")}</h3>
                 <ul className={`${classes.PropList} ${placeholderClassState}`} data-text={placeholderText}>
                     <li>
                         <h4>{render2FloatingPoint(stats?.maxTip ?? 320)}zł</h4>
-                        <h6>Maximum <span className={classes.Bullet}></span> {renderDate(stats?.maxTipDate, "nice, but not true")}</h6>
+                        <h6>{tc("maximum")} <span className={classes.Bullet}></span> {renderDate(stats?.maxTipDate, t("max-tip-date-placeholder"))}</h6>
                     </li>
                     <li>
                         <h4>{render2FloatingPoint(stats?.minTip ?? 4)}zł</h4>
-                        <h6>Minimum <span className={classes.Bullet}></span> {renderDate(stats?.minTipDate, "yikes")}</h6>
+                        <h6>{tc("minimum")} <span className={classes.Bullet}></span> {renderDate(stats?.minTipDate, t("min-tip-date-placeholder"))}</h6>
                     </li>
                     <li>
                         <h4>{render2FloatingPoint(stats?.avgTip ?? 124)}zł</h4>
-                        <h6>Average</h6>
+                        <h6>{tc("average")}</h6>
                     </li>
                 </ul>
             </div>
             <div className={classes.Section}>
-                <h3>Wage</h3>
+                <h3>{tg("shift.wage")}</h3>
                 <ul className={`${classes.PropList} ${placeholderClassState}`} data-text={placeholderText}>
                     <li>
                         <h4>{render2FloatingPoint(stats?.actMontlyWage ?? 25)}zł/h</h4>
-                        <h6>Actual monthly wage</h6>
+                        <h6>{t("act-month-wage")}</h6>
                     </li>
                     <li>
                         <h4>{render2FloatingPoint(stats?.avgDailyWage ?? 23)}zł/h</h4>
-                        <h6>Average daily wage</h6>
+                        <h6>{t("avg-daily-wage")}</h6>
                     </li>
                 </ul>
             </div>
             <div className={`${classes.Section} ${classes.FuturePlansWrapper}`}>
-                <h3>And even more statistics...</h3>
+                <h3>{t("disclaimer-title")}</h3>
                 <div className={classes.FuturePlans}>
                     <img src="/ilustrations/DesigningProcess.svg" alt="Designing"></img>
-                    <h4>...in the future!</h4>
-                    <p>
-                        There is a lot of stuff planned, like statistics based on the day of the week, summary of shifts worked with certain people and more. 
-                        If you have any interesting idea, let me know.
-                    </p>
+                    <h4>{t("disclaimer-subtitle")}</h4>
+                    <p>{t("disclaimer-desc")}</p>
                 </div>
             </div>
         </div>

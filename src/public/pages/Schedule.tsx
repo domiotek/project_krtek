@@ -9,6 +9,7 @@ import { API } from "../types/networkAPI";
 
 import arrowImg from "../assets/ui/left-arrow-angle.png";
 import { callAPI } from "../modules/utils";
+import { useTranslation } from "react-i18next";
 
 function parseDateTime(isoStr: string | undefined) {
     return DateTime.fromISO(isoStr ?? "");
@@ -22,6 +23,8 @@ export default function Schedule(){
 
     const [rangePoint, setRangePoint] = useState<DateTime>(initialRangePoint.isValid&&initialRangePoint < hardLimit?initialRangePoint:DateTime.now());
     const [rangeSwitcherStates, setRangeSwitcherStates] = useState<boolean[]>([false,false]);
+
+    const {t} = useTranslation("schedule");
 
     async function seekSchedule(direction: -1 | 1 , targetButton?: HTMLButtonElement) {
         if(targetButton?.hasAttribute("disabled")) return;
@@ -48,11 +51,11 @@ export default function Schedule(){
     return (
         <section className={subPageClasses.SubPage}>
             <div className={classes.ErrorMessageBox}>
-                We had problems getting that content for you right now. Refresh to try again.
+                {t("fetch-error-message")}
             </div>
             <div className={classes.RangeSwitcher}>
                 <button type="button" onClick={ev=>seekSchedule(-1, ev.target as HTMLButtonElement)} disabled={rangeSwitcherStates[0]===false}>
-                    <img src={arrowImg} alt="Previous week"/>    
+                    <img src={arrowImg} alt={t("prev-week")}/>    
                 </button>
                 <span className={schedule==null?`${commonClasses.PulseLoadingAnimHolder} ${classes.DateRangePlaceholder}`:classes.DateRange}>{schedule==null?
                     ""
@@ -60,7 +63,7 @@ export default function Schedule(){
                    `${parseDateTime(schedule?.rangeStart).toFormat("dd/LL")} - ${parseDateTime(schedule?.rangeEnd).toFormat("dd/LL")}`
                 }</span>
                 <button type="button" onClick={ev=>seekSchedule(1, ev.target as HTMLButtonElement)} disabled={rangeSwitcherStates[1]===false}>
-                    <img src={arrowImg} alt="Next week" />
+                    <img src={arrowImg} alt={t("next-week")} />
                 </button>
             </div>
             <ScheduleView workDays={schedule?.workDays ?? null}/>

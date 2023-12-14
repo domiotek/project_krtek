@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import InputBox from "../../InputBox/InputBox";
 import CustomForm from "../CustomForm/CustomForm";
-import { API } from "../../../types/networkAPI";
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     isActive: boolean
@@ -10,6 +10,9 @@ interface IProps {
 
 export default function ForgotPassword(props: IProps) {
     const [email, setEmail] = useState<string>("");
+
+    const {t: tc} = useTranslation("common");
+    const {t: tg} = useTranslation("glossary");
 
     useEffect(()=>{
         setEmail("");
@@ -28,15 +31,15 @@ export default function ForgotPassword(props: IProps) {
                         case "DBError":
                         case "MailerError":
                         case "NoConnection":
-                            return "Server is facing temporary server-side error. Try again later."
+                            return tg("error-messages.generic-500");
                         default:
                         case "Other":
-                            return "Something went wrong. Try again in a bit."
+                            return tg("error-messages.generic");
                     }
                 }}
-                submitCaption="Send"
+                submitCaption={tc("send")}
                 elements={[
-                    <InputBox label="Email" globalID={`ForgotPassword-email-${Math.round(Math.random()*100)}`} formControlID="username" inputType="email" isRequired stateUpdater={ev=>setEmail(ev.target.value)} initialValue={email} key={0}/>
+                    <InputBox label={tc("email-address")} globalID={`ForgotPassword-email-${Math.round(Math.random()*100)}`} formControlID="username" inputType="email" isRequired stateUpdater={ev=>setEmail(ev.target.value)} initialValue={email} key={0}/>
                 ]}/>
        </div>
     );

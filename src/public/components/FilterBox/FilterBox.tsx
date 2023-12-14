@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 
 import classes from "./FilterBox.css";
+import { useTranslation } from "react-i18next";
 
 type TRule<T extends string = string> = {
     name: string
@@ -29,6 +30,8 @@ interface IProps<T extends IBase, K extends string> {
 export default function FilterBox<T extends IBase = IBase, K extends string = string>(props: IProps<T, K>) {
     const [changesMade, setChangesMade] = useState<boolean>(false);
     const [workingState, setWorkingState] = useState<IProps<T,K>["state"] | null>(null);
+
+    const {t} = useTranslation("common");
 
     function renderFilter(ID: string, filter: TRule<string>) {
 
@@ -115,13 +118,13 @@ export default function FilterBox<T extends IBase = IBase, K extends string = st
     return (
         <div className={classes.Wrapper}>
             <h2>
-                Filters
-                <button className={classes.ClearAllButton} onClick={clearClickHandler}>Clear all</button>
+                {t("filters")}
+                <button className={classes.ClearAllButton} onClick={clearClickHandler}>{t("clear-all")}</button>
             </h2>
             {renderFilters()}
             <div className={classes.Buttons}>
-                <button className={classes.ResetButton} onClick={resetClickHandler} disabled={!changesMade}>Reset</button>
-                <button className={classes.ApplyButton} onClick={applyClickHandler} disabled={!changesMade}>Apply</button>
+                <button className={classes.ResetButton} onClick={resetClickHandler} disabled={!changesMade}>{t("reset")}</button>
+                <button className={classes.ApplyButton} onClick={applyClickHandler} disabled={!changesMade}>{t("apply")}</button>
             </div>
         </div>
     );

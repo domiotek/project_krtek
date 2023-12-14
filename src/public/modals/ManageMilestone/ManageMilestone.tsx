@@ -6,6 +6,7 @@ import commonModalClasses from "../common.css";
 import ArrowImg from "../../assets/ui/left-arrow-angle.png";
 import InputBox, { CurrencyInputBox } from "../../components/InputBox/InputBox";
 import CustomForm from "../../components/Forms/CustomForm/CustomForm";
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     successCallback: (title: string, value: number)=>void
@@ -21,6 +22,10 @@ export default function ManageMilestoneModal(props: IProps) {
     const [title, setTitle] = useState<string>(props.milestoneInfo?.title ?? "");
     const [value, setValue] = useState<number>(props.milestoneInfo?.value ?? 0);
 
+    const {t} = useTranslation("statistics", {keyPrefix: "manage-milestone-modal"});
+    const {t: tc} = useTranslation("common");
+    const {t: tg} = useTranslation("glossary");
+
     return (
         <div className={commonModalClasses.ModalWrapper}>
             <div className={commonModalClasses.Header}>
@@ -28,7 +33,7 @@ export default function ManageMilestoneModal(props: IProps) {
                     <img src={ArrowImg} alt="Back"/>
                 </button>
                 <div className={commonModalClasses.HeaderContent}>
-                    <h3>{props.milestoneInfo?"Edit":"Add new"} milestone</h3>
+                    <h3>{t("header", {context: props.milestoneInfo?"edit":"add"})}</h3>
                 </div>
             </div>
             <div className={commonModalClasses.FormWrapper}>
@@ -40,12 +45,12 @@ export default function ManageMilestoneModal(props: IProps) {
                     onSuccess={()=>{
                         props.successCallback(title, value);
                     }}
-                    submitCaption="Confirm"
+                    submitCaption={tc("save")}
                 >  
                     <InputBox 
                         key="title" 
                         globalID={"manageMilestoneModal_title"} 
-                        label={"Title"} 
+                        label={t("title")} 
                         formControlID={"title"} 
                         inputType="text" 
                         initialValue={title} 
@@ -56,7 +61,7 @@ export default function ManageMilestoneModal(props: IProps) {
                     <CurrencyInputBox
                         key="value"
                         globalID="manageMilestoneModal_value"
-                        label="Value"
+                        label={t("value")}
                         formControlID="value"
                         initialValue={value}
                         stateUpdater={val=>setValue(val)}

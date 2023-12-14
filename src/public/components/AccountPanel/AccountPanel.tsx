@@ -7,6 +7,7 @@ import commonClasses from "../common.css";
 import settingsImg from "../../assets/ui/gray-settings.png";
 import logoutImg from "../../assets/ui/exit.png";
 import { WebApp } from "../../types/networkAPI";
+import { useTranslation } from "react-i18next";
 
 export namespace AccountPanel {
     export interface IProps {
@@ -17,13 +18,16 @@ export namespace AccountPanel {
 
 export default function AccountPanel(props: AccountPanel.IProps) {
 
+    const {t} = useTranslation("common");
+    const {t: tg} = useTranslation("glossary");
+
     if(props.accountDetails) {
         return (
             <div className={`${styles.AccountPanel} ${props.variant=="horizontal"?styles.Horizontal:styles.Vertical}`}>
                 <img src={props.accountDetails.accountImage} alt="User Avatar" />
                 <div className={styles.TextWrapper}>
                     <h4>{props.accountDetails.accountName}</h4>
-                    <span>{props.accountDetails.accountRank}</span>
+                    <span>{tg(`ranks.${props.accountDetails.accountRank}`)}</span>
                 </div>
                 <div className={styles.ButtonsWrapper}>
                     <Link className={styles.SettingsLink} to="/Account">
@@ -31,7 +35,7 @@ export default function AccountPanel(props: AccountPanel.IProps) {
                     </Link>
                     <a className={styles.LogoutLink} href="/auth/signout">
                         <img src={logoutImg} alt="Logout link" />
-                        <span>Sign out</span>
+                        <span>{t("signout")}</span>
                     </a>
                 </div>
             </div>

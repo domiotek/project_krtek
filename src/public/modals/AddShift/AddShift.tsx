@@ -10,6 +10,7 @@ import { DateTime } from "luxon";
 import SelectBox from "../../components/SelectBox/SelectBox";
 import { API } from "../../types/networkAPI";
 import { callAPI } from "../../modules/utils";
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     successCallback: ()=>void
@@ -28,13 +29,17 @@ export default function AddShiftModal(props: IProps) {
     const [role, setRole] = useState<string>("none");
     const [roleOptions, setRoleOptions] = useState<IRoleOption[]>([]);
 
+    const {t} = useTranslation("statistics", {keyPrefix: "add-shift-modal"});
+    const {t: tg} = useTranslation("glossary");
+    const {t: tc} = useTranslation("common");
+
     useEffect(()=>{
         return callAPI<API.App.GetUserRoles.IEndpoint>("GET","/api/user/roles",null, data=>{
             const newArray = [];
             for (const role of data) {
                 newArray.push({
                     value: role.name,
-                    displayName: role.displayName
+                    displayName: tg(`roles.${role.name}`)
                 })
             }
             setRoleOptions(newArray);
@@ -48,15 +53,15 @@ export default function AddShiftModal(props: IProps) {
                     <img src={ArrowImg} alt="Back"/>
                 </button>
                 <div className={commonModalClasses.HeaderContent}>
-                    <h3>Add new shift</h3>
-                    <h5>Manually add out-of-schedule shift</h5>
+                    <h3>{t("header-title")}</h3>
+                    <h5>{t("header-subtitle")}</h5>
                 </div>
             </div>
             <div className={commonModalClasses.FormWrapper}>
                 <p className={classes.Message}>
-                    It can be useful in cases where someone is covering for the part of the shift.
+                    {t("message-p-1")}
                     <br></br><br></br>
-                    Please note, that manager will be able to see, that the shift was manually added.
+                    {t("message-p-2")}
                 </p>
                 <CustomForm<API.App.Schedule.AddShift.IEndpoint>
                     doReset={false}
@@ -64,8 +69,8 @@ export default function AddShiftModal(props: IProps) {
                     urlParams={null}
                     method="POST" 
                     onFailure={async (code, err)=>{
-                        if(err=="NotAllowed") return "You can only add shifts to the last 3 days.";
-                        if(err=="InvalidTime") return "Only quarters of an hour are allowed.";
+                        if(err=="NotAllowed") return tg("error-messages.add-shift-forbidden");
+                        if(err=="InvalidTime") return tg("error-messages.invalid-time-input");
 
                     }}
                     onSuccess={()=>{
@@ -73,12 +78,12 @@ export default function AddShiftModal(props: IProps) {
                             props.successCallback()
                         else props.exit();
                     }}
-                    submitCaption="Add shift"
+                    submitCaption={tc("save")}
                 >  
                     <InputBox 
                         key="date" 
                         globalID={"editShiftModal_date"} 
-                        label={"Date"} 
+                        label={tg("shift.date")} 
                         formControlID={"when"} 
                         inputType="date" 
                         initialValue={date.isValid?date.toFormat("yyyy-LL-dd"):""} 
@@ -88,7 +93,7 @@ export default function AddShiftModal(props: IProps) {
                     <InputBox 
                         key="startTime" 
                         globalID={"editShiftModal_startTime"} 
-                        label={"Start time"} 
+                        label={tg("shift.start-time")} 
                         formControlID={"startTime"} 
                         inputType="time" 
                         initialValue={startTime.isValid?startTime.toFormat("HH:mm"):""} 
@@ -98,7 +103,7 @@ export default function AddShiftModal(props: IProps) {
                     <InputBox 
                         key="endTime" 
                         globalID={"editShiftModal_endTime"} 
-                        label={"End time"} 
+                        label={tg("shift.end-time")} 
                         formControlID={"endTime"} 
                         inputType="time" 
                         initialValue={endTime.isValid?endTime.toFormat("HH:mm"):""} 
@@ -107,7 +112,7 @@ export default function AddShiftModal(props: IProps) {
                     />
                     <SelectBox 
                         key="role" 
-                        label="Role" 
+                        label={tg("shift.role")} 
                         formControlID="role" 
                         initialValue={role} 
                         stateUpdater={ev=>setRole(ev.target.value)} 

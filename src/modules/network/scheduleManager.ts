@@ -352,7 +352,6 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
                 plannedStartTime: slot.plannedStartTime.toString(),
                 plannedEndTime: slot.plannedEndTime?.toString() ?? null,
                 requiredRole: slot.requiredRole,
-                requiredRoleDisplayName: slot.requiredRoleDisplayName,
                 assignedShift: await slot.assignedShift?.getJSON() ?? null
             }
         }
@@ -410,7 +409,6 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
             result[row["privateSlotID"]] = {
                 status,
                 requiredRole: row["roleName"],
-                requiredRoleDisplayName: row["displayName"],
                 plannedStartTime: DateTime.fromFormat(row["plannedStartTime"],"HH:mm:ss"),
                 plannedEndTime: row["plannedEndTime"]?DateTime.fromFormat(row["plannedEndTime"],"HH:mm:ss"):null,
                 assignedShift: shift

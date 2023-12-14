@@ -12,6 +12,7 @@ import InputBox from "../../../components/InputBox/InputBox";
 import SelectBox from "../../../components/SelectBox/SelectBox";
 
 import { API } from "../../../types/networkAPI";
+import { useTranslation } from "react-i18next";
 
 export default function OnBoardingPortal() {
     const [phase, setPhase] = useState(0);
@@ -19,6 +20,10 @@ export default function OnBoardingPortal() {
     const [name, setName] = useState("");
     const [surname, setSurname] = useState("");
     const [gender, setGender] = useState("o");
+
+    const {t} = useTranslation("portals", {keyPrefix: "onboarding"});
+    const {t: tc} = useTranslation("common");
+    const {t: tg} = useTranslation("glossary");
 
     useEffect(()=>{
         const abort = new AbortController();
@@ -51,12 +56,12 @@ export default function OnBoardingPortal() {
             </div>
             <div className={`${PortalClasses.PageHolder} ${classes.Container}`}>
                 <div className={`${PortalClasses.Page} ${classes.WelcomePage} ${phase==0?PortalClasses.Show:""}`}>
-                    <h2>Hello!</h2>
-                    <p>You've been invited to join our community.</p>
-                    <button onClick={()=>setPhase(1)}>Join now!</button>
+                    <h2>{t("phase0.header")}</h2>
+                    <p>{t("phase0.desc")}</p>
+                    <button onClick={()=>setPhase(1)}>{t("phase0.forward")}</button>
                 </div>
                 <div className={`${PortalClasses.Page} ${phase==1?PortalClasses.Show:""}`}>
-                    <h3>Enter your information</h3>
+                    <h3>{t("phase1.header")}</h3>
                     <CustomForm 
                         doReset={false}
                         url={""}
@@ -64,21 +69,21 @@ export default function OnBoardingPortal() {
                         method="POST"
                         onSuccess={()=>setPhase(2)}
                         onFailure={async ()=>{return "This can't fail"}}
-                        submitCaption="Next"
+                        submitCaption={tc("next")}
                         elements={[
-                            <InputBox key="name" globalID={`OnBoarding-name-${Math.round(Math.random()*100)}`} label="Name" formControlID="name" inputType="text" isRequired initialValue={name} stateUpdater={ev=>setName(ev.target.value)} autocomplete="given-name" pattern="[A-Z]{1}[a-z]{1,}"/>,
-                            <InputBox key="surname" globalID={`OnBoarding-surname-${Math.round(Math.random()*100)}`} label="Surname" formControlID="surname" inputType="text" isRequired initialValue={surname} stateUpdater={ev=>setSurname(ev.target.value)} autocomplete="family-name" pattern="[A-Z]{1}[a-z]{1,}"/>,
+                            <InputBox key="name" globalID={`OnBoarding-name-${Math.round(Math.random()*100)}`} label={t("phase1.name")} formControlID="name" inputType="text" isRequired initialValue={name} stateUpdater={ev=>setName(ev.target.value)} autocomplete="given-name" pattern="[A-Z]{1}[a-z]{1,}"/>,
+                            <InputBox key="surname" globalID={`OnBoarding-surname-${Math.round(Math.random()*100)}`} label={t("phase1.surname")} formControlID="surname" inputType="text" isRequired initialValue={surname} stateUpdater={ev=>setSurname(ev.target.value)} autocomplete="family-name" pattern="[A-Z]{1}[a-z]{1,}"/>,
                             <SelectBox 
                                 key="gender" 
-                                label="Gender" 
+                                label={tc("gender")}
                                 formControlID="gender"
                                 initialValue={gender}
                                 autocomplete="sex" 
                                 stateUpdater={ev=>setGender(ev.target.value)} 
                                 options={[
-                                    {value: "o", displayName: "Other"},
-                                    {value: "m", displayName: "Male"},
-                                    {value: "f", displayName: "Female"}
+                                    {value: "o", displayName: tg("gender_o")},
+                                    {value: "m", displayName: tg("gender_m")},
+                                    {value: "f", displayName: tg("gender_f")}
                                 ]} 
                             />
                         ]}
@@ -90,10 +95,10 @@ export default function OnBoardingPortal() {
                         onSuccess={()=>setPhase(3)} 
                         onFailure={async (res: API.Auth.SignUp.IResponse)=>{
                             if(res.errCode=="UserExists")
-                                return "User with that email already exists";
+                                return tg("error-messages.user-exists");
                             if(res.errCode=="InvalidEmail" || res.errCode=="InvalidToken") 
-                                return "This invite is corrupted. Try getting another one.";
-                            return "Couldn't create your account at this time."
+                                return tg("error-messages.invite-corrupted");
+                            return tg("error-messages.generic-create-account");
                         }}
                         username={username}
                         staticFields={{
@@ -105,7 +110,7 @@ export default function OnBoardingPortal() {
                     />
                 </div>
                 <div className={`${PortalClasses.Page} ${phase==3?PortalClasses.Show:""}`}>
-                    <FlowFinishPage header="All done!" description="Your account has been created. You can login now." buttonCaption="Login" redirectUrl="/Login"/>
+                    <FlowFinishPage header={t("phase3.header")} description={t("phase3.desc")} buttonCaption={t("go-to-login")} redirectUrl="/Login"/>
                 </div>
             </div>
             

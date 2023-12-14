@@ -63,7 +63,7 @@ export default async function initializeFeatures(instance: FastifyInstance | nul
             });
         }
 
-        if(url.endsWith(".png")||url.endsWith(".svg")) {
+        if(url.endsWith(".png")||url.endsWith(".svg")||url.endsWith(".json")) {
             res.code(404);
             return;
         }

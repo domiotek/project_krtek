@@ -32,6 +32,7 @@
     cursor: pointer;
     -webkit-user-select: none;
     user-select: none;
+    text-transform: capitalize;
 }
 
 .FilterSection span.Active {

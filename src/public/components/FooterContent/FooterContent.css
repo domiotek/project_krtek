@@ -1,0 +1,15 @@
+.FooterContent {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.FooterContent i {
+    font-style: normal;
+    flex-shrink: 0;
+}
+
+.FooterContent a {
+    flex-shrink: 0;
+    margin-left: 0.5em;
+}

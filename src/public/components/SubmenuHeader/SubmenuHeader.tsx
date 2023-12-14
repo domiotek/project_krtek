@@ -4,6 +4,7 @@ import classes from "./SubmenuHeader.css"
 import { manageClassState } from "../../modules/utils";
 
 import ArrowImg from "../../assets/ui/left-arrow-angle.png";
+import { useTranslation } from "react-i18next";
 
 namespace SubmenuHeader {
     interface IAction {
@@ -19,6 +20,7 @@ namespace SubmenuHeader {
 }
 
 export default function SubmenuHeader(props: SubmenuHeader.IProps) {
+    const {t: tc} = useTranslation("common");
     return (
         <div className={classes.SubmenuHeader}>
             <button className={classes.GoBackButton} 
@@ -31,7 +33,7 @@ export default function SubmenuHeader(props: SubmenuHeader.IProps) {
                     if(props.onBackCallback) props.onBackCallback();
             }} title="Go Back">
                 <img src={ArrowImg} alt="Left Arrow" />
-                <span>Back</span>
+                <span>{tc("back")}</span>
             </button>
 
             <h4>

@@ -1,13 +1,16 @@
 import React from "react";
 import classes from "./Shifts.css";
 import commonClasses from "../../../common.css";
+import { useTranslation } from "react-i18next";
 
 
 export function NoShiftsMessage() {
+    const {t} = useTranslation("statistics", {keyPrefix: "shifts-tab"});
+
     return (
         <div className={classes.NoShiftsMessageContainer}>
             <img src="/ilustrations/Void.svg" alt="Void" />
-            <h4>No shifts found</h4>
+            <h4>{t("no-shifts-title")}</h4>
         </div>
     );
 }
@@ -43,11 +46,13 @@ export function LoadingShiftsView() {
 }
 
 export function NoFilterResultsMessage() {
+    const {t} = useTranslation("statistics", {keyPrefix: "shifts-tab"});
+
     return (
         <div className={classes.NoShiftsMessageContainer}>
             <img src="/ilustrations/Void.svg" alt="Void" />
-            <h4>No shifts found</h4>
-            <p>Adjust your filters and try again.</p>
+            <h4>{t("no-shifts-title")}</h4>
+            <p>{t("no-filter-hits-desc")}</p>
         </div>
     );
 }

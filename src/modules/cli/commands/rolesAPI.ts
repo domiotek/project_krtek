@@ -19,7 +19,7 @@ export default function(){
             return;
         }
 
-        const headers = ["ID","Code name","Display name","User count"];
+        const headers = ["ID","Code name","User count"];
         const dataTable = initArrayOfArrays<string>(headers.length);
         
         for(let i=0; i< headers.length; i++)
@@ -31,7 +31,6 @@ export default function(){
             const values = [
                 role.ID.toString(), 
                 role.name,
-                role.displayName,
                 (users?.length ?? 0).toString()
             ];
 
@@ -112,7 +111,7 @@ export default function(){
         req.respond(`Roles assigned to the requested user:\n========================================`, false);
 
         for (const role of roles) {
-            req.respond(`${role.ID} / ${role.name} / ${role.displayName}`, false);
+            req.respond(`${role.ID} / ${role.name}`, false);
         }
 
         req.respond(roles.length==0?"No roles found":"");

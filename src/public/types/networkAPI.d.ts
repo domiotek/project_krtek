@@ -206,7 +206,6 @@ export namespace API {
             interface IRoleDetails {
                 ID: number
                 name: string
-                displayName: string
             }
 
             type IEndpoint = TBuildAPIEndpoint<"GET", "/api/app/roles", IRoleDetails[]>
@@ -216,7 +215,6 @@ export namespace API {
             interface IRoleDetails {
                 ID: number
                 name: string
-                displayName: string
             }
 
             type IEndpoint = TBuildAPIEndpoint<"GET", "/api/user/roles", IRoleDetails[], "NotSignedIn">
@@ -327,7 +325,6 @@ export namespace API {
                     plannedStartTime: string
                     plannedEndTime: string | null
                     requiredRole: string
-                    requiredRoleDisplayName: string
                     assignedShift: IShift | null
                 }
 

@@ -8,11 +8,17 @@ import { callAPI, render2FloatingPoint } from "../../../../modules/utils";
 import ProgressBar from "../../../ProgressBar/ProgressBar";
 import { Link } from "react-router-dom";
 import { WidgetContext } from "../../WidgetBox";
+import { useTranslation } from "react-i18next";
+import { AppContext } from "../../../../App";
 
 export default function EarningsSummaryWidget() {
     const [data, setData] = useState<API.App.Widgets.GetEarnings.IResponseData | null>(null);
 
     const [widgetState, setWidgetState] = useContext(WidgetContext);
+
+    const {t} = useTranslation("home", {keyPrefix: "earnings-widget"});
+
+    const [userData] = useContext(AppContext);
 
     useEffect(()=>{
         return callAPI<API.App.Widgets.GetEarnings.IEndpoint>("GET","/api/widgets/earnings",null,
@@ -42,15 +48,15 @@ export default function EarningsSummaryWidget() {
                             <ProgressBar progress={Math.min(goalProgress,100)} labels={["0zł", `${render2FloatingPoint(data.setGoal)}zł`]} showOnlyOnePerctantage={true} />
                             <h5>{
                                 diff > 0?
-                                    ["Still have ", <span key={0}>{render2FloatingPoint(diff)}zł</span>," to earn"]
+                                    [t("still-need-prefix"), <span key={0}>{render2FloatingPoint(diff)}zł</span>,t("still-need-sufix")]
                                 :
-                                    ["You earned ",<span key={0}>{render2FloatingPoint(-diff)}zł</span>," more than needed"]
+                                    [t("has-more-prefix", {context: userData?.accountGender=="f"?"female":"male"}),<span key={0}>{render2FloatingPoint(-diff)}zł</span>,t("has-more-sufix")]
                             }</h5>
                         </div>
                     :
                         <div className={classes.NoGoalSetView}>
-                            <h5>You don't have goal set</h5>
-                            <Link to={"/Statistics/Settings"} >Set your goal</Link>
+                            <h5>{t("no-goal-set")}</h5>
+                            <Link to={"/Statistics/Settings"}>{t("set-goal-link")}</Link>
                         </div>
                         
                 }
@@ -80,8 +86,8 @@ export default function EarningsSummaryWidget() {
                     :
                         <div className={`${classes.Message} ${classes.NoWageRateView}`}>
                             <img src="/ilustrations/NoData.svg" alt="Missing information" />
-                            <h5>Couldn't calculate</h5>
-                            <Link to={"/Statistics/Settings"}>Set wage rate</Link>
+                            <h5>{t("calc-failure")}</h5>
+                            <Link to={"/Statistics/Settings"}>{t("set-wage-link")}</Link>
                         </div>
                 :
                     renderDummyContent()

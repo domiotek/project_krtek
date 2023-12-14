@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import classes from "./PasswordStrengthIndicator.css";
+import { useTranslation } from "react-i18next";
 
 
 interface IProps {
@@ -14,6 +15,8 @@ export default function PasswordStrengthIndicator(props: IProps) {
     const [hasLLetter, setHasLLetter] = useState(false);
     const [hasDigit, setHasDigit] = useState(false);
     const [hasSymbol, setHasSymbol] = useState(false);
+
+    const {t} = useTranslation("portals", {keyPrefix: "pass-page"})
     
     useEffect(()=>{
         const _isLongEnough = props.password.length>=8;
@@ -35,19 +38,19 @@ export default function PasswordStrengthIndicator(props: IProps) {
     return (
         <ul className={classes.PasswordStrengthIndicator}>
             <li className={isLongEnough?classes.PassedRequirement:""}>
-                Is at least 8 charactes long
+                {t("req-length")}
             </li>
             <li className={hasULetter?classes.PassedRequirement:""}>
-                Has one uppercase letter
+                {t("req-upper")}
             </li>
             <li className={hasSymbol?classes.PassedRequirement:""}>
-                Has one special character
+                {t("req-symb")}
             </li>
             <li className={hasLLetter?classes.PassedRequirement:""}>
-                Has one lowercase letter
+                {t("req-lower")}
             </li>
             <li className={hasDigit?classes.PassedRequirement:""}>
-                Has one numeric character
+                {t("req-num")}
             </li>
         </ul>
     );

@@ -6,10 +6,14 @@ import classes from "./PasswordRecovery.css";
 import FlowFinishPage from "../shared/FinishPage/FinishPage";
 import SetPasswordPage from "../shared/SetPasswordPage/SetPasswordPage";
 import { API } from "../../../types/networkAPI";
+import { useTranslation } from "react-i18next";
 
 export default function PasswordRecoveryPortal() {
     const [username, setUsername] = useState("");
     const [flowFinished, setFlowFinished] = useState(false);
+
+    const {t} = useTranslation("portals");
+    const {t: tg} = useTranslation("glossary");
 
     useEffect(()=>{
         const abort = new AbortController();
@@ -37,13 +41,13 @@ export default function PasswordRecoveryPortal() {
                     <SetPasswordPage 
                         url={"/auth/change/password"} 
                         onSuccess={()=>setFlowFinished(true)} 
-                        onFailure={async ()=>"Couldn't change password at this time."}
+                        onFailure={async ()=>tg("error-messages.generic-change-password")}
                         staticFields={{token: new URLSearchParams(window.location.search).get("token") ?? ""}}
                         username={username}
                     />
                 </div>
                 <div className={`${PortalClasses.Page} ${flowFinished?PortalClasses.Show:""}`}>
-                    <FlowFinishPage header="Password changed" description="Your password has been successfully changed. You may login now." redirectUrl="/Login" buttonCaption="Login"/>
+                    <FlowFinishPage header={t("rec-pass.header")} description={t("rec-pass.desc")} redirectUrl="/Login" buttonCaption={t("onboarding.go-to-login")}/>
                 </div>
             </div>
         </div>

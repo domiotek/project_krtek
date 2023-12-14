@@ -3,6 +3,7 @@ import React, { createContext, useState } from "react";
 import PuffLoader from "react-spinners/PuffLoader";
 
 import classes from "./WidgetBox.css";
+import { useTranslation } from "react-i18next";
 
 interface IProps {
     children: JSX.Element
@@ -18,6 +19,8 @@ export const WidgetContext = createContext<[TWidgetState, (newState: TWidgetStat
 export default function WidgetBox(props: IProps) {
     const [state, setState] = useState<TWidgetState>(props.skipLoading?"Ready":"Loading");
 
+    const {t} = useTranslation("home");
+
     return (
         <WidgetContext.Provider value={[state, setState]}>
             <div className={`${classes.Widget} ${props.size=="Large"?classes.LargeWidget:""}`}>
@@ -28,7 +31,7 @@ export default function WidgetBox(props: IProps) {
                     </div>
                     <div className={`${classes.ErrorMessage} ${state==="Unavailable"?classes.Visible:""}`}>
                         <img src="/ilustrations/Broken.svg" alt="Broken widget"/>
-                        <h5>That didn't work</h5>
+                        <h5>{t("widget.error-message")}</h5>
                     </div>
                     <div className={`${classes.LoadingPanel} ${state=="Loading"?classes.Visible:""}`}>
                         <PuffLoader size="80px" color="#4166DC" />

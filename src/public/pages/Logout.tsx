@@ -5,10 +5,14 @@ import classes from "./Logout.css";
 import { useNavigate } from "react-router-dom";
 import { API } from "../types/networkAPI";
 import { callAPI } from "../modules/utils";
+import { useTranslation } from "react-i18next";
 
 export default function Logout() {
     const [name, setName] = useState("");
     const [surname, setSurname] = useState("");
+    const [gender, setGender] = useState("");
+
+    const {t} = useTranslation("portals", {keyPrefix: "logout"});
 
 
     const navigate = useNavigate();
@@ -33,6 +37,7 @@ export default function Logout() {
         return callAPI<API.App.BasicData.IEndpoint>("GET","/api/user/basic-data", null, data=>{
             setName(data.name);
             setSurname(data.surname);
+            setGender(data.gender);
         }, ()=>{
             navigate("/login");
         });
@@ -41,17 +46,17 @@ export default function Logout() {
     return (
         <div className={`${classes.ContentBox}`}>
             <img src="/ilustrations/RoadSigns.svg" alt="Lost at intersection" />
-            <h3>Log out to continue</h3>
+            <h3>{t("header")}</h3>
             <p>
-                You are currently logged in as:
+                {t("desc-1", {context: gender=="f"?"female":"male"})}
                 <span className={`${classes.LoadingFields} ${name==""?classes.ActiveAnim:""}`}>
                     <span></span>
                     <span></span>
                 </span>
                 <span className={name==""?classes.Hide:classes.ShowData}>{name} {surname}</span>
-                To access the requested website, you can't be signed in.
+                {t("desc-2", {context: gender=="f"?"female":"male"})}
             </p>
-            <button type="button" onClick={clickHandler}>Logout and continue</button>
+            <button type="button" onClick={clickHandler}>{t("action")}</button>
         </div>
     );
 }

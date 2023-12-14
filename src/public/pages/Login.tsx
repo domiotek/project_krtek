@@ -13,12 +13,15 @@ import RegisterImg from "../assets/ui/add-user.png";
 import KeyImg from "../assets/ui/key.png";
 import ContactImg from "../assets/ui/comment.png";
 import ForgotPasswordForm from "../components/Forms/ForgotPasswordForm/ForgotPassword";
+import { useTranslation } from "react-i18next";
 
 type TPanelTypes = "MainPanel" | "PasswordRecoveryPanel" | "PasswordRecoveryEndPointPanel" | "RegistrationInfoPanel" | "ContactInfoPanel" | "HelpCenterPanel";
 
 export default function Login() {
     const [popupState, setPopupState] = useState<{show: boolean, text: string}>({show: false, text: ""});
     const [activePanel, setActivePanel] = useState<TPanelTypes>("MainPanel");
+
+    const {t} = useTranslation("portals", {keyPrefix: "login"});
 
     const navigate = useNavigate();
     
@@ -29,10 +32,10 @@ export default function Login() {
             let text = "";
             switch(params.get("r")) {
                 case "session_expired":
-                    text = "Your session expired";
+                    text = t("session-expired-message");
                 break;
                 case "logout":
-                    text = "You've been logged out."
+                    text = t("logout-message");
                 break;
             }
             setPopupState({show: true, text});
@@ -58,10 +61,10 @@ export default function Login() {
                         manageClassState(classes.MainPanel,"inactive",classes.Show);
                         manageClassState(classes.MainPanel,"active",classes.HideMainPanel);
                         setActivePanel("HelpCenterPanel");
-                    }}>Need help?</button>
+                    }}>{t("need-help-link")}</button>
             </div>
             <div className={`${classes.AdditionalPanel} ${classes.HelpCenterPanel} ${activePanel=="HelpCenterPanel"?classes.Show:""}`}>
-                <SubmenuHeader headerCaption="Help center" 
+                <SubmenuHeader headerCaption={t("help-center-section")}
                     actionList={[
                         {target: classes.MainPanel, name: classes.HideMainPanel, action:"inactive"},
                         {target: classes.MainPanel, name: classes.Show, action: "active"}
@@ -71,54 +74,49 @@ export default function Login() {
                 <div className={classes.PanelContent}>
                     <div className={classes.ItemPanel} onClick={()=>setActivePanel("PasswordRecoveryPanel")}>
                         <img src={KeyImg} alt="Key"/>
-                        <h5>I forgot my password</h5>
+                        <h5>{t("forgot-password-entry")}</h5>
                     </div>
                     <div className={classes.ItemPanel} onClick={()=>setActivePanel("RegistrationInfoPanel")}>
                         <img src={RegisterImg} alt="Signup" />
-                        <h5>Where can I register?</h5>
+                        <h5>{t("register-entry")}</h5>
                     </div>
                     <div className={classes.ItemPanel} onClick={()=>setActivePanel("ContactInfoPanel")}>
                         <img src={ContactImg} alt="Message" />
-                        <h5>I have different problem</h5>
+                        <h5>{t("other-problem-entry")}</h5>
                     </div>
                 </div>
             </div>
             <div className={`${classes.AdditionalPanel} ${classes.PasswordRecoveryPanel} ${activePanel=="PasswordRecoveryPanel"?classes.Show:""}`}>
-                <SubmenuHeader headerCaption="Password recovery" onBackCallback={()=>setActivePanel("HelpCenterPanel")} />
+                <SubmenuHeader headerCaption={t("password-recovery-section")} onBackCallback={()=>setActivePanel("HelpCenterPanel")} />
 
                 <div className={classes.PanelContent}>
                     <img src="/ilustrations/ForgotPassword.svg" alt="Forgotten password"/>
-                    <p>We will send you an email with the link that will allow you to recover your account.</p>
+                    <p>{t("account-recovery-message")}</p>
                     <ForgotPasswordForm isActive={activePanel=="PasswordRecoveryPanel"} onSuccess={()=>setActivePanel("PasswordRecoveryEndPointPanel")}/>
                 </div>
             </div>
             <div className={`${classes.AdditionalPanel} ${classes.PasswordRecoveryEndPointPanel} ${activePanel=="PasswordRecoveryEndPointPanel"?classes.Show:""}`}>
-                <SubmenuHeader headerCaption="Password recovery" onBackCallback={()=>setActivePanel("HelpCenterPanel")} />
+                <SubmenuHeader headerCaption={t("password-recovery-section")} onBackCallback={()=>setActivePanel("HelpCenterPanel")} />
                 <div className={classes.PanelContent}>
                     <img src="/ilustrations/emailSent.svg" alt="Email with a checkmark" />
-                    <h3>Email sent</h3>
-                    <p>We have sent you an email with the link that will allow you to reset your password.</p>
-                    <h5>Email didn't arrive?</h5>
-                    <p>Make sure to check your spam folder or try again in a moment.</p>
+                    <h3>{t("account-recovery-header")}</h3>
+                    <p>{t("account-recovery-desc")}</p>
+                    <h5>{t("account-recovery-email-failure")}</h5>
+                    <p>{t("account-recovery-spam-notice")}</p>
                 </div>
             </div>
             <div className={`${classes.AdditionalPanel} ${classes.RegistrationInfoPanel} ${activePanel=="RegistrationInfoPanel"?classes.Show:""}`}>
-                <SubmenuHeader headerCaption="Registration" onBackCallback={()=>setActivePanel("HelpCenterPanel")} />
+                <SubmenuHeader headerCaption={t("registration-section")} onBackCallback={()=>setActivePanel("HelpCenterPanel")} />
                 <div className={classes.PanelContent}>
                     <img src="/ilustrations/workFriends.svg" alt="Friends at work"/>
-                    <p>
-                        Project Krtek is a closed community focused around employes in the same workplace, therefore it's invitation only. 
-                        If you are an employee of [???], just contact your supervisor and register through received invitation link.
-                    </p>
+                    <p>{t("register-notice")}</p>
                 </div>
             </div>
             <div className={`${classes.AdditionalPanel} ${classes.ContactInfoPanel} ${activePanel=="ContactInfoPanel"?classes.Show:""}`}>
-                <SubmenuHeader headerCaption="Contact" onBackCallback={()=>setActivePanel("HelpCenterPanel")} />                                                        
+                <SubmenuHeader headerCaption={t("contact-section")} onBackCallback={()=>setActivePanel("HelpCenterPanel")} />                                                        
                 <div className={classes.PanelContent}>
                     <img src="/ilustrations/UnderConstruction.svg" alt="Construction site"/>
-                    <p>
-                        For now you can only contact me in person. Contact form will be added in the future.
-                    </p>
+                    <p>{t("contact-notice")}</p>
                 </div>
             </div>
             <TopPopup text={popupState.text} show={popupState.show} popupReseter={()=>setPopupState({show: false, text: popupState.text})}/>
