@@ -47,7 +47,7 @@
     "shifts-tab.shared-note": "Shared note",
     "shifts-tab.shared-note-updated-on": "{{date}} by {{actor}}",
     "shifts-tab.private-note": "Private note",
-    "shifts-tab.requires-action": "Requires action",
+    "shifts-tab.requires-action": "Requires finishing",
     "shifts-tab.earnings-section-header": "Earnings",
     "nerd-stats-tab.work-more-header": "Work some more",
     "nerd-stats-tab.loading-header": "Working on it...",
