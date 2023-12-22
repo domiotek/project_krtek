@@ -30,16 +30,47 @@
     display: none;
 }
 
-.InputContainer.checkbox {
+.CheckBox label {
     display: flex;
-    flex-direction: row-reverse;
-    justify-content: flex-end;
-    font-size: smaller;
+	flex-direction: row-reverse;
+	justify-content: flex-end;
+	align-items: center;
+	font-size: 0.85em;
+	-webkit-user-select: none;
+	user-select: none;
 }
 
-.InputContainer.checkbox input {
-    margin: 0 0.25rem 0 0.5rem;
-    width: auto;
+.CheckBox .checkmark {
+	position: relative;
+	font-size: 1.25em;
+    height: 1em;
+    width: 1em;
+    background-color: #c1c1c1;
+    box-shadow: 1px 1px 10px 0 #4d4d4d33;
+	margin-right: 0.5em;
+	border-radius: 5px;
+    margin: 0 0.5em;
+}
+  
+.CheckBox input:checked ~ .checkmark {
+	background-color: var(--primary-color);
+}
+  
+.CheckBox .checkmark:after {
+	content: "";
+	position: absolute;
+	display: none;
+	left: 50%;
+    top: 45%;
+    width: 0.15em;
+    height: 0.3em;
+    border: solid white;
+    border-width: 0 0.15em 0.15em 0;
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.CheckBox input:checked ~ .checkmark:after {
+	display: block;
 }
 
 .CheckBox label {
