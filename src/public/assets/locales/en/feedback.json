@@ -1,0 +1,10 @@
+{
+    "header": "Send feedback",
+    "desc": "Is something broken? Maybe something could work or look differently? Or maybe you just have some intersting idea? Let me know. ",
+    "type": "Type",
+    "title": "Title",
+    "details": "Additional details",
+    "anonymity": "Stay anonymous",
+    "opinion": "Opinion",
+    "problem": "Problem"
+}

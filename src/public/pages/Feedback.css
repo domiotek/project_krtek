@@ -1,0 +1,42 @@
+.Wrapper {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.Header {
+    position: relative;
+}
+
+.Header::after {
+    content: "";
+    display: block;
+    position: absolute;
+    bottom: -7px;
+    width: 160px;
+    height: 4px;
+    background-color: var(--primary-color);
+}
+
+
+@media screen and (min-width: 1200px) {
+    .Wrapper {
+        max-width: 700px;
+    }
+
+    .Wrapper Form div {
+        max-width: 400px;
+    }
+
+    .Wrapper Form div:nth-of-type(1) {
+        max-width: 200px;
+    }
+}
+
+@media screen and (min-width: 1700px) {
+    .Wrapper {
+        align-self: flex-start;
+        margin-left: 6rem;
+    }
+}

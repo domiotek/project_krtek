@@ -21,6 +21,7 @@ const BetaIntro = React.lazy(()=>import(/* webpackChunkName: "beta" */"./pages/B
 const MyAccountDetails = React.lazy(()=>import(/* webpackChunkName: "myacc" */"./pages/MyAccount"));
 const Schedule = React.lazy(()=>import(/* webpackChunkName: "schd" */"./pages/Schedule"));
 const Statistics = React.lazy(()=>import(/* webpackChunkName: "stats" */"./pages/Statistics"));
+const Feedback = React.lazy(()=>import(/* webpackChunkName: "fdbck" */"./pages/Feedback"));
 const NoPage = React.lazy(()=>import(/* webpackChunkName: "nopage" */"./pages/NoPage"));
 
 const root = ReactDOM.createRoot(
@@ -37,6 +38,7 @@ root.render(
               <Route path="/Account" element={<MyAccountDetails />} />
               <Route path='/Schedule' element={<Schedule />} />
               <Route path='/Statistics/:tab?' element={<Statistics />} />
+              <Route path="/Feedback" element={<Feedback />} />
               <Route path='*' element={<NoPage />} />
           </Route>
           <Route path='/p' element={<Portal />}>
