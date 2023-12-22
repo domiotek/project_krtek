@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import InputBox from "../../InputBox/InputBox";
+import InputBox, { CheckBox } from "../../InputBox/InputBox";
 import CustomForm from "../CustomForm/CustomForm";
 
 import { useNavigate } from "react-router-dom";
@@ -36,7 +36,7 @@ export default function LoginForm() {
                 elements={[
                     <InputBox key="username" globalID={`Login-username-${Math.round(Math.random()*100)}`} label={tc("email-address")} formControlID="username" inputType="email" stateUpdater={ev=>setEmail(ev.target.value)} isRequired initialValue={email} autocomplete="username"/>,
                     <InputBox key="password" globalID={`Login-password-${Math.round(Math.random()*100)}`} label={tc("password")} formControlID="password" inputType="password" stateUpdater={ev=>setPassword(ev.target.value)} isRequired initialValue={password} autocomplete="current-password"/>,
-                    <InputBox key="rememberMe" globalID={`Login-rembMe-${Math.round(Math.random()*100)}`} label={t("remember-me")} formControlID="rememberMe" inputType="checkbox" stateUpdater={ev=>setRememberMe(ev.target.checked)} isRequired={false} initialValue={rememberMe}/>
+                    <CheckBox key="rememberMe" globalID={`Login-rembMe-${Math.round(Math.random()*100)}`} label={t("remember-me")} formControlID="rememberMe" stateUpdater={val=>setRememberMe(val)} initialValue={rememberMe} />
                 ]}
             />
         </div>
