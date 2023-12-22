@@ -1,4 +1,4 @@
-import React, { ChangeEventHandler, FormEventHandler, HTMLInputTypeAttribute, createRef, useEffect, useRef, useState } from "react";
+import React, { ChangeEventHandler, HTMLInputTypeAttribute, createRef, useEffect, useRef, useState } from "react";
 
 import classes from "./InputBox.css"
 
@@ -16,9 +16,14 @@ namespace InputBox {
     }
 
     export interface IProps extends IBasicProps {
-        inputType: HTMLInputTypeAttribute
+        inputType: Exclude<HTMLInputTypeAttribute, "checkbox">
         autocomplete?: string
         pattern?: string
+    }
+
+    export interface ICheckBoxProps extends Omit<IBasicProps, "isRequired" | "stateUpdater"> {
+        initialValue: boolean
+        stateUpdater: (newValue: boolean)=>void
     }
 
     export interface ICurrencyProps extends Omit<IBasicProps,"stateUpdater"> {
@@ -33,8 +38,21 @@ export default function InputBox(props: InputBox.IProps) {
         <div className={`${classes.InputContainer} ${classes[props.inputType]} ${props.hidden?classes.hidden:""} ${props.disabled?classes.disabled:""}`}>
             <label htmlFor={props.globalID}>{props.label}</label>
             <input id={props.globalID} name={props.formControlID} title={props.label} type={props.inputType} onChange={props.stateUpdater} required={props.isRequired} value={props.initialValue} 
-                checked={props.inputType=="checkbox"&&props.initialValue} autoComplete={props.autocomplete ?? "off"} pattern={props.pattern} maxLength={props.sizeLimit} disabled={props.disabled}/>
+                autoComplete={props.autocomplete ?? "off"} pattern={props.pattern} maxLength={props.sizeLimit} disabled={props.disabled}/>
+            {props.sizeLimit&&props.sizeLimit>0?<span>{`${props.initialValue.length} / ${props.sizeLimit}`}</span>:""}
 
+        </div>
+    );
+}
+
+export function CheckBox(props: InputBox.ICheckBoxProps) {
+    return (
+        <div className={`${classes.InputContainer} ${classes.CheckBox} ${props.hidden?classes.hidden:""} ${props.disabled?classes.disabled:""}`}>
+            <label>{props.label}
+                <input id={props.globalID} name={props.formControlID} title={props.label} type="checkbox" onChange={e=>{props.stateUpdater(e.target.checked)}}
+                    checked={props.initialValue} autoComplete={"off"} disabled={props.disabled} hidden value={props.initialValue.toString()}/>
+                <span className={classes.checkmark}></span>
+            </label>
         </div>
     );
 }
