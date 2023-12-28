@@ -37,5 +37,6 @@
     "unsaved-changes": "You have unsaved changes",
     "email-address": "Email address",
     "gender": "Gender",
-    "password": "Password"
+    "password": "Password",
+    "go-home": "Go home"
 }

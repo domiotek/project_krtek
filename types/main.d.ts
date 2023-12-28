@@ -61,6 +61,8 @@ interface IApp {
 
     public readonly userAuth: CLIAPI.UserAuthentication.IAuthenticationManager;
 
+    public readonly feedbackManager: WebAPI.Feedback.IFeedbackManager;
+
     /**
      * Reloads server's session, by reloading config and reinitializing main services.
      * Note that it will NOT reload API server.

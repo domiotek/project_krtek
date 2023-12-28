@@ -17,6 +17,7 @@ import { ScheduleManager } from "./modules/network/scheduleManager.js";
 import { UserStatsManager } from "./modules/network/userStatsManager.js";
 import { BuildDate } from "./build-date.js";
 import { initializeSubscriptions } from "./modules/cli/subscriptions.js";
+import { FeedbackManager } from "./modules/network/feedbackManager.js";
 
 
 class App implements IApp {
@@ -36,6 +37,7 @@ class App implements IApp {
 	public readonly commands: CLIAPI.CommandsHandling.ICommandsHandler;
 	public readonly userAuth: CLIAPI.UserAuthentication.IAuthenticationManager;
 	public readonly mailer: Mailer.IMailer;
+	public readonly feedbackManager: WebAPI.Feedback.IFeedbackManager;
 
 	public get isHTTPS(): boolean {
 		return this.server?.webServer.isHTTPS ?? false;
@@ -59,6 +61,7 @@ class App implements IApp {
 		this.commands = new CommandsHandler();
 		this.userAuth = new AuthenticationManager(this.env.auth);
 		this.mailer = new Mailer(this.env.environmentName,envConfig.externalServices.Mailtrap);
+		this.feedbackManager = new FeedbackManager(this.mysqlController);
 
 		Output.category("debug").print("notice","Loader finished initializing environment.");
 

@@ -6,5 +6,8 @@
     "details": "Dodatkowe informacje",
     "anonymity": "Zachowaj anonimowość",
     "opinion": "Opinia",
-    "problem": "Problem"
+    "problem": "Problem",
+    "sp-header": "Dziękujemy!",
+    "sp-desc_opinion": "Otrzymaliśmy Twoją opinię i z pewnością weźmiemy ją pod uwagę.",
+    "sp-desc_problem": "Otrzymaliśmy Twoje zgłoszenie, a problemem zajmiemy się najszybciej jak to możliwe."
 }

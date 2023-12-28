@@ -1218,6 +1218,32 @@ namespace WebAPI {
         }
     }
 
+    namespace Feedback {
+
+        type TErrorTypes<T>= "";
+
+        interface ITicketDetails {
+            ID: number 
+            type: string
+            creatorUserID: number | null
+            title: string
+            desc: string
+            submittedOn: DateTime
+        }
+
+        interface IFeedbackManager {
+            createTicket(type: string, title: string, desc: string, creatorUserKey: string | number | null): Promise<number | null>
+
+            listTickets(): Promise<ITicketDetails[]>
+
+            getTicket(ticketID: number): Promise<ITicketDetails | null>
+
+            dropTicket(ticketID: number): Promise<boolean>
+            
+            dropAllTickets(): Promise<void>
+        }
+    }
+
     type TRouteSourceFile = Array<import("fastify").RouteOptions> | {[exportName: string]: any, default: Array<import("fastify").RouteOptions>}
 
     interface IGetRequestQuery {
@@ -1253,7 +1279,7 @@ namespace WebAPI {
         public clearLinks()
     }
 
-    type APITypes = "Auth" | "Schedule" | "Stats";
+    type APITypes = "Auth" | "Schedule" | "Stats" | "Feedback";
     type SubAPITypes<T extends APITypes> =
         (T extends "Auth"?Auth.TAuthAPITypes:never) | 
         (T extends "Schedule"?Schedule.TScheduleAPITypes:never);
@@ -1261,7 +1287,8 @@ namespace WebAPI {
     type APIErrors<T extends APITypes, S extends "All" | SubAPITypes<T>="All"> = "NoConnection" | "DBError" | "NotImplemented"|
         (T extends "Auth"?Auth.TErrorTypes<S>:never) |
         (T extends "Schedule"?Schedule.TErrorTypes<S>:never) | 
-        (T extends "Stats"?Statistics.TErrorTypes<S>:never);
+        (T extends "Stats"?Statistics.TErrorTypes<S>:never) | 
+        (T extends "Feedback"?Feedback.TErrorTypes<S>:never);
 
     interface APIError<T extends APITypes=APITypes> extends Error {
         module: string

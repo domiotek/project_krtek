@@ -1,5 +1,9 @@
+import { RequiredStringSchema } from "yup/lib/string.js";
 import { API } from "../../../public/types/networkAPI.js";
 import { errorHandler } from "./common/error.js";
+
+import * as yup from "yup";
+import { isAPIError } from "../../util.js";
 
 const appVersion: WebAPI.IRouteOptions<API.App.Version.IEndpoint> = {
     method: "GET",
@@ -212,11 +216,73 @@ const userRoles: WebAPI.IRouteOptions<API.App.GetUserRoles.IEndpoint> = {
     errorHandler
 }
 
+const postFeedbackRequestSchema = yup.object().shape({
+    type: yup.string().required().oneOf(["opinion", "problem"]) as RequiredStringSchema<"opinion" | "problem">,
+    title: yup.string().required(),
+    desc: yup.string().required(),
+    anonymity: yup.boolean().required()
+});
+
+const postFeedback: WebAPI.IRouteOptions<API.App.PostFeedback.IEndpoint> = {
+    method: "POST",
+    url: "/api/app/feedback",
+    handler: async (req, res)=>{
+        res.header("cache-control","private, no-cache");
+        res.status(401);
+
+        const sessionID = req.cookies.session;
+
+        let result: API.App.PostFeedback.IEndpoint["returnPacket"] = {
+            status: "Failure",
+            errCode: "NotSignedIn"
+        }
+
+        if(sessionID) {
+            const auth = global.app.webAuthManager;
+
+            let session = await auth.getSessionDetails(sessionID);
+
+            if(session) {
+                res.code(400);
+
+                let params: API.App.PostFeedback.IFeedbackData;
+                
+                try {
+                    params = await postFeedbackRequestSchema.validate(req.body);
+                } catch (error) {
+                    result.status = "Failure";
+                    result.errCode = "BadRequest";
+                    result.message = (error as yup.ValidationError).message;
+                    return result;
+                }
+                
+                const ticketID = await global.app.feedbackManager.createTicket(params.type,params.title, params.desc, params.anonymity?null:session.userID);
+
+                if(ticketID!=null) {
+                    res.code(201);
+                    result = {
+                        status: "Success",
+                        data: undefined
+                    }
+
+                    return result;
+                }
+
+                result.errCode = "BadRequest";
+            }
+        }
+
+        return result;
+    },
+    errorHandler
+}
+
 export default [
     appVersion,
     basicData,
     fullUserData,
     navMenu,
     getRoles,
-    userRoles
+    userRoles,
+    postFeedback
 ];

@@ -1,8 +1,12 @@
 .Wrapper {
     width: 100%;
     max-width: 400px;
-    display: flex;
+    display: none;
     flex-direction: column;
+}
+
+.Wrapper.Active {
+    display: flex;
 }
 
 .Header {
@@ -19,6 +23,20 @@
     background-color: var(--primary-color);
 }
 
+.SuccessPage {
+    padding-top: 3em;
+    align-items: center;
+}
+
+.SuccessPage img {
+    max-width: 280px;
+}
+
+.SuccessPage button {
+    align-self: center;
+    border-radius: 5rem;
+    margin-top: 2em;
+}
 
 @media screen and (min-width: 1200px) {
     .Wrapper {

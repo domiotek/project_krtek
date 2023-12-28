@@ -220,6 +220,17 @@ export namespace API {
             type IEndpoint = TBuildAPIEndpoint<"GET", "/api/user/roles", IRoleDetails[], "NotSignedIn">
         }
 
+        namespace PostFeedback {
+            interface IFeedbackData {
+                type: "opinion" | "problem"
+                title: string
+                desc: string
+                anonymity: boolean
+            }
+
+            type IEndpoint = TBuildAPIEndpoint<"POST", "/api/app/feedback", undefined, "NotSignedIn">
+        }
+
         namespace Schedule {
             namespace GetSchedule {
 

@@ -7,7 +7,7 @@
   "scripts": {
     "build-date-factory": "node build-date-factory.js",
     "copy-config": "copyfiles -u 1 src/**/*.json dist && copyfiles environment*.json dist",
-    "copy-assets": "mkdirp dist/public && mkdirp dist/public/assets && ncp src/public/downloads dist/public/downloads --filter=\"public\\b(?:\\\\?[^\\\\.]+)*(\\.zip)*$\" && ncp src/public/assets dist/public/assets",
+    "copy-assets": "mkdirp dist/public && mkdirp dist/public/assets && ncp src/public/assets dist/public/assets",
     "copy-locales": "copyFiles -u 1 src/public/assets/locales/**/*.json dist",
     "clean": "rimraf dist && rimraf stats.json",
     "build-webapp-dev": "npm run copy-assets && cross-env NODE_ENV=development webpack --mode=development",
