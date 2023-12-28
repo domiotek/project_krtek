@@ -220,7 +220,7 @@ const recoverAccountRoute: RouteOptions = {
                 const sender = mailer.getSender("aas");
 
                 if(template&&sender) {
-                    const sendResult = await mailer.send(sender, params.username,template, {name: user.name, email_address: params.username, reset_link: `http://127.0.0.1:3000/p/ResetPassword?token=${token}`});
+                    const sendResult = await mailer.send(sender, params.username,template, {name: user.name, email_address: params.username, reset_link: `${global.app.env.server.url}/p/ResetPassword?token=${token}`});
                     if(sendResult) {
                         result.status="Success";
                     }

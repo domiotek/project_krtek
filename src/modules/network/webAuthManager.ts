@@ -812,7 +812,7 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
             if(actionTypeID!=-1) {
                 const tokenCount = await this.getTokensCount(userID,actionName,connection);
             
-                if(tokenCount) {
+                if(tokenCount!=null) {
                     if(tokenCount < this.MAX_SLOT_COUNT) {
                         const token = randomBytes(16).toString("hex");
                         const queryStr = `INSERT INTO account_actions(accountActionTokenID, accountActionTypeID, userID, expirationDate) VALUES(?,?,?,?)`;
