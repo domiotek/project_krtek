@@ -1,6 +1,6 @@
 {
   "name": "project-krtek",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "System for managing restaurant's workflow.",
   "main": "dist/server.js",
   "type": "module",
