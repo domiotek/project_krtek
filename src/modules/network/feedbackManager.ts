@@ -55,7 +55,7 @@ export class FeedbackManager implements WebAPI.Feedback.IFeedbackManager {
     }
 
     public async getTicket(ticketID: number): ReturnType<WebAPI.Feedback.IFeedbackManager["getTicket"]> {
-        let queryStr = `SELECT * FROM feedback_tickets NATURAL JOIN feedback_types WHERE tickedID=?;`;
+        let queryStr = `SELECT * FROM feedback_tickets NATURAL JOIN feedback_types WHERE ticketID=?;`;
         const response = await this._db.performQuery<"Select">(queryStr,[ticketID]);
 
         if(response) {
@@ -66,7 +66,7 @@ export class FeedbackManager implements WebAPI.Feedback.IFeedbackManager {
                     creatorUserID: response[0]["userID"],
                     title: response[0]["title"],
                     desc: response[0]["desc"],
-                    submittedOn: DateTime.fromJSDate(response[0]["expirationDate"])
+                    submittedOn: DateTime.fromJSDate(response[0]["submittedOn"])
                 }
             }else return null;
         }
@@ -88,7 +88,7 @@ export class FeedbackManager implements WebAPI.Feedback.IFeedbackManager {
                     creatorUserID: row["userID"],
                     title: row["title"],
                     desc: row["desc"],
-                    submittedOn: DateTime.fromJSDate(row["expirationDate"])
+                    submittedOn: DateTime.fromJSDate(row["submittedOn"])
                 });
             }
 
