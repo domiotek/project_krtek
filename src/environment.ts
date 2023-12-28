@@ -50,7 +50,9 @@ export default async function initialize(local: IfsProvider | null) : Promise<IE
         viewTokens: env.auth?.actions.viewTokens ?? [],
         manageTokens: env.auth?.actions.manageTokens ?? [],
         viewSchedule: env.auth?.actions.viewSchedule ?? [],
-        manageSchedule: env.auth?.actions.manageSchedule ?? []
+        manageSchedule: env.auth?.actions.manageSchedule ?? [],
+        viewFeedbackTickets: env.auth?.actions.viewFeedbackTickets ?? [],
+        manageFeedbackTickets: env.auth?.actions.manageFeedbackTickets ?? []
     }
     env.auth = auth as any;
 

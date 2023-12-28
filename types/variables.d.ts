@@ -12,7 +12,8 @@ namespace CLIAPI {
         "viewInvites" | "manageInvites" | 
         "viewTokens" | "manageTokens" | 
         "viewSessions" | "manageSessions" |
-        "viewSchedule" | "manageSchedule";
+        "viewSchedule" | "manageSchedule" | 
+        "viewFeedbackTickets" | "manageFeedbackTickets";
     
     }
 }
