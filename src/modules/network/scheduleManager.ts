@@ -2,6 +2,7 @@ import { DateTime } from "luxon";
 import { MysqlError } from "mysql";
 import { APIError, isValidTime } from "../util.js";
 import { getDifference } from "../time.js";
+import Output from "../output.js";
 
 class ScheduleAPIError extends APIError<"Schedule"> {
     constructor(errCode: WebAPI.APIErrors<"Schedule">) {
@@ -45,8 +46,9 @@ export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
                         }
                         return new WorkDay(response[0]["workDayID"],this._db,when.toJSDate(), response[0]["note"], response[0]["noteUpdatedAt"], response[0]["noteUpdatedBy"]);
                     default:
-                        this._db.reportMysqlError(new Error(`[DB][Schedule] Invalid state for workday on '${when.toISODate()}'. Detected more than one entry(${response.length}).`) as MysqlError);
+                        Output.category("debug").print("error",new Error(`[DB][Schedule] Invalid state for workday on '${when.toISODate()}'. Detected more than one entry (${response.length}).`));
                         errCode = "DBError";
+                    break;
                     case 0:
                         const insertResponse = await this._db.performQuery<"Other">("INSERT INTO work_days(date) VALUES(?);",[when.toISODate()], connection);
                         if(insertResponse) {
