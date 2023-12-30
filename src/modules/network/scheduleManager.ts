@@ -234,7 +234,7 @@ export class ScheduleManager implements WebAPI.Schedule.IScheduleManager {
         if(connection) {
             if(!conn) connection.beginTransaction();
 
-            const beginDate = DateTime.fromObject({weekNumber: ofDay.weekNumber});
+            const beginDate = DateTime.fromObject({weekNumber: ofDay.weekNumber, weekYear: ofDay.weekYear});
             
             const result = [];
 
