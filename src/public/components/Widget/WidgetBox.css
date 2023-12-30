@@ -68,4 +68,8 @@
     .LargeWidget {
         width: calc(600px + 2rem);
     }
+
+    .LargeWidget .ErrorMessage img {
+        width: 20%;
+    }
 }
