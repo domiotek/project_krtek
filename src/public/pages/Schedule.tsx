@@ -17,6 +17,7 @@ function parseDateTime(isoStr: string | undefined) {
 
 export default function Schedule(){
     const [schedule, setSchedule] = useState<API.App.CommonEntities.IWorkdays | null>(null);
+    const [fetchError, setFetchError] = useState<boolean>(false);
 
     const initialRangePoint = DateTime.fromISO(new URLSearchParams(window.location.search).get("withDay") ?? "");
     const hardLimit = DateTime.now().plus({weeks: 2}).startOf("week");
@@ -40,9 +41,9 @@ export default function Schedule(){
         return callAPI<API.App.Schedule.GetSchedule.IEndpoint>("GET","/api/schedule/:withDay", {withDay: rangePoint.toISODate()}, data=>{
             setSchedule(data);
             setRangeSwitcherStates(newBtnStates);
+            setFetchError(false);
         }, ()=>{
-            const elem = document.querySelector(`.${classes.ErrorMessageBox}`);
-            if(elem) elem.classList.add(classes.Shown);
+            setFetchError(true);
 
             setRangeSwitcherStates(newBtnStates);
         });
@@ -50,7 +51,7 @@ export default function Schedule(){
 
     return (
         <section className={subPageClasses.SubPage}>
-            <div className={classes.ErrorMessageBox}>
+            <div className={`${classes.ErrorMessageBox} ${fetchError?classes.Shown:""}`}>
                 {t("fetch-error-message")}
             </div>
             <div className={classes.RangeSwitcher}>
