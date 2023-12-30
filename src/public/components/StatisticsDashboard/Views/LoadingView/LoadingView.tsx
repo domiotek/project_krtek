@@ -9,7 +9,7 @@ import { LoadingGoalPanel } from "../../../GoalPanel/GoalPanel";
 import { useTranslation } from "react-i18next";
 
 export default function LoadingStatsView() {
-    const {t} = useTranslation("Statistics", {keyPrefix: "default-view"});
+    const {t: tg} = useTranslation("glossary", {keyPrefix: "shift"});
 
     return (
         <div className={layoutClasses.DefaultViewWrapper}>
@@ -26,16 +26,16 @@ export default function LoadingStatsView() {
                 <div className={`${layoutClasses.TipWageRatioPie} ${pieClasses.Container} ${classes.DisableOnMobile}`}>
                     <div className={`${pieClasses.OuterGraph} ${commonClasses.PulseLoadingAnimHolder} ${classes.DummyWageTipRatioGraph}`}></div>
                     <div className={pieClasses.GraphLegend}>
-                        <span>{t("tip-label")}</span>
-                        <span>{t("wage-label")}</span>
+                        <span>{tg("tip")}</span>
+                        <span>{tg("wage")}</span>
                     </div>
                 </div>
 
                 <div className={`${layoutClasses.TipWageRatioBar} ${barClasses.Container}`}>
                     <div className={`${barClasses.OuterGraph} ${commonClasses.PulseLoadingAnimHolder} ${classes.DummyWageTipRatioGraph}`}></div>
                     <div className={barClasses.GraphLegend}>
-                        <span>{t("tip-label")}</span>
-                        <span>{t("wage-label")}</span>
+                        <span>{tg("tip")}</span>
+                        <span>{tg("wage")}</span>
                     </div>
                 </div>
             </div>
