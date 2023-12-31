@@ -1,0 +1,39 @@
+.NoteHolder {
+    background: #a1b1e257;
+    border-radius: 1rem;
+    height: 145px;
+    padding: 0.5em;
+    display: flex;
+    flex-direction: column;
+}
+
+.NoteHolder h4 {
+    margin: 0;
+    font-weight: 700;
+    color: #737373;
+}
+
+.NoteHolder textarea {
+    resize: none;
+    background: none;
+    border: none;
+    width: 100%;
+    flex: 1;
+    outline: none;
+    margin: 0.5em;
+}
+
+.NoteHolder h6 {
+    margin: 0;
+    font-weight: 500;
+    font-size: 0.6em;
+}
+
+.NoteHolder h6 button {
+    display: inline;
+    padding: 0;
+    background: 0;
+    color: var(--primary-color);
+    font-size: 1em;
+    margin: 0 0.3em;
+}

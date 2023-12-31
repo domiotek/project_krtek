@@ -1,16 +1,24 @@
 .Header {
-    background: #d8e1ff85;
+    background: #eaefff;
     display: flex;
     height: 175px;
-    position: relative;
-    justify-content: space-between;
     padding: 0 1rem;
+    position: sticky;
+    top: -75px;
+    min-height: 100px;
+    z-index: 99;
+    flex-shrink: 0;
+    box-shadow: 0px 1px 20px 0 #d1d1d1d1;
 }
 
-.Header > div {
+.LeftPanel, .RightPanel {
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
+}
+
+.ButtonWrapper {
+    width: 0;
 }
 
 .LeftPanel h1 {
@@ -24,17 +32,27 @@
     font-weight: normal;
 }
 
+.RightPanel {
+    margin-left: auto;
+}
+
 .RightPanel h4 {
     color: #6f88d5;
     margin-bottom: 0.5rem;
 }
 
 .Header button {
-    position: absolute;
-    right: 0;
+    position: sticky;
+    right: 0rem;
     border-bottom-left-radius: 0.75rem;
     padding: 0;
     width: 2.25rem;
     height: 2.25rem;
     background: #8f9bbf;
+    top: 0;
+    margin: -1.25rem;
+}
+
+.MainContent {
+    padding: 1.5em 1em;
 }

@@ -1,0 +1,222 @@
+.Toolbar {
+    display: flex;
+    justify-content: space-between;
+}
+
+.Toolbar button {
+    background: none;
+    color: black;
+    display: flex;
+    align-items: center;
+    font-size: 0.8em;
+    padding: 0;
+}
+
+.Toolbar button img {
+    width: 24px;
+    margin-right: 0.5em;
+}
+
+.PlannedShiftSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.PlannedShiftSection h4 {
+    color: var(--primary-color);
+}
+
+.PlannedShiftSection h3 {
+    margin: 0;
+    color: #636363;
+}
+
+.PlannedShiftSection h5 {
+    margin: 0.5em 0 0;
+    font-weight: 400;
+    text-align: center;
+}
+
+.PendingShiftSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2.5rem;
+}
+
+.PendingShiftSection h2 {
+    color: var(--primary-color);
+    margin: 0;
+}
+
+.PendingShiftSection h6 {
+    margin: 0;
+    color: #616161;
+    font-weight: 600;
+    margin-top: 0.75em;
+}
+
+.PendingShiftSection .ButtonBox {
+    margin-top: 4em;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    width: 100%;
+    max-width: 300px;
+}
+
+.PendingShiftSection .ButtonBox button {
+    margin: 0 0.5rem;
+    border-radius: 1rem;
+    font-size: 0.6em;
+}
+
+.FinishedShiftSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.FinishedShiftSection .TimeRangeSection {
+    margin-top: 1.5em;
+}
+
+.FinishedShiftSection .TimeRangeSection .TimeRangeHolder {
+    display: flex;
+    align-items: center;
+    font-size: 1.2em;
+}
+
+.FinishedShiftSection .TimeRangeSection .TimeRangeHolder span {
+    padding: 0.5em 1em;
+    background: #a1b1e257;
+    border-radius: 5em;
+    margin: 0 0.5em;
+    font-size: 0.8em;
+}
+
+.FinishedShiftSection .TimeRangeSection > h4 {
+    margin: 0.5em 0 0;
+    text-align: center;
+    color: var(--primary-color);
+}
+
+.FinishedShiftSection .EarningsSection h1 {
+    font-size: 2.5em;
+    color: var(--primary-color);
+    margin: 1em 0 0.1em;
+    text-align: center;
+}
+
+.FinishedShiftSection .EarningsComponentsHolder {
+    display: flex;
+}
+
+.FinishedShiftSection .EarningsComponent {
+    margin: 0 0.5em;
+}
+
+.FinishedShiftSection .EarningsComponent h3 {
+    margin: 0;
+}
+
+.FinishedShiftSection .EarningsComponent h6 {
+    margin: 0;
+    font-size: 0.55em;
+    text-align: center;
+    font-weight: 600;
+}
+
+.FinishedShiftSection .EarningsComponentsHolder span {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.FinishedShiftSection .EarningsComponentsHolder span.PlusSign {
+    align-self: center;
+}
+
+.FinishedShiftSection .WageRateSection {
+    margin-top: 2em;
+}
+
+.FinishedShiftSection .WageRateSection h3:nth-of-type(1) {
+    margin: 0;
+    font-weight: 400;
+    color: #6d6c6c;
+}
+
+.FinishedShiftSection .WageRateSection h3:nth-of-type(2) {
+    margin: 0;
+    text-align: center;
+    margin-top: 0.5em;
+    color: var(--primary-color);
+}
+
+.CoWorkersSection {
+    margin-top: 5em;
+}
+
+.CoWorkersSection > h4 {
+    text-align: center;
+    position: relative;
+}
+
+.CoWorkersSection > h4::before {
+    content: "";
+    position: absolute;
+    left: 10%;
+    width: 80%;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 1px;
+    background: #c7c7c7;
+    z-index: 1;
+}
+
+.CoWorkersSection > h4 span {
+    background: var(--main-bg);
+    z-index: 2;
+    display: inline-block;
+    position: relative;
+    padding: 0 1.2em;
+    color: #9b9b9b;
+    font-weight: 500;
+}
+
+.CoWorkersSection .Container {
+    display: flex;
+    margin: 1em 0em 2em;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.CoWorkersSection .Panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75em 2.25em;
+    background: #f2f5ff;
+    border-radius: 1em;
+    box-shadow: 0 2px 4px 0px #8381818c;
+    margin: 0.5em;
+}
+
+.CoWorkersSection .Panel h3 {
+    margin: 0;
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.CoWorkersSection .Panel h5 {
+    margin: 0;
+    font-weight: 400;
+}
+
+.CoWorkersSection .Panel h6 {
+    margin: 0;
+    font-weight: normal;
+    margin-top: 0.5em;
+}
