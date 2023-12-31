@@ -16,6 +16,7 @@ interface IProps {
     expandToggler: ()=>void
     wage: number
     showEditModal: ()=>void
+    showNewModal: ()=>void
 }
 
 
@@ -76,7 +77,7 @@ export default function ShiftPanel(props: IProps)  {
         return (
             <div className={classes.Header} onClick={props.expandToggler.bind(day.ID)}>
                 <div className={classes.LeftPanel}>
-                    <h2>{DateTime.fromISO(day.date).toFormat("EEEE, d")}</h2>
+                    <h2 onClick={props.showNewModal}>{DateTime.fromISO(day.date).toFormat("EEEE, d")}</h2>
                     <h5>{tg(`roles.${ownerSlot.requiredRole}`)} <span className={classes.InlineBullet}></span> {coWorkersStr}</h5>
                 </div>
                 <div className={classes.RightPanel}>

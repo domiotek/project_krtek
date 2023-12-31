@@ -5,6 +5,7 @@ import classes from "./Shifts.css";
 
 import EditShiftModal from "../../../../modals/EditShift/EditShift";
 import AddShiftModal from "../../../../modals/AddShift/AddShift";
+import WorkDayOverviewModal from "../../../../modals/WorkDayOverview/WorkDayOverview";
 import ShiftPanel from "./ShiftPanel";
 import { LoadingShiftsView, NoFilterResultsMessage, NoShiftsMessage } from "./Views";
 import FilterBox from "../../../FilterBox/FilterBox";
@@ -115,6 +116,15 @@ export default function ShiftsTab(props: IProps) {
             )
         }
 
+        function showNewModal() {
+            props.setModalContent(
+                <WorkDayOverviewModal 
+                    exit={()=>props.setModalContent(null)} 
+                    successCallback={()=>{props.setModalContent(null); props.reloadStats()}} 
+                />
+            )
+        }
+
         for (let i=0; i < elements.shifts.length; i++) {
             const ownerSlot = elements.shifts[i].slots[elements.userSlots[i]] as API.App.Statistics.UserShifts.IAssignedShiftSlot;
             const weekDay = DateTime.fromISO(elements.shifts[i].date).weekday;
@@ -137,6 +147,7 @@ export default function ShiftsTab(props: IProps) {
                     expandToggler = {toggleExpandShiftState}
                     wage = {props.wage as number}
                     showEditModal={showEditModal.bind([elements.shifts[i], elements.userSlots[i]])}
+                    showNewModal = {showNewModal}
                 />
             );
 

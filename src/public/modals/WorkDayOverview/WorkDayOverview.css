@@ -1,0 +1,40 @@
+.Header {
+    background: #d8e1ff85;
+    display: flex;
+    height: 175px;
+    position: relative;
+    justify-content: space-between;
+    padding: 0 1rem;
+}
+
+.Header > div {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.LeftPanel h1 {
+    color: var(--primary-color);
+    font-weight: 400;
+    margin: 0 0 0.2em;
+}
+
+.LeftPanel h3 {
+    margin: 0 0 1rem;
+    font-weight: normal;
+}
+
+.RightPanel h4 {
+    color: #6f88d5;
+    margin-bottom: 0.5rem;
+}
+
+.Header button {
+    position: absolute;
+    right: 0;
+    border-bottom-left-radius: 0.75rem;
+    padding: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    background: #8f9bbf;
+}
