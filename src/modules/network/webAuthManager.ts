@@ -839,6 +839,19 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         throw new WebAuthAPIError("NoConnection");
     }
 
+    public async renewToken(token: string, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["renewToken"]> {
+        const result = await this.db.performQuery<"Other">("UPDATE account_actions SET expirationDate=? WHERE accountActionTokenID=?;",[DateTime.now().plus({hours: 24}).toISO(), token],conn);
+
+        if(result) {
+            if(result.affectedRows===1) return true;
+            else return false;
+        }
+        
+        conn?.rollback();
+        conn?.release();
+        throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
+    }
+
     public async getTokenDetails(token: string, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["getTokenDetails"]> {
         const response = await this.db.performQuery<"Select">(`SELECT * FROM account_actions NATURAL JOIN account_action_types WHERE accountActionTokenID=? AND now() < expirationDate;`,[token],conn);
 
@@ -992,6 +1005,19 @@ export class WebAuthManager implements WebAPI.Auth.IWebAuthManager {
         }
 
         throw new WebAuthAPIError("NoConnection");
+    }
+
+    public async renewInvite(token: string, conn?: WebAPI.Mysql.IPoolConnection): ReturnType<WebAPI.Auth.IWebAuthManager["renewInvite"]> {
+        const result = await this.db.performQuery<"Other">("UPDATE invites SET expirationDate=? WHERE inviteTokenID=?;",[DateTime.now().plus({hours: 24}).toISO(), token],conn);
+
+        if(result) {
+            if(result.affectedRows===1) return true;
+            else return false;
+        }
+        
+        conn?.rollback();
+        conn?.release();
+        throw new WebAuthAPIError(this.db.getLastQueryFailureReason());
     }
 
     public async getInviteDetails(query: string, conn?: WebAPI.Mysql.IPoolConnection | undefined): ReturnType<WebAPI.Auth.IWebAuthManager["getInviteDetails"]> {

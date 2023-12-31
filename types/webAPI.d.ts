@@ -519,6 +519,17 @@ namespace WebAPI {
             createToken(actionType: AccountsTokenAPI.TAccountActionName, userKey: number | string): Promise<string>
 
             /**
+             * Renews token validity.
+             * @param token Token ID.
+             * 
+             * @async
+             * @returns True on successfull request, false if token not found.
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
+             */
+            renewToken(token: string): Promise<boolean>
+
+            /**
              * Returns number of active tokens for given user.
              * Note that only not expired tokens will be considered.
              * @param userKey Either email address or userID.
@@ -616,6 +627,17 @@ namespace WebAPI {
              * @throws Can throw with NoConnection, DBError, InvalidEmail, UserExsits or InviteExists errors.
              */
             generateInvite(email: string): Promise<string>
+
+            /**
+             * Renews invite validity.
+             * @param token Invite ID.
+             * 
+             * @async
+             * @returns True on successfull request, false if token not found.
+             * 
+             * @throws Can throw with NoConnection and DBError errors.
+             */
+            renewInvite(token: string): Promise<boolean>
 
             /**
              * Deletes invite with given invite ID.

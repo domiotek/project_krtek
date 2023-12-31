@@ -180,6 +180,38 @@ export default function(){
         }
     });
 
+    command.addSubCommand({
+        name: "renew",
+        desc: "Allows for renewing action's validity.",
+        params: [
+            {
+                name: "token",
+                desc: "Token identifying the account action",
+                type: "string",
+                caseSensitive: true
+            }
+        ]
+    }, async (req, data)=>{
+        const token = data.parameters["token"] as string;
+        
+        let result;
+        let errCode: WebAPI.APIErrors<"Auth"> | undefined= undefined;
+        try {
+            result = await global.app.webAuthManager.renewToken(token);
+        } catch (error: any) {
+            if(!error.errCode) throw error;
+
+            errCode = error.errCode;
+        }
+
+        if(result===true) {
+            req.respond(insertColor("fg_green","Action token renewed successfully.",data.colorsMode));
+        }else {
+            if(errCode===undefined) errCode = "InvalidToken";
+            req.respond(getCommandErrorDisplayText(`Couldn't renew ${insertColor("fg_cyan",token, data.colorsMode)} action token`,errCode, data.colorsMode));
+        }
+    });
+
     
     command.addVariant({
         type: "customTest",
