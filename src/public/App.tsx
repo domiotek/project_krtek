@@ -16,7 +16,7 @@ import AccountPanelPopup from './components/AccountPanelPopup/AccountPanelPopup'
 import { callAPI, manageClassState } from './modules/utils';
 import Modal from './components/Modal/Modal';
 import useScrollBlocker from './hooks/useScrollBlocker/useScrollBlocker';
-import SuspenseLoader from './pages/Loader';
+import SuspenseLoader from './components/Loader/Loader';
 
 import "./modules/luxon";
 

@@ -1,21 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { API, WebApp } from "../../../../types/networkAPI";
 
 import classes from "./Shifts.css";
 
 import EditShiftModal from "../../../../modals/EditShift/EditShift";
 import AddShiftModal from "../../../../modals/AddShift/AddShift";
-import ShiftOverviewModal from "../../../../modals/WorkDayOverview/ShiftOverview";
 import ShiftPanel from "./ShiftPanel";
 import { LoadingShiftsView, NoFilterResultsMessage, NoShiftsMessage } from "./Views";
 import FilterBox from "../../../FilterBox/FilterBox";
 import { DateTime, Info } from "luxon";
-
-
 import eFilterImg from "../../../../assets/ui/empty_filter.png";
 import fFilterImg from "../../../../assets/ui/filled_filter.png";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { handleImport } from "../../../../modules/utils";
+import FallbackForm from "../../../LazyLoadFallbackForm/LazyLoadFallbackForm";
 
 type IShiftFilters = {
     states: {
@@ -87,6 +86,11 @@ export default function ShiftsTab(props: IProps) {
         }
         setFilteringActive(count > 0);
     },[filters]);
+
+    const ShiftOverviewModal = React.lazy(()=>
+        handleImport(import(/* webpackChunkName: "ShiftOverviewModal" */"../../../../modals/WorkDayOverview/ShiftOverview"),
+        <FallbackForm button={{caption: "close", action: ()=>props.setModalContent(null)}} />
+    ));
 
     function toggleExpandShiftState(this: number) {
         if(expandedShiftID!=this) setExpandedShiftID(this);

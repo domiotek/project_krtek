@@ -5,7 +5,7 @@ import {BrowserRouter, Route, Routes} from "react-router-dom";
 import './index.css';
 import App from './App';
 import Portal from "./pages/Portal";
-import SuspenseLoader from './pages/Loader';
+import SuspenseLoader from './components/Loader/Loader';
 
 import "./modules/i18n";
 

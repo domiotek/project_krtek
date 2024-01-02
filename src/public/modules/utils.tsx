@@ -2,6 +2,7 @@ import { DateTime } from "luxon";
 import { CustomFormTypes } from "../components/Forms/CustomForm/CustomForm";
 import { API } from "../types/networkAPI";
 import i18n from "./i18n";
+import { ComponentType } from "react";
 
 export function manageClassState(targetClassName: string, action: "active" | "inactive" | "toggle", shownStateClassName: string) {
 	let target = document.querySelector(`.${targetClassName}`) as HTMLDivElement | null;
@@ -113,4 +114,22 @@ export function callAPI<T extends API.IBaseAPIEndpoint>(method: T["method"], end
 	});
 
 	return ()=>aborter.abort();
+}
+
+/**
+ * Gracefully handles lazy React component import by displaying fallbackForm component when importing fails.
+ * Note, that there still needs to be Suspense wrapper used for the loading process. FallbackForm will be 
+ * displayed only after import timeouted or client is offline.
+ */
+export function handleImport<P>(importPromise: Promise<{default: ComponentType<P>}>, fallbackForm: JSX.Element) {
+    return new Promise<{default: ComponentType<P>}>(async res=>{
+        try {
+            const component = await importPromise;
+
+            res(component);
+        } catch (error) {
+            res({default: ()=>fallbackForm});
+        }
+        
+    });
 }

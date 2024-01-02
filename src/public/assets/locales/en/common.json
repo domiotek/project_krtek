@@ -15,6 +15,7 @@
     "unknown": "Unknown",
     "filters": "Filters",
     "back": "Back",
+    "close": "Close",
     "apply": "Apply",
     "clear-all": "Clear all",
     "reset": "Reset",
@@ -36,5 +37,8 @@
     "unsaved-changes": "You have unsaved changes",
     "email-address": "Email address",
     "gender": "Gender",
-    "password": "Password"
+    "password": "Password",
+    "llff.header": "Something went wrong",
+    "llff.subtitle": "Couldn't download required modules.",
+    "llff.prompt": "Check your internet connection and try again in a bit."
 }

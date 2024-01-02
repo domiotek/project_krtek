@@ -17,6 +17,7 @@
     "unknown": "Nieznane",
     "filters": "Filtry",
     "back": "Wstecz",
+    "close": "Zamknij",
     "apply": "Zastosuj",
     "clear-all": "Wyczyść",
     "reset": "Przywróć",
@@ -38,5 +39,8 @@
     "unsaved-changes": "Masz niezapisane zmiany",
     "email-address": "Adres email",
     "gender": "Płeć",
-    "password": "Hasło"
+    "password": "Hasło",
+    "llff.header": "Coś poszło nie tak",
+    "llff.subtitle": "Nie udało się pobrać wymaganych modułów.",
+    "llff.prompt": "Sprawdź swoje połączenie internetowe i spróbuj ponownie za chwilę."
 }
