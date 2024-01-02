@@ -36,6 +36,7 @@
     margin: 0.5em 0 0;
     font-weight: 400;
     text-align: center;
+    text-transform: lowercase;
 }
 
 .PendingShiftSection {
@@ -106,7 +107,17 @@
     font-size: 2.5em;
     color: var(--primary-color);
     margin: 1em 0 0.1em;
+    position: relative;
     text-align: center;
+}
+
+.FinishedShiftSection .EarningsSection h1.NoWageRateModifier::before {
+    content: attr(data-text);
+    font-size: 0.3em;
+    color: #5a5a5a;
+    position: absolute;
+    right: calc(100% + 0.5em);
+    bottom: 0.7em;
 }
 
 .FinishedShiftSection .EarningsComponentsHolder {
@@ -119,6 +130,7 @@
 
 .FinishedShiftSection .EarningsComponent h3 {
     margin: 0;
+    text-align: center;
 }
 
 .FinishedShiftSection .EarningsComponent h6 {
@@ -148,11 +160,23 @@
     color: #6d6c6c;
 }
 
+.FinishedShiftSection .WageRateSection.NoWageRate h3:nth-of-type(1) {
+    font-size: 0.85em;
+}
+
 .FinishedShiftSection .WageRateSection h3:nth-of-type(2) {
     margin: 0;
     text-align: center;
     margin-top: 0.5em;
     color: var(--primary-color);
+}
+
+.FinishedShiftSection .WageRateSection button {
+    padding: 0;
+    color: var(--primary-color);
+    background: none;
+    display: inline;
+    font-size: 0.7em;
 }
 
 .CoWorkersSection {

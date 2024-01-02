@@ -274,9 +274,100 @@ const addShift: WebAPI.IRouteOptions<API.App.Schedule.AddShift.IEndpoint> = {
     errorHandler
 }
 
+const getWorkDayRequestSchema = yup.object().shape({
+    date: yup.string().required()
+});
+
+const getWorkDay: WebAPI.IRouteOptions<API.App.Schedule.GetWorkDay.IEndpoint> = {
+    method: "GET",
+    url: "/api/schedule/workday/:date",
+    handler: async (req, res)=>{
+        res.header("cache-control","private, no-cache");
+        res.status(401);
+        const sessionID = req.cookies.session;
+
+        let result: API.App.Schedule.GetWorkDay.IEndpoint["returnPacket"] = {
+            status: "Failure",
+            errCode: "NotSignedIn"
+        }
+
+        if(sessionID) {
+            const session = await global.app.webAuthManager.getSessionDetails(sessionID);
+
+            if(session) {
+                let params: API.App.Schedule.GetWorkDay.IRequest;
+                res.status(400);
+
+                try {
+                    params = await getWorkDayRequestSchema.validate(req.params);
+                } catch (error) {
+                    result.status = "Failure";
+                    result.errCode = "BadRequest";
+                    result.message = (error as yup.ValidationError).message;
+                    return result;
+                }
+
+                const workDay = await global.app.scheduleManager.getWorkDay(DateTime.fromISO(params.date));
+
+                if(workDay) {
+                    res.status(200);
+                    const jsonWorkDay = await workDay.getJSON();
+
+                    const limitedSlots: {[ID: string]: API.App.Schedule.GetWorkDay.IShiftSlot} = {};
+
+                    let personalSlot: API.App.Schedule.GetWorkDay.IPersonalShiftSlot | undefined;
+
+                    for (const slotID in jsonWorkDay.slots) {
+                        const slot = jsonWorkDay.slots[slotID] as WebAPI.Schedule.WorkDayAPI.IJSONShiftSlot;
+
+                        limitedSlots[slotID] = Object.assign({privateSlotID: parseInt(slotID)}, slot);
+
+                        if(slot.assignedShift) {
+                            if(slot.assignedShift.userID === session.userID) {
+                                //@ts-expect-error Slot won't be in Unassigned state, so it's ok.
+                                personalSlot = Object.assign({privateSlotID: parseInt(slotID)}, slot);
+                                delete limitedSlots[slotID];
+                                continue;
+                            }
+
+                            limitedSlots[slotID].assignedShift = {
+                                startTime: slot.assignedShift.startTime,
+                                endTime: slot.assignedShift.endTime,
+                                userID: slot.assignedShift.userID,
+                                userName: slot.assignedShift.userName
+                            }
+                        }
+                    }
+
+                    const userProps = await global.app.userStatsManager.getHistoricUserData(session.userID, DateTime.now());
+
+                    result = {
+                        status: "Success",
+                        data: {
+                            day: {
+                                date: params.date,
+                                note: workDay.note,
+                                noteLastUpdater: jsonWorkDay.noteLastUpdater,
+                                noteUpdateTime: jsonWorkDay.noteUpdateTime,
+                                otherSlots: limitedSlots,
+                                personalSlot: personalSlot ?? null
+                            },
+                            wageRate: userProps?.wage ?? null
+                        }    
+                    }
+                }else result.errCode = "InvalidDate";
+            }
+        }
+
+        return result;
+    },
+    errorHandler
+}
+
 export default [
     getSchedule,
     updateShiftDetails,
     updateShiftNotes,
-    addShift
+    addShift,
+    getWorkDay
 ];

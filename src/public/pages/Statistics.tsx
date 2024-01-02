@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next";
 const NerdStatsTab = React.lazy(()=>import(/* webpackChunkName: "s_nrdst" */"../components/StatisticsDashboard/Tabs/NerdStats/NerdStats"));
 const SettingsTab = React.lazy(()=>import(/* webpackChunkName: "s_sett" */"../components/StatisticsDashboard/Tabs/Settings/Settings"));
 
-function calculateShiftData(slot: API.App.Statistics.UserShifts.IAssignedShiftSlot, wage: number) {
+export function calculateShiftData(slot: API.App.Statistics.UserShifts.IAssignedShiftSlot | API.App.Schedule.GetWorkDay.IPersonalShiftSlot, wage: number) {
 
     let startTimeStr = slot.plannedStartTime;
     let endTimeStr = slot.plannedEndTime;

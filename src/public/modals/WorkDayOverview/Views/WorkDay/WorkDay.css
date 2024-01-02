@@ -9,6 +9,11 @@
     margin-bottom: 2em;
 }
 
+.EmployeeList > h6 {
+    text-align: center;
+    margin: 5em 0;
+}
+
 .EmployeePanel {
     margin: 0.25em 0;
     position: relative;

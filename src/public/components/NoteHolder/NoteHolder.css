@@ -13,14 +13,23 @@
     color: #737373;
 }
 
+.NoteHolder > div {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
 .NoteHolder textarea {
     resize: none;
     background: none;
     border: none;
-    width: 100%;
     flex: 1;
-    outline: none;
     margin: 0.5em;
+    outline: solid 2px #a1b1e2;
+}
+
+.NoteHolder textarea:read-only {
+    outline: none;
 }
 
 .NoteHolder h6 {
@@ -29,11 +38,25 @@
     font-size: 0.6em;
 }
 
-.NoteHolder h6 button {
+.NoteHolder button {
     display: inline;
     padding: 0;
     background: 0;
     color: var(--primary-color);
     font-size: 1em;
     margin: 0 0.3em;
+}
+
+.NewNoteWrapper {
+    align-items: center;
+    justify-content: center;
+}
+
+.NewNoteWrapper h4 {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.NewNoteWrapper h6 {
+    margin: 1em 0 2em;
 }

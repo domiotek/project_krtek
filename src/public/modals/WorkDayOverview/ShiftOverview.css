@@ -25,20 +25,32 @@
     color: var(--primary-color);
     font-weight: 400;
     margin: 0 0 0.2em;
+    text-transform: capitalize;
+    font-size: 1.5em;
 }
 
 .LeftPanel h3 {
     margin: 0 0 1rem;
     font-weight: normal;
+    text-transform: capitalize;
 }
 
 .RightPanel {
     margin-left: auto;
+    align-items: flex-end;
 }
 
 .RightPanel h4 {
     color: #6f88d5;
     margin-bottom: 0.5rem;
+}
+
+.RightPanel h4::first-letter {
+    text-transform: capitalize;
+}
+
+.RightPanel h5 {
+    margin: 0 0 0.5rem;
 }
 
 .Header button {
@@ -55,4 +67,11 @@
 
 .MainContent {
     padding: 1.5em 1em;
+}
+
+@media screen and (min-width: 386px) {
+    .LeftPanel h1 {
+        font-size: 2em;
+    }
+    
 }
