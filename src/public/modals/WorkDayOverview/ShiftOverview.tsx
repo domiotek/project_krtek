@@ -10,7 +10,6 @@ import ShiftView from "./Views/Shift/Shift";
 import { API } from "../../types/networkAPI";
 import { callAPI, renderDateRelDiff } from "../../modules/utils";
 import { DateTime } from "luxon";
-import i18n from "../../modules/i18n";
 
 interface IProps {
     successCallback: ()=>void
@@ -26,7 +25,7 @@ export interface IViewProps {
 export const WorkDayContext = createContext<API.App.Schedule.GetWorkDay.IResponse>({} as any);
 
 export default function ShiftOverviewModal(props: IProps) {
-    const {t} = useTranslation("statistics", {keyPrefix: "edit-shift-modal"});
+    const {t} = useTranslation("shift-modal");
     const {t: tc} = useTranslation("common");
     const {t: tg} = useTranslation("glossary");
 

@@ -16,6 +16,7 @@
     "shift.end-time": "End time",
     "shift.role": "Role",
     "shift.private-note": "Private note",
+    "shift.note": "Note",
     "shift.shared-note": "Shared note",
     "error-messages.add-shift-forbidden": "You can only add shifts to the last 3 days.",
     "error-messages.invalid-time-input": "Only quarters of an hour are allowed.",
@@ -31,5 +32,7 @@
     "error-messages.generic": "Something went wrong. Try again in a bit.",
     "gender_m": "Male",
     "gender_f": "Female",
-    "gender_o": "Other"
+    "gender_o": "Other",
+    "employees": "Employees",
+    "date-from": "from {{date}}"
 }

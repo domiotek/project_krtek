@@ -47,9 +47,12 @@ const EmployeePanel = React.memo(function EmployeePanel(props: IEmployeePanelPro
 export default function WorkDayView(props: IViewProps) {
     const workDayData = useContext(WorkDayContext).day;
 
+    const {t} = useTranslation("shift-modal");
+    const {t: tg} = useTranslation("glossary");
+
     return (
         <div className={classes.Wrapper}>
-            <h3>Pracownicy</h3>
+            <h3>{tg("employees")}</h3>
             {
                 workDayData.personalSlot || Object.keys(workDayData.otherSlots).length > 0?
                 <ul className={classes.EmployeeList}>
@@ -65,18 +68,18 @@ export default function WorkDayView(props: IViewProps) {
                 </ul>
                 :
                 <div className={classes.EmployeeList}>
-                    <h6>{DateTime.fromISO(workDayData.date) < DateTime.now()?"Wygląda, jakby nikt nie pracował":"Jeszcze nikogo tu nie ma"}</h6>
+                    <h6>{t("no-employees",{context: DateTime.fromISO(workDayData.date) < DateTime.now()?"past":"future"})}</h6>
                 </div>
             }
 
             <NoteHolder 
-                header="Notatka"
+                header={tg("shift.note")}
                 content={workDayData.note ?? ""}
                 lastAuthor={workDayData.noteLastUpdater}
                 lastChange={workDayData.noteUpdateTime?DateTime.fromISO(workDayData.noteUpdateTime):null}
                 allowChange={workDayData.personalSlot!==null}
-                createNoteDesc="Miejsce na rzeczy, które mogą się przydać innym."
-                duringEditText="Twoje zmiany będą widoczne dla wszystkich."
+                createNoteDesc={t("public-note.desc")}
+                duringEditText={t("public-note.reminder")}
             />
         </div>
     );

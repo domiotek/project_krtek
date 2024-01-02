@@ -71,6 +71,7 @@
     margin: 0 0.5rem;
     border-radius: 1rem;
     font-size: 0.6em;
+    min-width: 90px;
 }
 
 .FinishedShiftSection {

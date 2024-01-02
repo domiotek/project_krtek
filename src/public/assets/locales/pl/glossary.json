@@ -16,6 +16,7 @@
     "shift.end-time": "Godzina zakończenia",
     "shift.role": "Rola",
     "shift.private-note": "Notatka prywatna",
+    "shift.note": "Notatka",
     "shift.shared-note": "Notatka współdzielona",
     "error-messages.add-shift-forbidden": "Możesz dodać zmianę tylko do trzech ostatnich dni.",
     "error-messages.invalid-time-input": "Niewłaściwa godzina. Jako minuty akceptowalne są tylko ćwiartki godziny.",
@@ -30,5 +31,7 @@
     "error-messages.generic": "Coś nie zadziałało. Spróbuj ponownie za chwilę.",
     "gender_m": "Mężczyzna",
     "gender_f": "Kobieta",
-    "gender_o": "Inna"
+    "gender_o": "Inna",
+    "employees": "Pracownicy",
+    "date-from": "od {{date}}"
 }

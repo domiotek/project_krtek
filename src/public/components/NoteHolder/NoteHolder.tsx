@@ -2,6 +2,7 @@ import React, { useCallback, useState } from "react";
 
 import classes from "./NoteHolder.css";
 import { DateTime } from "luxon";
+import { useTranslation } from "react-i18next";
 
 
 interface IProps {
@@ -16,7 +17,10 @@ interface IProps {
 
 export default function NoteHolder(props: IProps) {
     const [note, setNote] = useState<string>(props.content);
-    const [editActive, setEditActive] = useState<boolean>(false);   
+    const [editActive, setEditActive] = useState<boolean>(false);  
+    
+    const {t: tc} = useTranslation("common");
+    const {t} = useTranslation("shift-modal", {keyPrefix: "note-holder"});
 
     const cancelAction = useCallback(()=>{
         setEditActive(false);
@@ -31,12 +35,20 @@ export default function NoteHolder(props: IProps) {
         setEditActive(true)
     }, []);
 
-    const buttons = editActive?[<button onClick={cancelAction}>Anuluj</button>,<button onClick={saveAction}>Zapisz</button>]:(props.allowChange?<button onClick={editAction}>Zmień</button>:"")
+    const buttons = editActive?
+        [
+            <button type="button" key={0} onClick={saveAction}>{tc("save")}</button>,
+            <button type="button" key={1} onClick={cancelAction}>{tc("cancel")}</button>
+        ]
+        :(props.allowChange?
+            <button type="button" onClick={editAction}>{tc("change")}</button>
+        :"");
+
     const subtext = 
-    editActive?
-        props.duringEditText ?? "Pamiętaj o zapisaniu zmian."
-    :
-        `Ostatnio zmieniono ${props.lastChange?.toFormat("dd/LL/yyyy")} ${props.lastAuthor?"przez " + props.lastAuthor:""}.`;
+        editActive?
+            props.duringEditText ?? t("default-edit-prompt")
+        :
+            t(`last-change${props.lastAuthor?"-author":""}`, {date: props.lastChange?.toFormat("dd/LL/yyyy"), author: props.lastAuthor});
 
     return (
         <div className={classes.NoteHolder}>
@@ -44,9 +56,9 @@ export default function NoteHolder(props: IProps) {
             {
                 props.lastChange==null&&!editActive?
                     <div className={classes.NewNoteWrapper}>
-                        <h4>Jeszcze nic tu nie ma</h4>
+                        <h4>{t("new-note-header")}</h4>
                         <h6>{props.createNoteDesc}</h6>
-                        <button onClick={editAction}>Utwórz</button>
+                        <button onClick={editAction}>{tc("create")}</button>
                     </div>
                 :
                     <div>
