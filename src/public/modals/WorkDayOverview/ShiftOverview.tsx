@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import WorkDayView from "./Views/WorkDay/WorkDay";
 import ShiftView from "./Views/Shift/Shift";
 import { API } from "../../types/networkAPI";
-import { callAPI } from "../../modules/utils";
+import { callAPI, renderDateRelDiff } from "../../modules/utils";
 import { DateTime } from "luxon";
 import i18n from "../../modules/i18n";
 
@@ -42,25 +42,7 @@ export default function ShiftOverviewModal(props: IProps) {
 
     const date = useMemo(()=>DateTime.fromISO(workDayData?.day.date ?? ""),[workDayData]);
 
-    const timeRel = useMemo(()=>{
-        const unitTable: {[u: string]: [number, number]} = { //[divisor, cutoff]
-            year  : [365, 90],
-            month : [365/12, 21],
-            week  : [7, 4],
-            day: [1,1]
-        }
-        const rtf = new Intl.RelativeTimeFormat(i18n.language, { numeric: 'auto' });
-        const diff = date.startOf("day").diff(DateTime.now().startOf("day"),["days"]).days;
-
-        if(!isNaN(diff)) {
-            for (let u in unitTable) {
-                if (Math.abs(diff) >= unitTable[u][1] || u == 'day') {
-                    return rtf.format(Math.floor(diff/unitTable[u][0]), u as Intl.RelativeTimeFormatUnit);
-                }
-            }
-        }
-       
-    },[workDayData]);
+    const timeRel = useMemo(()=>renderDateRelDiff(date),[date]);
 
     return (
         <SimpleBar style={{ height: "100%" }}>
