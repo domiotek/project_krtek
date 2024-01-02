@@ -61,6 +61,10 @@ export function renderDate(dateTime: DateTime | undefined, fallback: string) {
 	return dateTime?.isValid?dateTime.toFormat("dd/LL/yyyy"):fallback;
 }
 
+export function renderTime(dateTime: DateTime | undefined, fallback: string="") {
+	return dateTime?.isValid?dateTime.toFormat("HH:mm"):fallback;
+}
+
 export function callAPI<T extends API.IBaseAPIEndpoint>(method: T["method"], endpointURL: T["url"],values: T["urlParams"], onSuccess: (data: T["returnData"])=>void, onError?: (statusCode: number, errCode: T["errCodes"], errorType: "Server" | "Client")=>void, body?: URLSearchParams) {
 	const aborter = new AbortController();
 
