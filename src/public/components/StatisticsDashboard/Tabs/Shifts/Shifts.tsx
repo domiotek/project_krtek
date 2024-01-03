@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { handleImport } from "../../../../modules/utils";
 import FallbackForm from "../../../LazyLoadFallbackForm/LazyLoadFallbackForm";
+import NewShiftPanel from "./NewShiftPanel";
 
 type IShiftFilters = {
     states: {
@@ -54,6 +55,8 @@ export default function ShiftsTab(props: IProps) {
     const navigate = useNavigate();
     const {t} = useTranslation("statistics",{keyPrefix: "shifts-tab"});
     const {t: tg} = useTranslation("glossary");
+
+    const useNewModal = true;
 
     const weekDayLabels = Info.weekdays();
     
@@ -145,6 +148,15 @@ export default function ShiftsTab(props: IProps) {
                 continue;
 
             result.push(
+                useNewModal?
+                <NewShiftPanel key={elements.shifts[i].ID} 
+                    workDay = {elements.shifts[i]}
+                    userSlot = {elements.userSlots[i]}
+                    calcStats = {elements.calcStats[i]}
+                    wage = {props.wage as number}
+                    showNewModal = {showNewModal.bind(elements.shifts[i].date)}
+                />
+                :
                 <ShiftPanel key={elements.shifts[i].ID} 
                     workDay = {elements.shifts[i]}
                     userSlot = {elements.userSlots[i]}
@@ -153,7 +165,6 @@ export default function ShiftsTab(props: IProps) {
                     expandToggler = {toggleExpandShiftState}
                     wage = {props.wage as number}
                     showEditModal={showEditModal.bind([elements.shifts[i], elements.userSlots[i]])}
-                    showNewModal = {showNewModal.bind(elements.shifts[i].date)}
                 />
             );
 
