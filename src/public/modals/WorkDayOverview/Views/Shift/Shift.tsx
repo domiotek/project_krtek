@@ -25,7 +25,7 @@ export default function ShiftView(props: IViewProps) {
 
         const hideModal = ()=>setModalContent(null);
 
-        const shiftModal = <ShiftOverviewModal successCallback={hideModal} exit={hideModal} targetDate={workday.date} />
+        const shiftModal = <ShiftOverviewModal successCallback={hideModal} exit={hideModal} targetDate={DateTime.fromISO(workday.date)} targetView={"Shift"} />
 
         setModalContent(
             <EditShiftModal 
@@ -126,7 +126,7 @@ const PendingShiftSection = React.memo(function PendingShiftSection() {
 
         const hideModal = ()=>setModalContent(null);
 
-        const shiftModal = <ShiftOverviewModal successCallback={hideModal} exit={hideModal} targetDate={workday.day.date} />
+        const shiftModal = <ShiftOverviewModal successCallback={hideModal} exit={hideModal} targetDate={DateTime.fromISO(workday.day.date)} targetView={"Shift"}/>
 
         setModalContent(
             <EditShiftModal 
@@ -182,11 +182,11 @@ const FinishedShiftSection = React.memo(function FinishedShiftSection() {
                     {
                         context.wageRate!=null?
                             [
-                            <div className={classes.EarningsComponent}>
+                            <div key={0} className={classes.EarningsComponent}>
                                 <h3>{render2FloatingPoint(data.wageEarnings)}zł</h3>
                                 <h6>{tg("shift.wage")}</h6>
                             </div>,
-                            <span className={classes.PlusSign}>+</span>
+                            <span key={1} className={classes.PlusSign}>+</span>
                             ]
                         :""
                     }
@@ -210,7 +210,7 @@ const FinishedShiftSection = React.memo(function FinishedShiftSection() {
                 </div>
             </div>
             
-            <div className={`${classes.WageRateSection} ${classes.NoWageRate}`}>
+            <div className={`${classes.WageRateSection} ${context.wageRate==null?classes.NoWageRate:""}`}>
                 <h3>{context.wageRate==null?t("missing-wage-desc"):(data.tip>0?t("earnings-desc-tip"):t("earnings-desc"))}</h3>
                 <h3>{context.wageRate==null?<button type="button" onClick={()=>navigate("/Statistics/Settings")}>{t("set-wage-link")}</button>:`${render2FloatingPoint(data.realWageRate)} zł/h`}</h3>
             </div>

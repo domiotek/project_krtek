@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { API, WebApp } from "../../../../types/networkAPI";
 
 import classes from "./Shifts.css";
@@ -87,10 +87,10 @@ export default function ShiftsTab(props: IProps) {
         setFilteringActive(count > 0);
     },[filters]);
 
-    const ShiftOverviewModal = React.lazy(()=>
+    const ShiftOverviewModal = React.useMemo(()=>React.lazy(()=>
         handleImport(import(/* webpackChunkName: "ShiftOverviewModal" */"../../../../modals/WorkDayOverview/ShiftOverview"),
-        <FallbackForm button={{caption: "close", action: ()=>props.setModalContent(null)}} />
-    ));
+        <FallbackForm button={{caption: "close", action: ()=>{}}} />
+    )),[]);
 
     function toggleExpandShiftState(this: number) {
         if(expandedShiftID!=this) setExpandedShiftID(this);
@@ -125,7 +125,8 @@ export default function ShiftsTab(props: IProps) {
                 <ShiftOverviewModal 
                     exit={()=>props.setModalContent(null)} 
                     successCallback={()=>{props.setModalContent(null); props.reloadStats()}}
-                    targetDate={this} 
+                    targetDate={DateTime.fromISO(this)} 
+                    targetView={"Shift"}
                 />
             )
         }
