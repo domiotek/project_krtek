@@ -17,7 +17,14 @@
 .EmployeePanel {
     margin: 0.25em 0;
     position: relative;
-    padding: 0.5em 0;
+    padding: 0.5em;
+}
+
+.EmployeePanel.Personal {
+    cursor: pointer;
+    background: transparent;
+    transition: background 0.4s;
+    border-radius: 0.5em;
 }
 
 .EmployeePanel::after {
@@ -41,10 +48,23 @@
     transform: translateY(-50%) rotate(180deg);
     width: 16px;
     right: 10px;
+    transition: right 0.4s;
 }
 
 .EmployeePanel.Personal > h3 {
     color: var(--primary-color);
+}
+
+.EmployeePanel.Personal:hover {
+    background: #f3f6ff;
+}
+
+.EmployeePanel.Personal:active {
+    background: #eaf0ff;
+}
+
+.EmployeePanel.Personal:hover img {
+    right: 5px;
 }
 
 .EmployeePanel > h5 {

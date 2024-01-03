@@ -21,11 +21,16 @@
 
 .NoteHolder textarea {
     resize: none;
-    background: none;
     border: none;
     flex: 1;
     margin: 0.5em;
     outline: solid 2px #a1b1e2;
+    background: transparent;
+    transition: background 0.4s;
+}
+
+.NoteHolder textarea.Active {
+    background: #edf1ff;
 }
 
 .NoteHolder textarea:read-only {
@@ -49,6 +54,15 @@
     color: var(--primary-color);
     font-size: 1em;
     margin: 0 0.3em;
+    transition: color 0.4s;
+}
+
+.NoteHolder button:hover {
+    text-decoration: underline;
+}
+
+.NoteHolder button:active {
+    color: var(--primary-dark-1-color)
 }
 
 .NewNoteWrapper {

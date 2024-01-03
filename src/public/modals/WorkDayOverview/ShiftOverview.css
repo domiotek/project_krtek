@@ -65,6 +65,14 @@
     margin: -1.25rem;
 }
 
+.Header button:hover {
+    background: #a3b0d4;
+}
+
+.Header button:active {
+    background: #515c7d;
+}
+
 .MainContent {
     padding: 1.5em 1em;
 }

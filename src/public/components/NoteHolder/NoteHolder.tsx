@@ -105,7 +105,7 @@ export default function NoteHolder(props: IProps) {
                     </div>
                 :
                     <div>
-                        <textarea ref={textAreaRef} title="Note" value={note} onChange={e=>setNote(e.target.value)} readOnly={!editActive} />
+                        <textarea className={editActive?classes.Active:""} ref={textAreaRef} title="Note" value={note} onChange={e=>setNote(e.target.value)} readOnly={!editActive} />
                         <h6>{subtext} {buttons}</h6>
                     </div>
             }

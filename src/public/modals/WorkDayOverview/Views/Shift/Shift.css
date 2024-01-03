@@ -4,12 +4,22 @@
 }
 
 .Toolbar button {
-    background: none;
+    background: transparent;
     color: black;
     display: flex;
     align-items: center;
     font-size: 0.8em;
-    padding: 0;
+    transition: background 0.4s;
+    padding: 0.5em;
+    border-radius: 0.5em;
+}
+
+.Toolbar button:hover {
+    background: #f3f3f3;
+}
+
+.Toolbar button:active {
+    background: #e8e8e8;
 }
 
 .Toolbar button img {
