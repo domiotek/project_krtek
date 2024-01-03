@@ -99,7 +99,7 @@ const CoWorkersSection = React.memo(function CoWorkersSection() {
                         const startTime = slot?.assignedShift?.startTime ?? slot?.plannedStartTime as string;
                         const endTime = slot?.assignedShift?.endTime ?? slot?.plannedEndTime as string | null;
 
-                        return <div className={classes.Panel}>
+                        return <div key={slot?.privateSlotID} className={classes.Panel}>
                             {
                                 slot?.assignedShift?
                                     <h3>{slot?.assignedShift?.userName}</h3>
