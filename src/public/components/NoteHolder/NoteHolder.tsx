@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 
 import classes from "./NoteHolder.css";
 import { DateTime } from "luxon";
@@ -30,6 +30,7 @@ export default function NoteHolder(props: IProps) {
     
     const {t: tc} = useTranslation("common");
     const {t} = useTranslation("shift-modal", {keyPrefix: "note-holder"});
+    const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
     const cancelAction = useCallback(()=>{
         setEditActive(false);
@@ -55,12 +56,14 @@ export default function NoteHolder(props: IProps) {
             },()=>{
                 setSaveError(true);
                 setSavingInProgress(false);
+                textAreaRef.current?.focus();
             },new URLSearchParams({data: note}));
     }, [note]);
 
     const editAction = useCallback(()=>{
         setSaveError(false);
-        setEditActive(true)
+        setEditActive(true);
+        textAreaRef.current?.focus();
     }, []);
 
     const buttons = editActive?
@@ -102,7 +105,7 @@ export default function NoteHolder(props: IProps) {
                     </div>
                 :
                     <div>
-                        <textarea title="Note" value={note} onChange={e=>setNote(e.target.value)} readOnly={!editActive} />
+                        <textarea ref={textAreaRef} title="Note" value={note} onChange={e=>setNote(e.target.value)} readOnly={!editActive} />
                         <h6>{subtext} {buttons}</h6>
                     </div>
             }
