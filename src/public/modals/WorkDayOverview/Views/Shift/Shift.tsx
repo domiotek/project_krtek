@@ -1,7 +1,7 @@
-import React, { useCallback, useContext, useMemo } from "react";
+import React, { useCallback, useContext, useMemo, useState } from "react";
 
 import classes from "./Shift.css";
-import NoteHolder from "../../../../components/NoteHolder/NoteHolder";
+import NoteHolder, { IUpdatedNote } from "../../../../components/NoteHolder/NoteHolder";
 import ShiftOverviewModal, { IViewProps, WorkDayContext } from "../../ShiftOverview";
 import { API } from "../../../../types/networkAPI";
 import { calculateShiftData } from "../../../../pages/Statistics";
@@ -13,7 +13,8 @@ import EditShiftModal from "../../../EditShift/EditShift";
 import { useNavigate } from "react-router";
 
 export default function ShiftView(props: IViewProps) {
-    const workday = useContext(WorkDayContext).day
+    const context = useContext(WorkDayContext);
+    const workday = context.data.day;
     const slot = workday.personalSlot as API.App.Schedule.GetWorkDay.IPersonalShiftSlot;
     const [data, setModalContent] = useContext(AppContext);
 
@@ -68,12 +69,14 @@ export default function ShiftView(props: IViewProps) {
 
             <NoteHolder 
                 header={t("private-note.header")}
-                content = {slot.assignedShift.note ?? ""}
+                content = {context.updatedPersonalNote?.note ?? slot.assignedShift.note}
                 lastAuthor={null}
-                lastChange={null}
+                lastChange={context.updatedPersonalNote?.updateTime ?? (slot.assignedShift.noteUpdateTime?DateTime.fromISO(slot.assignedShift.noteUpdateTime):null)}
                 allowChange={true}
                 createNoteDesc={t("private-note.desc")}
                 duringEditText={t("private-note.reminder")}
+                apiEndpoint={`/api/schedule/shift/${workday.date}/personal-note`}
+                updateConfirmedNote={context.setUpdatedPersonalNote}
             />
         </div>
     );
@@ -81,7 +84,7 @@ export default function ShiftView(props: IViewProps) {
 
 
 const CoWorkersSection = React.memo(function CoWorkersSection() {
-    const workday = useContext(WorkDayContext).day;
+    const workday = useContext(WorkDayContext).data.day;
 
     const {t: tg} = useTranslation("glossary");
     const {t} = useTranslation("shift-modal", {keyPrefix: "coworkers"});
@@ -116,7 +119,7 @@ const CoWorkersSection = React.memo(function CoWorkersSection() {
 const PendingShiftSection = React.memo(function PendingShiftSection() {
 
     const [data, setModalContent] = useContext(AppContext);
-    const workday = useContext(WorkDayContext);
+    const workday = useContext(WorkDayContext).data;
 
     const {t} = useTranslation("shift-modal", {keyPrefix: "pending-view"});
     const {t: tc} = useTranslation("common"); 
@@ -156,9 +159,9 @@ const PendingShiftSection = React.memo(function PendingShiftSection() {
 
 const FinishedShiftSection = React.memo(function FinishedShiftSection() {
     const context = useContext(WorkDayContext);
-    const slot = context.day.personalSlot as API.App.Schedule.GetWorkDay.IPersonalShiftSlot;
+    const slot = context.data.day.personalSlot as API.App.Schedule.GetWorkDay.IPersonalShiftSlot;
 
-    const data = useMemo(()=>calculateShiftData(slot, context.wageRate ?? 0),[slot, context.wageRate]);
+    const data = useMemo(()=>calculateShiftData(slot, context.data.wageRate ?? 0),[slot, context.data.wageRate]);
 
     const {t} = useTranslation("shift-modal", {keyPrefix: "finished-view"});
     const {t: tg} = useTranslation("glossary");
@@ -177,10 +180,10 @@ const FinishedShiftSection = React.memo(function FinishedShiftSection() {
             </div>
 
             <div className={classes.EarningsSection}>
-                <h1 className={context.wageRate===null?classes.NoWageRateModifier:""} data-text={t("at-least")}>{render2FloatingPoint(data.totalEarnings)}zł</h1>
+                <h1 className={context.data.wageRate===null?classes.NoWageRateModifier:""} data-text={t("at-least")}>{render2FloatingPoint(data.totalEarnings)}zł</h1>
                 <div className={classes.EarningsComponentsHolder}>
                     {
-                        context.wageRate!=null?
+                        context.data.wageRate!=null?
                             [
                             <div key={0} className={classes.EarningsComponent}>
                                 <h3>{render2FloatingPoint(data.wageEarnings)}zł</h3>
@@ -210,9 +213,9 @@ const FinishedShiftSection = React.memo(function FinishedShiftSection() {
                 </div>
             </div>
             
-            <div className={`${classes.WageRateSection} ${context.wageRate==null?classes.NoWageRate:""}`}>
-                <h3>{context.wageRate==null?t("missing-wage-desc"):(data.tip>0?t("earnings-desc-tip"):t("earnings-desc"))}</h3>
-                <h3>{context.wageRate==null?<button type="button" onClick={()=>navigate("/Statistics/Settings")}>{t("set-wage-link")}</button>:`${render2FloatingPoint(data.realWageRate)} zł/h`}</h3>
+            <div className={`${classes.WageRateSection} ${context.data.wageRate==null?classes.NoWageRate:""}`}>
+                <h3>{context.data.wageRate==null?t("missing-wage-desc"):(data.tip>0?t("earnings-desc-tip"):t("earnings-desc"))}</h3>
+                <h3>{context.data.wageRate==null?<button type="button" onClick={()=>navigate("/Statistics/Settings")}>{t("set-wage-link")}</button>:`${render2FloatingPoint(data.realWageRate)} zł/h`}</h3>
             </div>
         </div>
     );
@@ -220,7 +223,7 @@ const FinishedShiftSection = React.memo(function FinishedShiftSection() {
 
 
 const PlannedShiftSection = React.memo(function PlannedShiftSection() {
-    const slot = useContext(WorkDayContext).day.personalSlot as API.App.Schedule.GetWorkDay.IPersonalShiftSlot;
+    const slot = useContext(WorkDayContext).data.day.personalSlot as API.App.Schedule.GetWorkDay.IPersonalShiftSlot;
 
     const {t: tg} = useTranslation("glossary");
     const {t} = useTranslation("shift-modal", {keyPrefix: "planned-view"});

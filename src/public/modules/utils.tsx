@@ -59,11 +59,15 @@ export function render2FloatingPoint(amount: number) {
     return amount.toFixed(2).replace(".00", "")
 }
 
-export function renderDate(dateTime: DateTime | undefined, fallback: string) {
+export function renderDateTime(dateTime: DateTime | null | undefined, fallback: string = "") {
+	return dateTime?.isValid?dateTime.toFormat("dd/LL/yyyy HH:mm"):fallback;
+}
+
+export function renderDate(dateTime: DateTime | null | undefined, fallback: string = "") {
 	return dateTime?.isValid?dateTime.toFormat("dd/LL/yyyy"):fallback;
 }
 
-export function renderTime(dateTime: DateTime | undefined, fallback: string="") {
+export function renderTime(dateTime: DateTime | null | undefined, fallback: string = "") {
 	return dateTime?.isValid?dateTime.toFormat("HH:mm"):fallback;
 }
 

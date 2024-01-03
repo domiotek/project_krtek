@@ -43,9 +43,9 @@ const EmployeePanel = React.memo(function EmployeePanel(props: IEmployeePanelPro
     );
 });
 
-
 export default function WorkDayView(props: IViewProps) {
-    const workDayData = useContext(WorkDayContext).day;
+    const context = useContext(WorkDayContext) 
+    const workDayData = context.data.day;
 
     const {t} = useTranslation("shift-modal");
     const {t: tg} = useTranslation("glossary");
@@ -74,12 +74,14 @@ export default function WorkDayView(props: IViewProps) {
 
             <NoteHolder 
                 header={tg("shift.note")}
-                content={workDayData.note ?? ""}
-                lastAuthor={workDayData.noteLastUpdater}
-                lastChange={workDayData.noteUpdateTime?DateTime.fromISO(workDayData.noteUpdateTime):null}
+                content={context.updatedPublicNote?.note ?? workDayData.note}
+                lastAuthor={context.updatedPublicNote?t("note-holder.by-you"):workDayData.noteLastUpdater}
+                lastChange={context.updatedPublicNote?.updateTime ?? (workDayData.noteUpdateTime?DateTime.fromISO(workDayData.noteUpdateTime):null)}
                 allowChange={workDayData.personalSlot!==null}
                 createNoteDesc={t("public-note.desc")}
                 duringEditText={t("public-note.reminder")}
+                apiEndpoint={`/api/schedule/shift/${workDayData.date}/note`}
+                updateConfirmedNote={context.setUpdatedPublicNote}
             />
         </div>
     );

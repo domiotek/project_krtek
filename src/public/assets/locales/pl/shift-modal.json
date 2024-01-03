@@ -24,5 +24,9 @@
     "note-holder.default-edit-prompt": "Pamiętaj o zapisaniu zmian.",
     "note-holder.last-change": "Ostatnio zmieniono {{date}}.",
     "note-holder.last-change-author": "Ostation zmieniono {{date}} przez {{author}}.",
-    "note-holder.new-note-header": "Jeszcze nic tu nie ma"
+    "note-holder.new-note-header": "Jeszcze nic tu nie ma",
+    "note-holder.save-in-progress": "Trwa zapisywanie zmian...",
+    "note-holder.save-failed": "Nie udało się zapisać zmian.",
+    "note-holder.unknown-date": "nie wiadomo kiedy",
+    "note-holder.by-you": "ciebie"
 }

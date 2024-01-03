@@ -763,6 +763,7 @@ namespace WebAPI {
                 userID: number,
                 userName: string
                 note: string | null
+                noteUpdateTime: string | null
             }
         }
 
@@ -990,6 +991,7 @@ namespace WebAPI {
             readonly tip: number;
             readonly deduction: number;
             readonly note: string | null;
+            readonly noteUpdateTime: DateTime | null;
             readonly userID: number;
 
             /**

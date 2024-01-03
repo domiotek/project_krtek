@@ -400,7 +400,7 @@ class WorkDay implements WebAPI.Schedule.IWorkDay {
             const parsedStartTime = row["startTime"]?DateTime.fromISO(row["startTime"]):null;
             const parsedEndTime =  row["endTime"]?DateTime.fromISO(row["endTime"]):null;
 
-            const shift = row["shiftID"]!=null?new Shift(row["shiftID"],this._db,row["userID"],parsedStartTime,parsedEndTime, parseFloat(row["tip"]) ?? 0, parseFloat(row["deduction"]) ?? 0, row["userNote"]):null;
+            const shift = row["shiftID"]!=null?new Shift(row["shiftID"],this._db,row["userID"],parsedStartTime,parsedEndTime, parseFloat(row["tip"]) ?? 0, parseFloat(row["deduction"]) ?? 0, row["userNote"], row["userNoteUpdateTime"]):null;
 
             let status: WebAPI.Schedule.WorkDayAPI.IShiftSlot["status"];
             if(shift) {
@@ -778,9 +778,10 @@ class Shift implements WebAPI.Schedule.IShift {
     private _tip: number;
     private _deduction: number;
     private _note: string | null;
+    private _noteUpdateTime: DateTime | null;
 
 
-    constructor(shiftID: number, db: WebAPI.Mysql.IMysqlController,userID: number, startTime: luxon.DateTime | null, endTime: luxon.DateTime | null, tip?: number, deduction?: number, note?: string) {
+    constructor(shiftID: number, db: WebAPI.Mysql.IMysqlController,userID: number, startTime: luxon.DateTime | null, endTime: luxon.DateTime | null, tip?: number, deduction?: number, note?: string, noteUpdateTime?: Date) {
         this._shiftID = shiftID;
         this._startTime = startTime;
         this._endTime = endTime;
@@ -789,6 +790,7 @@ class Shift implements WebAPI.Schedule.IShift {
         this._tip = tip ?? 0;
         this._deduction = deduction ?? 0;
         this._note = note ?? null;
+        this._noteUpdateTime = noteUpdateTime?DateTime.fromJSDate(noteUpdateTime):null
     }
 
     public toJSON() {
@@ -799,7 +801,8 @@ class Shift implements WebAPI.Schedule.IShift {
             tip: this._tip,
             deduction: this._deduction,
             userID: this._userID,
-            note: this._note
+            note: this._note,
+            noteUpdateTime: this._noteUpdateTime?.toISO() ?? null
         }
         return result;
     }
@@ -832,6 +835,10 @@ class Shift implements WebAPI.Schedule.IShift {
         return this._note;
     }
 
+    public get noteUpdateTime(): DateTime | null {
+        return this._noteUpdateTime;
+    }
+
     public get userID(): number {
         return this._userID;
     }
@@ -854,7 +861,9 @@ class Shift implements WebAPI.Schedule.IShift {
         if(newNote=="") newNote=null;
 
         if(newNote!=this._note) {
-            const response = await this._db.performQuery<"Other">("UPDATE shifts SET userNote=? WHERE shiftID=?",[newNote!=""?newNote:null, this._shiftID], conn);
+            const now = DateTime.now();
+
+            const response = await this._db.performQuery<"Other">("UPDATE shifts SET userNote=?, userNoteUpdateTime=? WHERE shiftID=?",[newNote, now.toISO(), this._shiftID], conn);
 
             if(!response || response.affectedRows!=1) {
                 conn?.rollback();
@@ -863,6 +872,7 @@ class Shift implements WebAPI.Schedule.IShift {
             }
             
             this._note = newNote;
+            this._noteUpdateTime = now;
         }
     }
 
@@ -876,10 +886,11 @@ class Shift implements WebAPI.Schedule.IShift {
         }
 
         const newNote: string | null = note==""?null:note ?? null;
+        const now = DateTime.now();
         
         if(isValidTime(startTime)&&isValidTime(endTime)) {
             if(!startTime.startOf("minute").equals(endTime.startOf("minute"))) {
-                const response = await this._db.performQuery("UPDATE shifts SET startTime=?, endTime=?, tip=?, deduction=?, userNote=? WHERE shiftID=?",[startTime.toFormat("HH:mm:ss"), endTime.toFormat("HH:mm:ss"), tip, deduction, newNote, this._shiftID], conn);
+                const response = await this._db.performQuery("UPDATE shifts SET startTime=?, endTime=?, tip=?, deduction=?, userNote=?, userNoteUpdateTime=? WHERE shiftID=?",[startTime.toFormat("HH:mm:ss"), endTime.toFormat("HH:mm:ss"), tip, deduction, newNote, now.toISO(), this._shiftID], conn);
                 if(response) {
                     if((response as WebAPI.Mysql.IMysqlQueryResult).affectedRows==1) {
                         this._startTime = startTime;
@@ -887,6 +898,7 @@ class Shift implements WebAPI.Schedule.IShift {
                         this._tip = tip;
                         this._deduction = deduction;
                         this._note = null;
+                        this._noteUpdateTime = now;
                         return;
                     }else errCode = "DBError";
                 }else errCode = this._db.getLastQueryFailureReason();

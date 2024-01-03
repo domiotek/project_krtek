@@ -38,6 +38,10 @@
     font-size: 0.6em;
 }
 
+.NoteHolder h6 span {
+    display: inline-block;
+}
+
 .NoteHolder button {
     display: inline;
     padding: 0;

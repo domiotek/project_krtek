@@ -12,6 +12,7 @@ import { callAPI, renderDateRelDiff } from "../../modules/utils";
 import { DateTime } from "luxon";
 import SuspenseView from "./Views/Suspense/Suspense";
 import ErrorView from "./Views/APIError/APIError";
+import { IUpdatedNote } from "../../components/NoteHolder/NoteHolder";
 
 interface IProps {
     successCallback: ()=>void
@@ -24,8 +25,15 @@ export interface IViewProps {
     switchView: ()=>void
 }
 
+interface IContext {
+    data: API.App.Schedule.GetWorkDay.IResponse
+    updatedPublicNote: IUpdatedNote | null
+    updatedPersonalNote: IUpdatedNote | null
+    setUpdatedPublicNote: (note: IUpdatedNote)=>void
+    setUpdatedPersonalNote: (note: IUpdatedNote)=>void
+}
 
-export const WorkDayContext = createContext<API.App.Schedule.GetWorkDay.IResponse>({} as any);
+export const WorkDayContext = createContext<IContext>({} as any);
 
 export default function ShiftOverviewModal(props: IProps) {
     const {t} = useTranslation("shift-modal");
@@ -35,6 +43,9 @@ export default function ShiftOverviewModal(props: IProps) {
     const [activeView, setActiveView] = useState<"Shift" | "WorkDay">(props.targetView);
     const [workDayData, setWorkDayData] = useState<API.App.Schedule.GetWorkDay.IResponse | null>(null);
     const [apiError, setApiError] = useState<boolean>(false);
+
+    const [updatedPublicNote, setUpdatedPublicNote] = useState<IUpdatedNote | null>(null);
+    const [updatedPersonalNote, setUpdatedPersonalNote] = useState<IUpdatedNote | null>(null);
 
     useEffect(()=>{
         return callAPI<API.App.Schedule.GetWorkDay.IEndpoint>("GET","/api/schedule/workday/:date",{"date": props.targetDate.toISODate()},
@@ -65,7 +76,7 @@ export default function ShiftOverviewModal(props: IProps) {
                 <div className={classes.MainContent}>
                     {
                         workDayData?
-                            <WorkDayContext.Provider value={workDayData}>
+                            <WorkDayContext.Provider value={{data: workDayData, updatedPersonalNote, updatedPublicNote, setUpdatedPublicNote, setUpdatedPersonalNote}}>
                             {
                                 activeView=="Shift"?
                                     <ShiftView switchView={()=>setActiveView("WorkDay")}/>

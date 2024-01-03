@@ -23,5 +23,9 @@
     "note-holder.default-edit-prompt": "Remember to save your changes.",
     "note-holder.last-change": "Last time changed {{date}}.",
     "note-holder.last-change-author": "Last time changed {{date}} by {{author}}.",
-    "note-holder.new-note-header": "There is nothing here yet"
+    "note-holder.new-note-header": "There is nothing here yet",
+    "note-holder.save-in-progress": "Saving changes...",
+    "note-holder.save-failed": "Couldn't save those changes.",
+    "note-holder.unknown-date": "don't really know when",
+    "note-holder.by-you": "you"
 }

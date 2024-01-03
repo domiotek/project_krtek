@@ -268,6 +268,20 @@ export namespace API {
                 type IEndpoint = TBuildAPIEndpoint<"PUT","/api/schedule/shift/:when/notes", undefined, "NotSignedIn" | "NoSlot" | "InvalidDate", IURLParams>
             }
 
+            namespace UpdateShiftNote {
+                interface IRequest {
+                    data: string
+                }
+
+                interface IURLParams {
+                    [p: string]: string
+                    when: string
+                    scope: "note" | "personal-note"
+                }
+
+                type IEndpoint = TBuildAPIEndpoint<"PUT","/api/schedule/shift/:when/:scope", undefined, "NotSignedIn" | "NoSlot" | "InvalidDate", IURLParams>
+            }
+
             namespace AddShift {
                 interface IRequest {
                     when: string
@@ -317,7 +331,8 @@ export namespace API {
                 interface IPersonalShift extends IShift {
                     tip: number | null,
                     deduction: number | null,
-                    note: string | null
+                    note: string | null,
+                    noteUpdateTime: string | null
                 }
 
                 interface IResponse {

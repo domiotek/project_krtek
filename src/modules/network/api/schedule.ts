@@ -3,6 +3,7 @@ import { errorHandler } from "./common/error.js";
 import * as yup from "yup";
 import { DateTime } from "luxon";
 import prepareWorkDayArrayResponse from "./common/responsePreps.js";
+import { RequiredStringSchema } from "yup/lib/string.js";
 
 const getScheduleRequestSchema = yup.object().shape({
     withDay: yup.string().required()
@@ -205,6 +206,79 @@ const updateShiftNotes: WebAPI.IRouteOptions<API.App.Schedule.UpdateShiftNotes.I
     errorHandler
 }
 
+
+const updateShiftNoteRequestSchema = yup.object().shape({
+    data: yup.string().required()
+});
+
+const updateShiftNoteURLParamsSchema = yup.object().shape({
+    when: yup.string().required(),
+    scope: yup.string().oneOf(["note", "personal-note"]).required() as RequiredStringSchema<"note" | "personal-note", Record<"note" | "personal-note", any>>
+});
+
+
+const updateNote: WebAPI.IRouteOptions<API.App.Schedule.UpdateShiftNote.IEndpoint> = {
+    method: "PUT",
+    url: "/api/schedule/shift/:when/:scope",
+    handler: async (req, res)=>{
+        res.header("cache-control","private, no-cache");
+        res.status(401);
+        const sessionID = req.cookies.session;
+
+        let result: API.App.Schedule.UpdateShiftNote.IEndpoint["returnPacket"] = {
+            status: "Failure",
+            errCode: "NotSignedIn"
+        }
+
+        if(sessionID) {
+            const session = await global.app.webAuthManager.getSessionDetails(sessionID);
+
+            if(session) {
+                res.status(400);
+                let data: API.App.Schedule.UpdateShiftNote.IRequest;
+                let params: API.App.Schedule.UpdateShiftNote.IURLParams;
+
+                try {
+                    data = await updateShiftNoteRequestSchema.validate(req.body);
+                    params = await updateShiftNoteURLParamsSchema.validate(req.params);
+                } catch (error) {
+                    result.status = "Failure";
+                    result.errCode = "BadRequest";
+                    result.message = (error as yup.ValidationError).message;
+                    return result;
+                }
+
+                const workDay = await global.app.scheduleManager.getWorkDay(DateTime.fromISO(params.when));
+
+                if(workDay) {
+                    let note = data.data==""?null:data.data;
+
+                    if(params.scope=="note") {
+                        workDay.setNote(note,session.userID);
+                    }else {
+                        const userSlot = await workDay.getUserSlot(session.userID);
+
+                        if(userSlot) {
+                            await userSlot.assignedShift?.setNote(note);
+                        }else {
+                            res.status(404);
+                            result.errCode = "NoSlot";
+                        }
+                    }
+
+                    res.status(200);
+                    result = {
+                        status: "Success",
+                        data: undefined
+                    }
+                }else result.errCode = "InvalidDate";
+            }
+        }
+
+        return result;
+    }
+}
+
 const addShiftRequestSchema = yup.object().shape({
     when: yup.string().required(),
     startTime: yup.string().required(),
@@ -368,6 +442,7 @@ export default [
     getSchedule,
     updateShiftDetails,
     updateShiftNotes,
+    updateNote,
     addShift,
     getWorkDay
 ];
