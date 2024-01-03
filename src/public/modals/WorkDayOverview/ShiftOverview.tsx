@@ -11,6 +11,7 @@ import { API } from "../../types/networkAPI";
 import { callAPI, renderDateRelDiff } from "../../modules/utils";
 import { DateTime } from "luxon";
 import SuspenseView from "./Views/Suspense/Suspense";
+import ErrorView from "./Views/APIError/APIError";
 
 interface IProps {
     successCallback: ()=>void
@@ -33,12 +34,12 @@ export default function ShiftOverviewModal(props: IProps) {
 
     const [activeView, setActiveView] = useState<"Shift" | "WorkDay">(props.targetView);
     const [workDayData, setWorkDayData] = useState<API.App.Schedule.GetWorkDay.IResponse | null>(null);
+    const [apiError, setApiError] = useState<boolean>(false);
 
     useEffect(()=>{
         return callAPI<API.App.Schedule.GetWorkDay.IEndpoint>("GET","/api/schedule/workday/:date",{"date": props.targetDate.toISODate()},
-            data=>{
-                setWorkDayData(data);
-            });
+            data=>setWorkDayData(data),
+            ()=>setApiError(true));
     },[]);
 
     const date = useMemo(()=>DateTime.fromISO(workDayData?.day.date ?? ""),[workDayData]);
@@ -73,7 +74,10 @@ export default function ShiftOverviewModal(props: IProps) {
                             }
                             </WorkDayContext.Provider>
                         :
-                        <SuspenseView variant={props.targetView}/>
+                            apiError?
+                                <ErrorView />
+                            :
+                                <SuspenseView variant={props.targetView}/>
                     }
                     
                 </div>

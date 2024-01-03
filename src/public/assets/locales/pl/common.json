@@ -24,6 +24,7 @@
     "clear-all": "Wyczyść",
     "reset": "Przywróć",
     "edit": "Edytuj",
+    "retry": "Spróbuj ponownie",
     "change": "Zmień",
     "confirm": "Zatwierdź",
     "create": "Utwórz",
@@ -43,7 +44,8 @@
     "email-address": "Adres email",
     "gender": "Płeć",
     "password": "Hasło",
-    "llff.header": "Coś poszło nie tak",
     "llff.subtitle": "Nie udało się pobrać wymaganych modułów.",
-    "llff.prompt": "Sprawdź swoje połączenie internetowe i spróbuj ponownie za chwilę."
+    "llff.prompt": "Sprawdź swoje połączenie internetowe i spróbuj ponownie za chwilę.",
+    "generic-error.title": "Coś poszło nie tak",
+    "generic-error.desc": "Serwer nie poradził sobie z tym żądaniem."
 }

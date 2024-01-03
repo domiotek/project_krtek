@@ -1,0 +1,18 @@
+.Wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.Wrapper img {
+    width: 70%;
+}
+
+.Wrapper h3 {
+    margin-bottom: 0;
+}
+
+.Wrapper h5 {
+    margin-top: 0.5em;
+    font-weight: 300;
+}

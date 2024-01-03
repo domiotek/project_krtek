@@ -15,7 +15,7 @@ export default function FallbackForm(props: IProps) {
     return (
         <div className={classes.Container}>
             <img src="/ilustrations/NoConnection.svg" alt="No connection" />
-            <h3>{tc("llff.header")}</h3>
+            <h3>{tc("generic-error.title")}</h3>
             <h5>{tc("llff.subtitle")}</h5>
             <h6>{tc("llff.prompt")}</h6>
             {
