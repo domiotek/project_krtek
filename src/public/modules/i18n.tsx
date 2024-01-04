@@ -16,6 +16,7 @@ i18n.use(i18nBackend)
         interpolation: {
             escapeValue: false,
         },
+        supportedLngs: ["pl", "en"],
         backend: {
             loadPath: "/locales/{{lng}}/{{ns}}.json"
         }

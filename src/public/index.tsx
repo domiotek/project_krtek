@@ -22,6 +22,7 @@ const MyAccountDetails = React.lazy(()=>import(/* webpackChunkName: "myacc" */".
 const Schedule = React.lazy(()=>import(/* webpackChunkName: "schd" */"./pages/Schedule"));
 const Statistics = React.lazy(()=>import(/* webpackChunkName: "stats" */"./pages/Statistics"));
 const NoPage = React.lazy(()=>import(/* webpackChunkName: "nopage" */"./pages/NoPage"));
+const Settings = React.lazy(()=>import(/* webpackChunkName: "settings" */"./pages/Settings"));
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -37,6 +38,7 @@ root.render(
               <Route path="/Account" element={<MyAccountDetails />} />
               <Route path='/Schedule' element={<Schedule />} />
               <Route path='/Statistics/:tab?' element={<Statistics />} />
+              <Route path="/Settings" element={<Settings />} />
               <Route path='*' element={<NoPage />} />
           </Route>
           <Route path='/p' element={<Portal />}>
