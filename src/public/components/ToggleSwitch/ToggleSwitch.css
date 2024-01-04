@@ -1,0 +1,36 @@
+.ToggleSwitch {
+    background: #969696;
+    aspect-ratio: 2 / 0.9;
+    border-radius: 5em;
+    position: relative;
+}
+
+.ToggleSwitch.Disabled {
+    background: #bfbfbf;
+}
+
+.ToggleSwitch input {
+    display: none;
+}
+
+.Bullet {
+    display: block;
+    position: absolute;
+    height: 120%;
+    aspect-ratio: 1 / 1;
+    background: lightgrey;
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 50%;
+    left: 0;
+    transition: background 0.4s, left 0.4s;
+}
+
+.ToggleSwitch.Disabled .Bullet {
+    background: #e3e3e3;
+}
+
+.Bullet.Active {
+    left: 50%;
+    background: var(--bg-dark);
+}
