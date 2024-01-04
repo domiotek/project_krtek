@@ -5,6 +5,20 @@
     max-width: 800px;
 }
 
+.Page > h2 {
+    position: relative;
+}
+
+.Page > h2::after {
+    content: "";
+    display: block;
+    position: absolute;
+    bottom: -7px;
+    width: 120px;
+    height: 4px;
+    background-color: var(--primary-color);
+}
+
 .Page section {
     padding: 0.5em;
 }
