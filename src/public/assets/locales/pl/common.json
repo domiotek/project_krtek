@@ -1,9 +1,12 @@
 {
+    "langs.en": "Angielski",
+    "langs.pl": "Polski",
     "nav-menu.home": "Strona Główna",
     "nav-menu.schedule": "Grafik",
     "nav-menu.statistics": "Moje Statystyki",
     "nav-menu.beta_intro": "Wstęp do wersji Beta",
     "nav-menu.feedback": "Prześlij Opinię",
+    "nav-menu.settings": "Ustawienia",
     "signout": "Wyloguj się",
     "footer": "Wszelkie prawa zastrzeżone.",
     "footerLink": "O projekcie",

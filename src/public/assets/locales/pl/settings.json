@@ -1,0 +1,9 @@
+{
+    "header": "Ustawienia",
+    "language.header": "Język wyświetlania",
+    "language.desc": "Zmień język, w jakim wyświetlany jest interfejs strony.",
+    "experiments.header": "Eksperymenty",
+    "experiments.desc": "Eksperymenty to najczęściej niedokończone funkcjonalności, które mogą, ale nie muszą pojawić się w przyszłości w swojej pełnej formie. Ich głównym celem jest zebranie opinii, jeszcze zanim funkcje te dostępne będą dla wszystkich.",
+    "experiments.no-items": "Brak dostępnych eksperymentów",
+    "experiments.warning-notice": "Proszę miej na uwadze, że takie funkcje z natury mogą nie być w pełni stabilne."
+}

@@ -1,0 +1,9 @@
+{
+    "header": "Settings",
+    "language.header": "Display language",
+    "language.desc": "Select language, that the website will be displayed in.",
+    "experiments.header": "Experiments",
+    "experiments.desc": "Experiments are usually unfinished features, which may, but don't have to be implemented in a fully-fledged way. Their purpouse is to collect early feedback, before they become available for everyone.",
+    "experiments.no-items": "No available experiments",
+    "experiments.warning-notice": "Please note, that those features may not and probably aren't fully stable."
+}
