@@ -1,0 +1,95 @@
+.Page {
+    display: flex;
+    flex-direction: column;
+    padding: 1em;
+    max-width: 800px;
+}
+
+.Page section {
+    padding: 0.5em;
+}
+
+.Page section > h4 {
+    font-weight: 600;
+    margin-bottom: 0;
+}
+
+.SectionDesc {
+    font-weight: 400;
+    font-size: 0.8em;
+    margin-top: 1em;
+}
+
+.SelectWrapper {
+    max-width: 150px;
+    margin-top: 2em;
+    margin-left: 0.5em;
+}
+
+.AlertBox {
+    display: flex;
+    align-items: center;
+    font-size: 0.8em;
+    border: solid 1px orange;
+    padding: 1em;
+    border-radius: 0.5em;
+    background: #fff4e4;
+}
+
+.AlertBox img {
+    width: 2em;
+    margin-right: 1em;
+}
+
+.ExperimentList {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 2em;
+}
+
+.ExperimentList li {
+    padding: 1.25em 0.5em;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.ExperimentList li:not(:last-of-type)::after {
+    content: "";
+    display: block;
+    position: absolute;
+    width: 80%;
+    height: 2px;
+    background: lightgrey;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 0;
+}
+
+.ExperimentList h5 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.ExperimentList p {
+    margin: 0.5em;
+    font-weight: 400;
+    font-size: 0.7em;
+}
+
+.ToggleSwitchWrapper {
+    flex-shrink: 0;
+    margin:0.5em 2em 0;
+}
+
+.NoExperimentsText {
+    margin: 3em;
+    text-align: center;
+}
+
+@media screen and (min-width: 426px) {
+    .ExperimentList {
+        padding-left: 1em;
+    }
+}

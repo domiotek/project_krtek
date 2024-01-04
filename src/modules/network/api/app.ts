@@ -142,7 +142,8 @@ const navMenu: WebAPI.IRouteOptions<API.App.NavMenu.IEndpoint> = {
                     {displayName: "beta_intro", linkDest: "/Beta", imageName: "/ui/announcement.png", imageAlt: "Beta intro tab link"},
                     {displayName: "home", linkDest: "/Home", imageName: "/ui/home.png", imageAlt: "Home tab link"},
                     {displayName: "schedule",linkDest: "/Schedule",imageName: "/ui/schedule.png",imageAlt: "Schedule tab link"},
-                    {displayName: "statistics",linkDest: "/Statistics",imageName: "/ui/stats.png",imageAlt: "Statistics tab link"}
+                    {displayName: "statistics",linkDest: "/Statistics",imageName: "/ui/stats.png",imageAlt: "Statistics tab link"},
+                    {displayName: "settings",linkDest: "/Settings",imageName: "/ui/settings.png", imageAlt: "Settings tab link"}
                 ];
 
                 result = {

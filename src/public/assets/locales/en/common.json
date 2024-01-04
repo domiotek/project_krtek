@@ -1,8 +1,11 @@
 {
+    "langs.en": "English",
+    "langs.pl": "Polish",
     "nav-menu.home": "Home",
     "nav-menu.beta_intro": "Beta Intro",
     "nav-menu.schedule": "Schedule",
     "nav-menu.statistics": "My Statistics",
+    "nav-menu.settings": "Settings",
     "signout": "Sign out",
     "footer": "All rights reserved.",
     "footerLink": "About",
