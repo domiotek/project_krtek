@@ -35,10 +35,13 @@ export default function AboutPage() {
                     <h3>{t("credits")}</h3>
                     <ul className={classes.CreditsList}>
                         <li>
-                           {t("freepik-credit")}<a href="https://www.flaticon.com/authors/freepik">Freepik</a> {t("from")} <a href="https://www.flaticon.com">flaticon.com</a>.
+                           {t("freepik-credit")}<a href="https://www.flaticon.com/authors/freepik">Freepik</a> {t("from")} <a href="https://www.flaticon.com">flaticon.com</a>
                         </li>
                         <li>
-                            {t("undraw-credit")}<a href="https://undraw.co">undraw.co</a>.
+                            {t("undraw-credit")}<a href="https://undraw.co">undraw.co</a>
+                        </li>
+                        <li>
+                            {t("storyset-credit")}<a href="https://storyset.com">storyset.com</a>
                         </li>
                     </ul>
                    
