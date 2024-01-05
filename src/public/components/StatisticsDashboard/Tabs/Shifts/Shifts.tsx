@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { API, WebApp } from "../../../../types/networkAPI";
 
 import classes from "./Shifts.css";
@@ -9,12 +9,13 @@ import ShiftPanel from "./ShiftPanel";
 import { LoadingShiftsView, NoFilterResultsMessage, NoShiftsMessage } from "./Views";
 import FilterBox from "../../../FilterBox/FilterBox";
 import { DateTime, Info } from "luxon";
-
-
 import eFilterImg from "../../../../assets/ui/empty_filter.png";
 import fFilterImg from "../../../../assets/ui/filled_filter.png";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { handleImport } from "../../../../modules/utils";
+import FallbackForm from "../../../LazyLoadFallbackForm/LazyLoadFallbackForm";
+import NewShiftPanel from "./NewShiftPanel";
 
 type IShiftFilters = {
     states: {
@@ -55,6 +56,15 @@ export default function ShiftsTab(props: IProps) {
     const {t} = useTranslation("statistics",{keyPrefix: "shifts-tab"});
     const {t: tg} = useTranslation("glossary");
 
+    const useNewModal = useMemo(()=>{
+        try {
+            let flags = JSON.parse(localStorage.getItem("featureFlags") ?? "{}");
+            return flags["NewShiftModal"];
+        } catch (error) {
+            return false;
+        }
+    },[]);
+
     const weekDayLabels = Info.weekdays();
     
     useEffect(()=>{
@@ -87,6 +97,11 @@ export default function ShiftsTab(props: IProps) {
         setFilteringActive(count > 0);
     },[filters]);
 
+    const ShiftOverviewModal = React.useMemo(()=>React.lazy(()=>
+        handleImport(import(/* webpackChunkName: "ShiftOverviewModal" */"../../../../modals/WorkDayOverview/ShiftOverview"),
+        <FallbackForm button={{caption: "close", action: ()=>{}}} />
+    )),[]);
+
     function toggleExpandShiftState(this: number) {
         if(expandedShiftID!=this) setExpandedShiftID(this);
         else setExpandedShiftID(null);
@@ -115,6 +130,17 @@ export default function ShiftsTab(props: IProps) {
             )
         }
 
+        function showNewModal(this: string) {
+            props.setModalContent(
+                <ShiftOverviewModal 
+                    exit={()=>props.setModalContent(null)} 
+                    successCallback={()=>{props.setModalContent(null); props.reloadStats()}}
+                    targetDate={DateTime.fromISO(this)} 
+                    targetView={"Shift"}
+                />
+            )
+        }
+
         for (let i=0; i < elements.shifts.length; i++) {
             const ownerSlot = elements.shifts[i].slots[elements.userSlots[i]] as API.App.Statistics.UserShifts.IAssignedShiftSlot;
             const weekDay = DateTime.fromISO(elements.shifts[i].date).weekday;
@@ -129,6 +155,15 @@ export default function ShiftsTab(props: IProps) {
                 continue;
 
             result.push(
+                useNewModal?
+                <NewShiftPanel key={elements.shifts[i].ID} 
+                    workDay = {elements.shifts[i]}
+                    userSlot = {elements.userSlots[i]}
+                    calcStats = {elements.calcStats[i]}
+                    wage = {props.wage as number}
+                    showNewModal = {showNewModal.bind(elements.shifts[i].date)}
+                />
+                :
                 <ShiftPanel key={elements.shifts[i].ID} 
                     workDay = {elements.shifts[i]}
                     userSlot = {elements.userSlots[i]}

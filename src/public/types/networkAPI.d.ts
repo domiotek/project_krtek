@@ -279,6 +279,20 @@ export namespace API {
                 type IEndpoint = TBuildAPIEndpoint<"PUT","/api/schedule/shift/:when/notes", undefined, "NotSignedIn" | "NoSlot" | "InvalidDate", IURLParams>
             }
 
+            namespace UpdateShiftNote {
+                interface IRequest {
+                    data: string
+                }
+
+                interface IURLParams {
+                    [p: string]: string
+                    when: string
+                    scope: "note" | "personal-note"
+                }
+
+                type IEndpoint = TBuildAPIEndpoint<"PUT","/api/schedule/shift/:when/:scope", undefined, "NotSignedIn" | "NoSlot" | "InvalidDate", IURLParams>
+            }
+
             namespace AddShift {
                 interface IRequest {
                     when: string
@@ -288,6 +302,56 @@ export namespace API {
                 }
 
                 type IEndpoint = TBuildAPIEndpoint<"POST","/api/schedule/shift", undefined, "NotSignedIn" | "SlotExists" | "InvalidDate" | "InvalidTime" | "NotAllowed">
+            }
+
+            namespace GetWorkDay {
+                interface IRequest {
+                    date: string
+                }
+
+                interface IWorkDay {
+                    note: string | null
+                    noteUpdateTime: string | null
+                    noteLastUpdater: string | null
+                    date: string
+                    personalSlot: IPersonalShiftSlot | null
+                    otherSlots: {[privateID: number]: IShiftSlot | undefined}
+                }
+
+                interface IShiftSlot {
+                    privateSlotID: number
+                    status: "Unassigned" | "Assigned" | "Pending" | "Finished"
+                    plannedStartTime: string
+                    plannedEndTime: string | null
+                    requiredRole: string
+                    assignedShift: IShift | null
+                }
+
+                interface IPersonalShiftSlot extends IShiftSlot {
+                    status: Exclude<IShiftSlot["status"],"Unassigned">
+                    assignedShift: IPersonalShift
+                }
+
+                interface IShift {
+                    startTime: string | null
+                    endTime: string | null
+                    userID: number
+                    userName: string
+                }
+
+                interface IPersonalShift extends IShift {
+                    tip: number | null,
+                    deduction: number | null,
+                    note: string | null,
+                    noteUpdateTime: string | null
+                }
+
+                interface IResponse {
+                    day: IWorkDay
+                    wageRate: number | null
+                }
+
+                type IEndpoint = TBuildAPIEndpoint<"GET", "/api/schedule/workday/:date", IResponse, "NotSignedIn" | "InvalidDate",{date: string}>;
             }
         }
 

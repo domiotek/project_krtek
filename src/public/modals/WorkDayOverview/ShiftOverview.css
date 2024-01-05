@@ -1,0 +1,85 @@
+.Header {
+    background: #eaefff;
+    display: flex;
+    height: 175px;
+    padding: 0 1rem;
+    position: sticky;
+    top: -75px;
+    min-height: 100px;
+    z-index: 99;
+    flex-shrink: 0;
+    box-shadow: 0px 1px 20px 0 #d1d1d1d1;
+}
+
+.LeftPanel, .RightPanel {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.ButtonWrapper {
+    width: 0;
+}
+
+.LeftPanel h1 {
+    color: var(--primary-color);
+    font-weight: 400;
+    margin: 0 0 0.2em;
+    text-transform: capitalize;
+    font-size: 1.5em;
+}
+
+.LeftPanel h3 {
+    margin: 0 0 1rem;
+    font-weight: normal;
+    text-transform: capitalize;
+}
+
+.RightPanel {
+    margin-left: auto;
+    align-items: flex-end;
+}
+
+.RightPanel h4 {
+    color: #6f88d5;
+    margin-bottom: 0.5rem;
+}
+
+.RightPanel h4::first-letter {
+    text-transform: capitalize;
+}
+
+.RightPanel h5 {
+    margin: 0 0 0.5rem;
+}
+
+.Header button {
+    position: sticky;
+    right: 0rem;
+    border-bottom-left-radius: 0.75rem;
+    padding: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    background: #8f9bbf;
+    top: 0;
+    margin: -1.25rem;
+}
+
+.Header button:hover {
+    background: #a3b0d4;
+}
+
+.Header button:active {
+    background: #515c7d;
+}
+
+.MainContent {
+    padding: 1.5em 1em;
+}
+
+@media screen and (min-width: 386px) {
+    .LeftPanel h1 {
+        font-size: 2em;
+    }
+    
+}

@@ -13,7 +13,7 @@
 }
 
 .ModalContainer {
-    min-width: 90%;
+    min-width: 95%;
     min-height: 50%;
     background: var(--main-bg);
     border-radius: 0.5rem;
@@ -21,24 +21,19 @@
     overflow: auto;
     max-width: 500px;
     margin: 2rem 0;
+    width: 60%;
 }
 
 @media screen and (min-width: 426px) {
     .ModalContainer {
-        min-width: 60%;
+        min-width: 400px;
     }
     
 }
 
 @media screen and (min-width: 1200px) {
     .ModalContainer {
-        min-width: 40%;
+        min-width: 500px;
     }
     
-}
-
-@media screen and (min-width: 1700px) {
-    .ModalContainer {
-        min-width: 30%;
-    }
 }

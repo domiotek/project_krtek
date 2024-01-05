@@ -1,6 +1,9 @@
 .ShiftsWrapper {
     display: flex;
     flex-direction: column;
+    max-width: 1200px;
+    width: 100%;
+    margin: auto;
 }
 
 .FilterButton {
@@ -63,6 +66,51 @@
     overflow: hidden;
 }
 
+.NewShiftPanel {
+    width: 100%;
+    padding: 1rem;
+    background-color: var(--main-bg);
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    border-radius: 0.5em;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.4s;
+}
+
+.NewShiftPanel:hover {
+    background: #eff3ffb0;
+}
+
+.NewShiftPanel:active {
+    background: #cbd6fab0;
+}
+
+.NewShiftPanel .LeftPanel h2, .NewShiftPanel .RightPanel h4 {
+    font-weight: 600;
+}
+
+.NewShiftPanel .LeftPanel h5, .NewShiftPanel .RightPanel h6 {
+    font-weight: 500;
+}
+
+.NewShiftPanel .RightPanel {
+    margin: 0;
+}
+
+.NewShiftPanel:not(:last-of-type)::after {
+    content: "";
+    position: absolute;
+    display: block;
+    width: 70%;
+    height: 2px;
+    background: #dfdfdf;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
 .ShiftPanel.Active {
     max-height: 75rem;
 }
@@ -101,7 +149,7 @@
     align-self: flex-end;
 }
 
-.Header > img {
+.Header > img, .NewShiftPanel > img {
     position: absolute;
     top: 0;
     right: 0;
@@ -265,6 +313,10 @@
         max-height: 5rem;
     }
 
+    .NewShiftPanel {
+        flex-direction: row;
+    }
+
     .ShiftPanel.Active {
         max-height: 45rem;
     }
@@ -274,7 +326,7 @@
         flex-direction: row;
     }
     
-    .Header > img {
+    .Header > img, .NewShiftPanel > img {
         top: 50%;
         right: 0;
         transform: translateY(-50%) rotate(-90deg);

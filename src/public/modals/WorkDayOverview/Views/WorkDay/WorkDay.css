@@ -1,0 +1,84 @@
+.Wrapper > h3 {
+    margin: 0;
+    font-weight: 400;
+}
+
+.EmployeeList {
+    list-style: none;
+    padding-left: 0.65em;
+    margin-bottom: 2em;
+}
+
+.EmployeeList > h6 {
+    text-align: center;
+    margin: 5em 0;
+}
+
+.EmployeePanel {
+    margin: 0.25em 0;
+    position: relative;
+    padding: 0.5em;
+}
+
+.EmployeePanel.Personal {
+    cursor: pointer;
+    background: transparent;
+    transition: background 0.4s;
+    border-radius: 0.5em;
+}
+
+.EmployeePanel::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    width: 70%;
+    border-bottom: solid 2px #b9b9b947;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.EmployeePanel > h3 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.EmployeePanel img {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%) rotate(180deg);
+    width: 16px;
+    right: 10px;
+    transition: right 0.4s;
+}
+
+.EmployeePanel.Personal > h3 {
+    color: var(--primary-color);
+}
+
+.EmployeePanel.Personal:hover {
+    background: #f3f6ff;
+}
+
+.EmployeePanel.Personal:active {
+    background: #eaf0ff;
+}
+
+.EmployeePanel.Personal:hover img {
+    right: 5px;
+}
+
+.EmployeePanel > h5 {
+    margin: 0;
+    font-weight: 500;
+    margin-left: 0.65em;
+}
+
+.EmployeePanel > h5 span {
+    height: 0.4rem;
+    display: inline-block;
+    width: 0.4rem;
+    background: var(--primary-color);
+    border-radius: 50%;
+    transform: translateY(-1px);
+}
+

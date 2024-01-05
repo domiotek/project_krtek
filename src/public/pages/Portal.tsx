@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom";
 import FooterContent from "../components/FooterContent/FooterContent";
 
 import layoutClasses from "./layouts/MiddleBox.css";
-import SuspenseLoader from "./Loader";
+import SuspenseLoader from "../components/Loader/Loader";
 
 
 export default function Portal() {
