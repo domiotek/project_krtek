@@ -9,7 +9,7 @@ export default function FooterContent() {
 
     return (
         <span className={classes.FooterContent}>
-            <i>&copy; 2023 {t("footer")}</i> 
+            <i>&copy; 2024 {t("footer")}</i> 
             <Link to="/About">{t("footerLink")}</Link>
         </span>
     );
