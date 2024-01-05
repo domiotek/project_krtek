@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { API, WebApp } from "../../../../types/networkAPI";
 
 import classes from "./Shifts.css";
@@ -56,7 +56,14 @@ export default function ShiftsTab(props: IProps) {
     const {t} = useTranslation("statistics",{keyPrefix: "shifts-tab"});
     const {t: tg} = useTranslation("glossary");
 
-    const useNewModal = true;
+    const useNewModal = useMemo(()=>{
+        try {
+            let flags = JSON.parse(localStorage.getItem("featureFlags") ?? "{}");
+            return flags["NewShiftModal"];
+        } catch (error) {
+            return false;
+        }
+    },[]);
 
     const weekDayLabels = Info.weekdays();
     

@@ -58,10 +58,10 @@ export default function SettingsPage() {
 
                 <p className={classes.SectionDesc}>{t("experiments.desc")}</p>
 
-                <h5 className={classes.NoExperimentsText}>{t("experiments.no-items")}</h5>
-                {/* <ul className={classes.ExperimentsList} >
-
-                </ul> */}
+                {/* <h5 className={classes.NoExperimentsText}>{t("experiments.no-items")}</h5> */}
+                <ul className={classes.ExperimentList} >
+                    <ExperimentPanel title="Nowy widok szczegółów zmiany" desc="Nie wszystko jest jeszcze gotowe, w tym zaktualizowany widok edycji, lecz baza już jest i można wysnuć pierwsze opinie jak ktoś chce. Gdyby ktoś nie wiedział, gdzie tego szukać, to znajdziecie to w 'Moje Statystyki' po kliknięciu na którąś ze zmian." featureID="NewShiftModal"/>
+                </ul>
 
                 <p className={classes.AlertBox}>
                     <img src="/ui/alert.png" alt="Warning sign" />
